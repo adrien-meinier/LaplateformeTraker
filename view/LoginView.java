@@ -2,7 +2,7 @@ package view;
 
 import controller.LoginController;
 
-public class LoginView extends javax.swing.JFrame {
+public class LoginView extends fenetre {
 
     private LoginController controller;
 

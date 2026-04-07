@@ -1,22 +1,20 @@
 package view;
 
-import view.main_menu;
+package view;
 
-//creation de la fenetre de l'application
-public class fenetre {
-     public static void main(String[] args)
-    {
-        //creation de la fenetre dimmension 800*600
-        java.awt.Dimension dimension = new java.awt.Dimension(800, 600);
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new main_menu().setVisible(true);
-            }
+import controller.LoginController;
+
+public class Fenetre {
+
+    public static void main(String[] args) {
+
+        java.awt.EventQueue.invokeLater(() -> {
+
+            LoginController controller = new LoginController();
+            LoginView view = new LoginView(controller);
+
+            view.setVisible(true);
         });
-        java.awt.Frame body =new main_menu();
-        body.setSize(dimension);
-        body.setVisible (true);
 
-
-    
     }
+}
