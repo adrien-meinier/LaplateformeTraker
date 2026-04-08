@@ -191,10 +191,9 @@ public class RechercheView {
         TableColumn<StudentModel, Integer> colAge = new TableColumn<>("Âge");
         
         colAge.setCellValueFactory(cellData -> {
-            int age = Period.between(cellData.getValue().getBirthDate(), LocalDate.now()).getYears();
-            return new SimpleStringProperty(String.valueOf(age));
-        });
-        colAge.setPrefWidth(70);
+        int age = Period.between(cellData.getValue().getBirthDate(), LocalDate.now()).getYears();
+        return new javafx.beans.property.SimpleIntegerProperty(age).asObject();
+     });
 
         TableColumn<StudentModel, String> colBirth = simpleCol("Naissance", "birthDate", 120);
 
