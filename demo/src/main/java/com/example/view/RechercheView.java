@@ -1,7 +1,7 @@
 package com.example.view;
 
 
-import com.studentmanager.model.Student;
+import com.example.model.Student;
 import com.studentmanager.service.StudentService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;

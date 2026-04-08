@@ -1,35 +1,16 @@
 package com.example;
-
-import javafx.application.Application;
-import javafx.scene.Group;
-import javafx.scene.Scene;
-import javafx.scene.paint.Color;
-import javafx.stage.Stage;
-
-public class Main extends Application {
-
-    @Override
-    public void start(Stage myStage) throws Exception {
-
-        // Initialize a group of nodes
-        Group root = new Group();
-        
-        // Initialize a scene that needs a node as argument, by convention call it root
-        Scene myScene = new Scene(root, Color.BLACK); 
-
-        // Give the stage a title
-        myStage.setTitle("My First JavaFX Stage");
-
-        // Set the scene into the stage
-        myStage.setScene(myScene);
-        // Always end the start method with showing a stage
-        myStage.show();
-
-    }
+ 
+/**
+ * Main — lanceur de secours pour les environnements sans support JavaFX natif.
+ *
+ * Certains IDEs (IntelliJ, Eclipse) ne peuvent pas lancer directement une classe
+ * qui étend {@link javafx.application.Application} sans configuration spéciale.
+ * Ce lanceur intermédiaire contourne ce problème.
+ *
+ * Usage : exécutez cette classe, pas App.java.
+ */
+public class Main {
     public static void main(String[] args) {
-
-        launch(args);
-
+        App.main(args);
     }
-
 }
