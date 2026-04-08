@@ -1,4 +1,4 @@
-package model;
+package com.example.model;
 import java.security.SecureRandom;
 import java.util.Base64;
 
