@@ -1,6 +1,7 @@
 package com.example.Model;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -18,27 +19,26 @@ public class DatabaseInitializer {
     private static final String DB_PASSWORD = "root";
 
     private static void createDatabaseIfNotExists() throws SQLException {
-    String url = "jdbc:postgresql://" + DB_HOST + ":" + DB_PORT + "/postgres";
+        String url = "jdbc:postgresql://" + DB_HOST + ":" + DB_PORT + "/postgres";
 
-    try (Connection conn = DriverManager.getConnection(url, DB_USER, DB_PASSWORD);
-         Statement stmt = conn.createStatement()) {
+        try (Connection conn = DriverManager.getConnection(url, DB_USER, DB_PASSWORD);
+             Statement stmt = conn.createStatement()) {
 
-        String checkDb = "SELECT 1 FROM pg_database WHERE datname = '" + DB_NAME + "';";
-        var rs = stmt.executeQuery(checkDb);
+            String checkDb = "SELECT 1 FROM pg_database WHERE datname = '" + DB_NAME + "';";
+            var rs = stmt.executeQuery(checkDb);
 
-        if (!rs.next()) {
-            System.out.println("Database '" + DB_NAME + "' does not exist. Creating...");
-            stmt.execute("CREATE DATABASE " + DB_NAME + ";");
-            System.out.println("Database created successfully.");
-        } else {
-            System.out.println("Database '" + DB_NAME + "' already exists.");
+            if (!rs.next()) {
+                System.out.println("Database '" + DB_NAME + "' does not exist. Creating...");
+                stmt.execute("CREATE DATABASE " + DB_NAME + ";");
+                System.out.println("Database created successfully.");
+            } else {
+                System.out.println("Database '" + DB_NAME + "' already exists.");
             }
         }
     }
 
     private static final String JDBC_URL =
             "jdbc:postgresql://" + DB_HOST + ":" + DB_PORT + "/" + DB_NAME;
-
 
     private static final String CREATE_TABLE_APP_USER = """
             CREATE TABLE IF NOT EXISTS app_user (
@@ -76,6 +76,24 @@ public class DatabaseInitializer {
     private static final String CREATE_INDEX_GRADES_STUDENT =
             "CREATE INDEX IF NOT EXISTS idx_grades_student_id ON grades(student_id);";
 
+    private static final String SEED_STUDENTS = """
+            INSERT INTO student (first_name, last_name, birth_date) VALUES
+                ('Alice',     'Martin',   '2004-03-12'),
+                ('Bob',       'Dupont',   '2003-07-24'),
+                ('Clara',     'Bernard',  '2005-01-08'),
+                ('David',     'Leroy',    '2002-11-30'),
+                ('Emma',      'Moreau',   '2004-06-15'),
+                ('Florian',   'Simon',    '2001-09-03'),
+                ('Gabrielle', 'Laurent',  '2003-04-22'),
+                ('Hugo',      'Michel',   '2002-08-19'),
+                ('Inès',      'Garcia',   '2004-12-05'),
+                ('Jules',     'David',    '2005-02-28'),
+                ('Karine',    'Petit',    '2000-10-14'),
+                ('Lucas',     'Robert',   '2003-05-07'),
+                ('Marie',     'Richard',  '2004-09-18'),
+                ('Nicolas',   'Thomas',   '2002-03-25'),
+                ('Océane',    'Blanc',    '2005-07-11');
+            """;
 
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASSWORD);
@@ -83,6 +101,7 @@ public class DatabaseInitializer {
 
     /*
     Creates all required tables and indexes if they do not already exist.
+    Seeds 15 fictitious students if the student table is empty.
     throws SQLException if any DDL statement fails
     */
     public static void initialize() throws SQLException {
@@ -108,6 +127,13 @@ public class DatabaseInitializer {
 
             stmt.execute(CREATE_INDEX_GRADES_STUDENT);
             System.out.println("Index 'idx_grades_student_id' is ready.");
+
+            // Seed students if table is empty
+            ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM student;");
+            if (rs.next() && rs.getInt(1) == 0) {
+                stmt.execute(SEED_STUDENTS);
+                System.out.println("15 fictitious students inserted.");
+            }
 
             System.out.println("Database initialization complete.");
         }
