@@ -65,7 +65,7 @@ public class StatistiquesView {
             Map<String, Integer> ageDist =
                     (Map<String, Integer>) stats.get("Distribution par âge");
 
-            // ── KPI Cards 
+            // ── KPI Cards ────────────────────────────────────────────────
             HBox kpiRow = new HBox(14);
             kpiRow.setFillHeight(true);
 
@@ -82,7 +82,7 @@ public class StatistiquesView {
                                     ? String.format("%.0f%%", failing * 100.0 / total) : "—")
             );
 
-            // ── Ligne détails 
+            // ── Ligne détails ─────────────────────────────────────────────
             HBox detailRow = new HBox(14);
 
             detailRow.getChildren().addAll(
@@ -96,7 +96,7 @@ public class StatistiquesView {
                             StyleFactory.C_PRIMARY, "")
             );
 
-            // ── Diagramme admis/refusés 
+            // ── Diagramme admis/refusés ───────────────────────────────────
             HBox charts = new HBox(16);
             charts.setFillHeight(true);
 
@@ -119,7 +119,7 @@ public class StatistiquesView {
         return scroll;
     }
 
-    // ── KPI card 
+    // ── KPI card ──────────────────────────────────────────────────────────
 
     private VBox kpi(String label, String value, String color, String sub) {
         VBox card = new VBox(4);
@@ -145,7 +145,7 @@ public class StatistiquesView {
         return card;
     }
 
-    // ── Donut admis/refusés 
+    // ── Donut admis/refusés ───────────────────────────────────────────────
 
     private VBox buildDonutCard(int passing, int failing, int total) {
         VBox card = new VBox(14);

@@ -1,14 +1,23 @@
 package com.example;
- 
-/**
- * Main — lanceur de secours pour les environnements sans support JavaFX natif.
- *
- 
- *
- * Usage : exécutez cette classe, pas App.java.
- */
-public class Main {
+
+import java.sql.SQLException;
+
+import com.example.Model.DatabaseInitializer;
+
+import com.example.view.App;
+
+public class Main{
+
     public static void main(String[] args) {
-        App.main(args);
+
+        try {
+            DatabaseInitializer.initialize();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        App.launch(args);
+
     }
+
 }

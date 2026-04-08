@@ -1,7 +1,9 @@
+
+
 package com.example.view;
 
-import com.example.view.App;
-import com.example.auth.AuthService;//Service de connexion fictif
+import com.example.App;
+import com.example.AuthService;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;

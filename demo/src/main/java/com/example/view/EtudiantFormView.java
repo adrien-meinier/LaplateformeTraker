@@ -1,7 +1,7 @@
 package com.example.view;
 
-import com.example.model.Student;
-import com.example.service.StudentService;//
+import com.example.view.EtudiantsView;
+import com.example.view.EtudiantFormView;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -23,7 +23,7 @@ import javafx.scene.text.FontWeight;
 public class EtudiantFormView {
 
     private final StudentService service;
-    private final Student        existing;   
+    private final Student        existing;   // null = mode ajout
     private final Runnable       onSaved;
 
     // Champs
@@ -46,7 +46,8 @@ public class EtudiantFormView {
         card.setStyle(StyleFactory.cardBg());
         card.setMaxWidth(460);
 
-        // Titre
+        // Titre 
+        // TODO a voir pour changer avec des sprite si necessaire 
         Label title = new Label(isEdit ? "✏️ Modifier l'étudiant" : "➕ Ajouter un étudiant");
         title.setFont(Font.font("System", FontWeight.BOLD, 20));
         title.setStyle("-fx-text-fill: " + StyleFactory.C_PRIMARY + ";");
@@ -99,7 +100,8 @@ public class EtudiantFormView {
             lblGradeVal.setStyle("-fx-text-fill: " + gradeColor(val.doubleValue()) + ";");
         });
 
-        // Grille
+        // Grille 
+        //TODO a voir pour date de creation et modification pour les autres champs a ajouter si necessaire
         grid.add(fieldGroup("Prénom *",    tfPrenom), 0, 0);
         grid.add(fieldGroup("Nom *",       tfNom),    1, 0);
         grid.add(fieldGroup("Âge *",       spAge),    0, 1);
@@ -173,7 +175,7 @@ public class EtudiantFormView {
         }
     }
 
-    // ── Helpers 
+    // ── Helpers ───────────────────────────────────────────────────────────
 
     private TextField field(String value) {
         TextField tf = new TextField(value);

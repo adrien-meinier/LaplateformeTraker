@@ -1,8 +1,9 @@
+
 package com.example.view;
 
-import com.example.auth.AuthService;
-import com.example.service.StudentService;
-import com.example.util.BackupScheduler;
+import com.studentmanager.auth.AuthService;
+import com.studentmanager.service.StudentService;
+import com.studentmanager.util.BackupScheduler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -58,7 +59,7 @@ public class MainMenuView {
         showEtudiants();
     }
 
-    // ── Construction de la scène 
+    // ── Construction de la scène ──────────────────────────────────────────
 
     private Scene buildScene() {
         root = new BorderPane();
@@ -72,7 +73,7 @@ public class MainMenuView {
         return new Scene(root, 1100, 700);
     }
 
-    // ── Sidebar 
+    // ── Sidebar ───────────────────────────────────────────────────────────
 
     private VBox buildSidebar() {
         VBox sidebar = new VBox(0);
@@ -159,7 +160,7 @@ public class MainMenuView {
         activeSidebarBtn = btn;
     }
 
-    // ── Navigation des vues 
+    // ── Navigation des vues ───────────────────────────────────────────────
 
     private void showEtudiants() {
         setContent(new EtudiantsView(studentService).build());
@@ -185,7 +186,7 @@ public class MainMenuView {
         contentArea.getChildren().setAll(node);
     }
 
-    // ── Déconnexion 
+    // ── Déconnexion ───────────────────────────────────────────────────────
 
     private void logout() {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
@@ -203,7 +204,7 @@ public class MainMenuView {
         });
     }
 
-    // ── Helpers 
+    // ── Helpers ───────────────────────────────────────────────────────────
 
     /** Accesseur pour que les sous-vues puissent naviguer. */
     public void navigateTo(String view) {

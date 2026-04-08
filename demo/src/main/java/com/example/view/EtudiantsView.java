@@ -2,8 +2,8 @@ package com.example.view;
 
 
 
-import com.example.model.Student;
-import com.example.service.StudentService;//
+import com.studentmanager.model.Student;
+import com.studentmanager.service.StudentService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -81,7 +81,7 @@ public class EtudiantsView {
         // ── Tableau ───────────────────────────────────────────────────────
         table = buildTable();
 
-        // ── Pagination 
+        // ── Pagination ────────────────────────────────────────────────────
         HBox pagination = new HBox(12);
         pagination.setAlignment(Pos.CENTER_RIGHT);
 
