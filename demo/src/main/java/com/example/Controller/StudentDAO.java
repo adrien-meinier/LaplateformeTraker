@@ -1,9 +1,12 @@
-package com.example.Model;
+package com.example.Controller;
 
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.example.Model.DatabaseInitializer;
+import com.example.Model.StudentModel;
 
 /*
  Data Access Object for the student table.
