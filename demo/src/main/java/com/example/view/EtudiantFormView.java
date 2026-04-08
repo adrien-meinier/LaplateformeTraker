@@ -1,7 +1,5 @@
 package com.example.view;
 
-
-
 import com.example.view.EtudiantsView;
 import com.example.view.EtudiantFormView;
 import javafx.geometry.Insets;
