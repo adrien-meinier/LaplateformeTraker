@@ -2,8 +2,8 @@ package com.example;
 
 import java.sql.SQLException;
 
-import com.example.Model.DatabaseInitializer;
-import com.example.Model.StudentSeeder;
+import com.example.model.DatabaseInitializer;
+import com.example.model.StudentSeeder;
 import com.example.view.App;
 
 public class Main{

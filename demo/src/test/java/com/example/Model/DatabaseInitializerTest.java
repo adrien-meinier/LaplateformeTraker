@@ -1,6 +1,9 @@
 package com.example.Model;
 
 import org.junit.jupiter.api.Test;
+
+import com.example.model.DatabaseInitializer;
+
 import java.sql.*;
 import static org.junit.jupiter.api.Assertions.*;
 
