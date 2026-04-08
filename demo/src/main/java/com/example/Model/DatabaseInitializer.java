@@ -80,18 +80,18 @@ public class DatabaseInitializer {
 
             // Create tables in dependency order (app_user and student before grades)
             stmt.execute(CREATE_TABLE_APP_USER);
-            System.out.println("[DB] Table 'app_user' is ready.");
+            System.out.println("Table 'app_user' is ready.");
 
             stmt.execute(CREATE_TABLE_STUDENT);
-            System.out.println("[DB] Table 'student' is ready.");
+            System.out.println("Table 'student' is ready.");
 
             stmt.execute(CREATE_TABLE_GRADES);
-            System.out.println("[DB] Table 'grades' is ready.");
+            System.out.println("Table 'grades' is ready.");
 
             stmt.execute(CREATE_INDEX_GRADES_STUDENT);
-            System.out.println("[DB] Index 'idx_grades_student_id' is ready.");
+            System.out.println("Index 'idx_grades_student_id' is ready.");
 
-            System.out.println("[DB] Database initialization complete.");
+            System.out.println("Database initialization complete.");
         }
     }
 }
