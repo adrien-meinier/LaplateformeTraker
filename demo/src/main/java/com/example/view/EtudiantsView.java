@@ -2,7 +2,7 @@ package com.example.view;
 
 
 
-import com.studentmanager.model.Student;
+import com.example.Model.StudentModel;
 import com.studentmanager.service.StudentService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -49,7 +49,7 @@ public class EtudiantsView {
         VBox root = new VBox(16);
         root.setPadding(new Insets(0));
 
-        // ── En-tête ──────────────────────────────────────────────────────
+        // ── En-tête 
         HBox header = new HBox(12);
         header.setAlignment(Pos.CENTER_LEFT);
 
@@ -78,10 +78,10 @@ public class EtudiantsView {
 
         header.getChildren().addAll(title, spacer, lblPage, cbPageSize, btnAdd);
 
-        // ── Tableau ───────────────────────────────────────────────────────
+        // ── Tableau 
         table = buildTable();
 
-        // ── Pagination ────────────────────────────────────────────────────
+        // ── Pagination 
         HBox pagination = new HBox(12);
         pagination.setAlignment(Pos.CENTER_RIGHT);
 
@@ -103,7 +103,7 @@ public class EtudiantsView {
         return root;
     }
 
-    // ── Tableau ───────────────────────────────────────────────────────────
+    // ── Tableau 
 
     @SuppressWarnings("unchecked")
     private TableView<Student> buildTable() {
@@ -115,7 +115,7 @@ public class EtudiantsView {
         TableColumn<Student, Integer> colId = col("ID", "id", 60);
         TableColumn<Student, String> colPrenom = col("Prénom", "firstName", 140);
         TableColumn<Student, String> colNom = col("Nom", "lastName", 140);
-        TableColumn<Student, Integer> colAge = col("Âge", "age", 70);
+        TableColumn<Student, LocalDate> colBirthDate = col("Date de Naissance", "birthDate", 120);
 
         // Colonne note avec couleur
         TableColumn<Student, String> colNote = new TableColumn<>("Note");
@@ -177,7 +177,7 @@ public class EtudiantsView {
         colAge.setSortable(true);
         colNote.setSortable(false);
 
-        tv.getColumns().addAll(colId, colPrenom, colNom, colAge, colNote, colMention, colEmail, colActions);
+        tv.getColumns().addAll(colId, colPrenom, colNom, colDatedeNaissance, colNote, colMention, colEmail, colActions);
 
         // Tri côté BDD au clic sur en-tête
         tv.setOnSort(e -> {
@@ -205,7 +205,7 @@ public class EtudiantsView {
         return c;
     }
 
-    // ── Refresh ───────────────────────────────────────────────────────────
+    // ── Refresh 
 
     private void refresh() {
         try {
@@ -225,7 +225,7 @@ public class EtudiantsView {
         }
     }
 
-    // ── Formulaire (ajout / modif) ─────────────────────────────────────────
+    // ── Formulaire 
 
     private void openForm(Student existing) {
         Stage dialog = new Stage();
@@ -243,7 +243,7 @@ public class EtudiantsView {
         dialog.showAndWait();
     }
 
-    // ── Suppression ───────────────────────────────────────────────────────
+    // ── Suppression 
 
     private void confirmDelete(Student s) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
