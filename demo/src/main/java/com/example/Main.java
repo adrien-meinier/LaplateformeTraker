@@ -1,0 +1,23 @@
+package com.example;
+
+import java.sql.SQLException;
+
+import com.example.Model.DatabaseInitializer;
+
+import com.example.view.App;
+
+public class Main{
+
+    public static void main(String[] args) {
+
+        try {
+            DatabaseInitializer.initialize();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        App.launch(args);
+
+    }
+
+}
