@@ -1,4 +1,4 @@
-package com.example.Controller;
+package com.example.controller;
 public class StudentController {
 
     // FXML fields (linked to UI components)
