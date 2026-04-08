@@ -1,7 +1,10 @@
 package com.example.view;
 
-import com.example.model.Student;
-import com.example.service.StudentService;
+
+
+import com.example.controller.StudentDAO;
+import com.example.model.StudentModel;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -10,25 +13,25 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
-/**
- * EtudiantFormView — formulaire ajout / modification, lié à la DB.
- */
 public class EtudiantFormView {
 
-    private final StudentService service;
-    private final Student        existing;
-    private final Runnable       onSaved;
+    private final StudentDAO dao;
+    private final StudentModel existing;
+    private final Runnable onSaved;
 
     private TextField tfPrenom, tfNom;
     private DatePicker dpBirthDate;
-    private Label      lblError;
+    private Label lblError;
 
-    public EtudiantFormView(StudentService service, Student existing, Runnable onSaved) {
-        this.service  = service;
+    public EtudiantFormView(StudentDAO dao, StudentModel existing, Runnable onSaved) {
+        this.dao = dao;
         this.existing = existing;
-        this.onSaved  = onSaved;
+        this.onSaved = onSaved;
     }
 
     public Node build() {
@@ -43,39 +46,41 @@ public class EtudiantFormView {
         title.setFont(Font.font("System", FontWeight.BOLD, 20));
         title.setStyle("-fx-text-fill: " + StyleFactory.C_PRIMARY + ";");
 
-        // ── Grille 
         GridPane grid = new GridPane();
         grid.setHgap(16);
         grid.setVgap(14);
         grid.setFillWidth(true);
 
-        ColumnConstraints c1 = new ColumnConstraints(); c1.setPercentWidth(50);
-        ColumnConstraints c2 = new ColumnConstraints(); c2.setPercentWidth(50);
+        ColumnConstraints c1 = new ColumnConstraints();
+        c1.setPercentWidth(50);
+        ColumnConstraints c2 = new ColumnConstraints();
+        c2.setPercentWidth(50);
         grid.getColumnConstraints().addAll(c1, c2);
 
-        tfPrenom    = field(isEdit ? existing.getFirstName() : "");
-        tfNom       = field(isEdit ? existing.getLastName()  : "");
+        tfPrenom = field(isEdit ? existing.getFirstName() : "");
+        tfNom = field(isEdit ? existing.getLastName() : "");
         dpBirthDate = new DatePicker(isEdit && existing.getBirthDate() != null
-                        ? existing.getBirthDate() : LocalDate.of(2000, 1, 1));
+                ? existing.getBirthDate()
+                : LocalDate.now());
+
         dpBirthDate.setPrefHeight(42);
         dpBirthDate.setMaxWidth(Double.MAX_VALUE);
 
-        grid.add(fieldGroup("Prénom *",          tfPrenom),    0, 0);
-        grid.add(fieldGroup("Nom *",             tfNom),       1, 0);
+        grid.add(fieldGroup("Prénom *", tfPrenom), 0, 0);
+        grid.add(fieldGroup("Nom *", tfNom), 1, 0);
         grid.add(fieldGroup("Date de naissance *", dpBirthDate), 0, 1, 2, 1);
 
-        // ── Erreur 
         lblError = new Label();
         lblError.setStyle("-fx-text-fill: " + StyleFactory.C_DANGER + "; -fx-font-size: 12px;");
         lblError.setVisible(false);
         lblError.setWrapText(true);
 
-        // ── Boutons ──────────────────────────────────────────────────────
-        Button btnSave   = isEdit ? StyleFactory.primaryBtn("💾 Enregistrer")
-                                  : StyleFactory.successBtn("➕ Ajouter");
+        Button btnSave = isEdit ? StyleFactory.primaryBtn("💾 Enregistrer")
+                                : StyleFactory.successBtn("➕ Ajouter");
         Button btnCancel = StyleFactory.secondaryBtn("Annuler");
         btnSave.setPrefWidth(160);
         btnCancel.setPrefWidth(110);
+
         btnSave.setOnAction(e -> doSave());
         btnCancel.setOnAction(e -> onSaved.run());
 
@@ -99,17 +104,20 @@ public class EtudiantFormView {
             showError("La date de naissance est obligatoire.");
             return;
         }
+
         try {
-            Student s = existing != null ? existing : new Student();
-            s.setFirstName(tfPrenom.getText().trim());
-            s.setLastName (tfNom.getText().trim());
-            s.setBirthDate(dpBirthDate.getValue());
-
-            if (existing != null) service.updateStudent(s);
-            else                  service.addStudent(s);
-
+            if (existing == null) {
+                dao.addStudent(tfPrenom.getText().trim(), tfNom.getText().trim(), dpBirthDate.getValue());
+            } else {
+                dao.updateStudent(
+                        existing.getId(),
+                        tfPrenom.getText().trim(),
+                        tfNom.getText().trim(),
+                        dpBirthDate.getValue()
+                );
+            }
             onSaved.run();
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             showError("Erreur : " + ex.getMessage());
         }
     }
@@ -120,7 +128,7 @@ public class EtudiantFormView {
         tf.setPrefHeight(42);
         tf.focusedProperty().addListener((obs, old, focused) ->
                 tf.setStyle(focused ? StyleFactory.textFieldFocusStyle()
-                                    : StyleFactory.textFieldStyle()));
+                        : StyleFactory.textFieldStyle()));
         return tf;
     }
 

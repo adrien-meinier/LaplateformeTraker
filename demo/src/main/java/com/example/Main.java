@@ -2,14 +2,15 @@ package com.example;
 
 import java.sql.SQLException;
 
-import com.example.Model.DatabaseInitializer;
-import com.example.Model.StudentSeeder;
-import com.example.view.App;
+import com.example.model.DatabaseInitializer;
+import com.example.model.StudentSeeder;
+import com.example.view.MainMenuView;
+import javafx.application.Application;
+import javafx.stage.Stage;
 
-public class Main{
+public class Main extends Application {
 
     public static void main(String[] args) {
-
         try {
             DatabaseInitializer.initialize();
         } catch (SQLException e) {
@@ -22,8 +23,11 @@ public class Main{
             e.printStackTrace();
         }
         
-        App.launch(args);
-
+        launch(args);
     }
 
+    @Override
+    public void start(Stage primaryStage) {
+        new MainMenuView(primaryStage).show();
+    }
 }
