@@ -14,7 +14,7 @@ public class DatabaseInitializer {
     // Connection settings
     private static final String DB_HOST     = "localhost";
     private static final String DB_PORT     = "5432";
-    private static final String DB_NAME     = "student_db";
+    private static final String DB_NAME     = "laplateformetracker";
     private static final String DB_USER     = "postgres";
     private static final String DB_PASSWORD = "your_password_here";
 
