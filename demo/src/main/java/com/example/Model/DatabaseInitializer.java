@@ -26,7 +26,6 @@ public class DatabaseInitializer {
             CREATE TABLE IF NOT EXISTS app_user (
                 email             VARCHAR(255) PRIMARY KEY,
                 password_hash     VARCHAR(512) NOT NULL,
-                salt              VARCHAR(128) NOT NULL,
                 creation_date     TIMESTAMP    NOT NULL DEFAULT NOW(),
                 is_admin          BOOLEAN      NOT NULL DEFAULT FALSE
             );
@@ -50,13 +49,12 @@ public class DatabaseInitializer {
                                     REFERENCES student(id) ON DELETE CASCADE,
                 grade             INT          NOT NULL
                                     CHECK (grade >= 0 AND grade <= 20),
-                subject           VARCHAR(150) NOT NULL,
+                subject           VARCHAR(100) NOT NULL,
                 creation_date     TIMESTAMP    NOT NULL DEFAULT NOW(),
                 last_modified_date TIMESTAMP   NOT NULL DEFAULT NOW()
             );
             """;
 
-    // Index: speeds up "get all grades for a given student"
     private static final String CREATE_INDEX_GRADES_STUDENT =
             "CREATE INDEX IF NOT EXISTS idx_grades_student_id ON grades(student_id);";
 
@@ -65,12 +63,10 @@ public class DatabaseInitializer {
         return DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASSWORD);
     }
 
-    /**
-     * Creates all required tables and indexes if they do not already exist.
-     * Safe to call multiple times (idempotent).
-     *
-     * throws SQLException if any DDL statement fails
-     */
+    /*
+    Creates all required tables and indexes if they do not already exist.
+    throws SQLException if any DDL statement fails
+    */
     public static void initialize() throws SQLException {
         // Load the PostgreSQL JDBC driver (auto-loaded in modern JVMs, but explicit is safer)
         try {
