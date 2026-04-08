@@ -12,7 +12,7 @@ import javafx.scene.layout.Region;
  */
 public final class StyleFactory {
 
-    // ── Palette ──────────────────────────────────────────────────────────
+    // ── Palette ─
     public static final String C_PRIMARY    = "#2c3e50";   // bleu marine foncé
     public static final String C_ACCENT     = "#3498db";   // bleu vif
     public static final String C_SUCCESS    = "#27ae60";   // vert
@@ -24,13 +24,13 @@ public final class StyleFactory {
     public static final String C_TEXT_GREY  = "#7f8c8d";
     public static final String C_BG         = "#f4f6f8";   // fond général
 
-    // ── Radius / taille ──────────────────────────────────────────────────
+    // ── Radius / taille
     private static final String RADIUS = "8";
     private static final String BTN_H  = "42";             // hauteur bouton px
 
     private StyleFactory() {}
 
-    // ── Styles de fond ────────────────────────────────────────────────────
+    // ── Styles de fond 
 
     public static String rootBg() {
         return "-fx-background-color: " + C_BG + ";";
@@ -46,7 +46,7 @@ public final class StyleFactory {
         return "-fx-background-color: " + C_PRIMARY + ";";
     }
 
-    // ── Boutons ────────────────────────────────────────────────────────────
+    // ── Boutons ─
 
     /** Bouton plein couleur accent (bleu). */
     public static Button primaryBtn(String text) {
@@ -112,7 +112,7 @@ public final class StyleFactory {
         return btn;
     }
 
-    // ── Champs de saisie ──────────────────────────────────────────────────
+    // ── Champs de saisie 
 
     public static String textFieldStyle() {
         return "-fx-background-color: " + C_WHITE + ";"
@@ -132,7 +132,7 @@ public final class StyleFactory {
              + "-fx-font-size: 13px;";
     }
 
-    // ── Labels ────────────────────────────────────────────────────────────
+    // ── Labels 
 
     public static String titleStyle() {
         return "-fx-font-size: 22px;"
@@ -151,7 +151,7 @@ public final class StyleFactory {
              + "-fx-text-fill: " + C_TEXT_DARK + ";";
     }
 
-    // ── TableView ─────────────────────────────────────────────────────────
+    // ── TableView ─
 
     public static String tableStyle() {
         return "-fx-background-color: " + C_WHITE + ";"
@@ -160,7 +160,7 @@ public final class StyleFactory {
              + "-fx-background-radius: 8;";
     }
 
-    // ── Helpers privés ────────────────────────────────────────────────────
+    // ── Helpers privés 
 
     private static Button styledBtn(String text, String bg, String fg) {
         Button btn = new Button(text);

@@ -48,12 +48,13 @@ public class EtudiantFormView {
         card.setStyle(StyleFactory.cardBg());
         card.setMaxWidth(460);
 
-        // Titre
+        // Titre 
+        // TODO a voir pour changer avec des sprite si necessaire 
         Label title = new Label(isEdit ? "✏️ Modifier l'étudiant" : "➕ Ajouter un étudiant");
         title.setFont(Font.font("System", FontWeight.BOLD, 20));
         title.setStyle("-fx-text-fill: " + StyleFactory.C_PRIMARY + ";");
 
-        // ── Champs ────────────────────────────────────────────────────────
+        // ── Champs 
         GridPane grid = new GridPane();
         grid.setHgap(16);
         grid.setVgap(14);
@@ -101,7 +102,8 @@ public class EtudiantFormView {
             lblGradeVal.setStyle("-fx-text-fill: " + gradeColor(val.doubleValue()) + ";");
         });
 
-        // Grille
+        // Grille 
+        //TODO a voir pour date de creation et modification pour les autres champs a ajouter si necessaire
         grid.add(fieldGroup("Prénom *",    tfPrenom), 0, 0);
         grid.add(fieldGroup("Nom *",       tfNom),    1, 0);
         grid.add(fieldGroup("Âge *",       spAge),    0, 1);

@@ -39,7 +39,7 @@ public class RechercheView {
         title.setFont(Font.font("System", FontWeight.BOLD, 22));
         title.setStyle(StyleFactory.titleStyle());
 
-        // ── Bloc Recherche par ID ──────────────────────────────────────
+        // ── Bloc Recherche par ID 
         VBox cardById = new VBox(12);
         cardById.setPadding(new Insets(18, 20, 18, 20));
         cardById.setStyle(StyleFactory.cardBg());
@@ -65,7 +65,7 @@ public class RechercheView {
         rowId.getChildren().addAll(tfId, btnSearchId);
         cardById.getChildren().addAll(lblById, rowId);
 
-        // ── Bloc Recherche avancée ──────────────────────────────────────
+        // ── Bloc Recherche avancée 
         VBox cardAdv = new VBox(14);
         cardAdv.setPadding(new Insets(18, 20, 18, 20));
         cardAdv.setStyle(StyleFactory.cardBg());
@@ -116,7 +116,7 @@ public class RechercheView {
         advButtons.getChildren().addAll(btnReset, btnSearch);
         cardAdv.getChildren().addAll(lblAdv, grid, advButtons);
 
-        // ── Résultats ──────────────────────────────────────────────────
+        // ── Résultats 
         lblResultCount = new Label();
         lblResultCount.setStyle(StyleFactory.subtitleStyle());
 
@@ -129,7 +129,7 @@ public class RechercheView {
         return root;
     }
 
-    // ── Actions ───────────────────────────────────────────────────────────
+    // ── Actions 
 
     private void searchById(String raw) {
         if (raw.isEmpty()) { refreshAll(); return; }
@@ -175,7 +175,7 @@ public class RechercheView {
         }
     }
 
-    // ── Tableau ───────────────────────────────────────────────────────────
+    // ── Tableau 
 
     @SuppressWarnings("unchecked")
     private TableView<Student> buildTable() {
