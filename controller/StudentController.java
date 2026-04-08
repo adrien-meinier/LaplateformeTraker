@@ -1,134 +1,156 @@
 public class StudentController {
 
-    // CHAMPS FXML 
-
-    // Champ texte pour le prénom (lié au FXML avec fx:id)
+    // FXML fields (linked to UI components)
     @FXML private TextField firstNameField;
-
-    // Champ texte pour le nom
     @FXML private TextField lastNameField;
+    @FXML private DatePicker birthDatePicker;
 
-    // Table qui affiche la liste des étudiants
+    // TableView to display students
     @FXML private TableView<Student> studentTable;
 
-    // Colonnes de la table
+    // Table columns
     @FXML private TableColumn<Student, Integer> colId;
     @FXML private TableColumn<Student, String> colFirstName;
     @FXML private TableColumn<Student, String> colLastName;
 
-    // DAO pour accéder à la base de données
+    // New date columns
+    @FXML private TableColumn<Student, LocalDate> colBirthDate;
+    @FXML private TableColumn<Student, LocalDate> colCreationDate;
+    @FXML private TableColumn<Student, LocalDate> colLastModifiedDate;
+
+    // DAO to interact with database
     private StudentDAO studentDAO = new StudentDAO();
 
-    //INITIALISATION
-
-    // Méthode appelée automatiquement au chargement de la vue
+    // Method automatically called when the view is loaded
     @FXML
     public void initialize() {
 
-        // Associe chaque colonne à un attribut de la classe Student
+        // Bind table columns to Student properties
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colFirstName.setCellValueFactory(new PropertyValueFactory<>("firstName"));
         colLastName.setCellValueFactory(new PropertyValueFactory<>("lastName"));
 
-        // Listener : quand on sélectionne une ligne dans la table
+        // Bind new date columns
+        colBirthDate.setCellValueFactory(new PropertyValueFactory<>("birthDate"));
+        colCreationDate.setCellValueFactory(new PropertyValueFactory<>("creationDate"));
+        colLastModifiedDate.setCellValueFactory(new PropertyValueFactory<>("lastModifiedDate"));
+
+        // Listener triggered when a row is selected in the table
         studentTable.getSelectionModel().selectedItemProperty().addListener(
             (observable, oldValue, newValue) -> {
 
-                // Si une ligne est sélectionnée
+                // If a student is selected
                 if (newValue != null) {
 
-                    // Remplit les champs texte avec les données
+                    // Fill text fields with selected student data
                     firstNameField.setText(newValue.getFirstName());
                     lastNameField.setText(newValue.getLastName());
+
+                    // Set birth date in DatePicker
+                    birthDatePicker.setValue(newValue.getBirthDate());
                 }
             }
         );
 
         try {
-            // Charge les données au démarrage
+            // Load students when UI starts
             loadStudents();
         } catch (Exception e) {
             showError(e);
         }
     }
 
-    // CREATE
-
+    // CREATE: Add a new student
     @FXML
     public void handleAdd() {
 
         try {
-            // Vérifie que les champs ne sont pas vides
-            if (firstNameField.getText().isEmpty() || lastNameField.getText().isEmpty()) {
-                showAlert("Champs obligatoires !");
-                return; // stop la méthode
-            }
+            // Validate required fields
+            if (firstNameField.getText().isEmpty() ||
+                lastNameField.getText().isEmpty() ||
+                birthDatePicker.getValue() == null) {
 
-            // Création d’un nouvel étudiant
-            Student s = new Student();
-
-            // Récupération des valeurs saisies
-            s.setFirstName(firstNameField.getText());
-            s.setLastName(lastNameField.getText());
-
-            // Enregistrement en base
-            studentDAO.create(s);
-
-            // Vide les champs après ajout
-            clearFields();
-
-            // Rafraîchit la table
-            loadStudents();
-
-        } catch (Exception e) {
-            showError(e);
-        }
-    }
-
-    // READ 
-
-    public void loadStudents() throws Exception {
-
-        // Récupère les étudiants depuis la base
-        ObservableList<Student> list =
-                FXCollections.observableArrayList(studentDAO.readAll());
-
-        // Met la liste dans la table
-        studentTable.setItems(list);
-    }
-
-    // UPDATE 
-
-    @FXML
-    public void handleUpdate() {
-
-        // Récupère l'étudiant sélectionné
-        Student selected = studentTable.getSelectionModel().getSelectedItem();
-
-        // Si rien n'est sélectionné
-        if (selected == null) {
-            showAlert("Aucun étudiant sélectionné !");
-            return;
-        }
-
-        try {
-            // Vérifie les champs
-            if (firstNameField.getText().isEmpty() || lastNameField.getText().isEmpty()) {
-                showAlert("Champs obligatoires !");
+                showAlert("All fields are required!");
                 return;
             }
 
-            // Mise à jour des données
-            selected.setFirstName(firstNameField.getText());
-            selected.setLastName(lastNameField.getText());
+            // Create new Student object
+            Student s = new Student();
 
-            // Update en base
-            studentDAO.update(selected);
+            // Set values from UI
+            s.setFirstName(firstNameField.getText());
+            s.setLastName(lastNameField.getText());
+            s.setBirthDate(birthDatePicker.getValue());
 
-            // Rafraîchit la table
+            // Set creation date to current date
+            s.setCreationDate(LocalDate.now());
+
+            // No modification yet
+            s.setLastModifiedDate(null);
+
+            // Save to database
+            studentDAO.create(s);
+
+            // Clear input fields
+            clearFields();
+
+            // Refresh table
             loadStudents();
 
-            // Vide les champs
+        } catch (Exception e) {
+            showError(e);
+        }
+    }
+
+    // READ: Load all students from database
+    public void loadStudents() throws Exception {
+
+        // Convert list to ObservableList for JavaFX
+        ObservableList<Student> list =
+                FXCollections.observableArrayList(studentDAO.readAll());
+
+        // Set data into table
+        studentTable.setItems(list);
+    }
+
+    // UPDATE: Modify selected student
+    @FXML
+    public void handleUpdate() {
+
+        // Get selected student
+        Student selected = studentTable.getSelectionModel().getSelectedItem();
+
+        // Check if a student is selected
+        if (selected == null) {
+            showAlert("No student selected!");
+            return;
+        }
+
+        try {
+            // Validate input fields
+            if (firstNameField.getText().isEmpty() ||
+                lastNameField.getText().isEmpty() ||
+                birthDatePicker.getValue() == null) {
+
+                showAlert("All fields are required!");
+                return;
+            }
+
+            // Update student data
+            selected.setFirstName(firstNameField.getText());
+            selected.setLastName(lastNameField.getText());
+            selected.setBirthDate(birthDatePicker.getValue());
+
+            // Update last modified date
+            selected.setLastModifiedDate(LocalDate.now());
+
+            // Save changes to database
+            studentDAO.update(selected);
+
+            // Refresh table
+            loadStudents();
+
+            // Clear input fields
             clearFields();
 
         } catch (Exception e) {
@@ -136,38 +158,37 @@ public class StudentController {
         }
     }
 
-    // DELETE 
-
+    // DELETE: Remove selected student
     @FXML
     public void handleDelete() {
 
-        // Récupère l'étudiant sélectionné
+        // Get selected student
         Student selected = studentTable.getSelectionModel().getSelectedItem();
 
-        // Si rien sélectionné
+        // Check selection
         if (selected == null) {
-            showAlert("Aucun étudiant sélectionné !");
+            showAlert("No student selected!");
             return;
         }
 
         try {
-            // Demande confirmation avant suppression
+            // Confirmation dialog
             Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
             confirm.setTitle("Confirmation");
-            confirm.setContentText("Supprimer cet étudiant ?");
+            confirm.setContentText("Delete this student?");
 
             Optional<ButtonType> result = confirm.showAndWait();
 
-            // Si l'utilisateur confirme
+            // If user confirms deletion
             if (result.isPresent() && result.get() == ButtonType.OK) {
 
-                // Suppression en base via l'ID
+                // Delete from database using ID
                 studentDAO.delete(selected.getId());
 
-                // Rafraîchit la table
+                // Refresh table
                 loadStudents();
 
-                // Vide les champs
+                // Clear fields
                 clearFields();
             }
 
@@ -176,32 +197,27 @@ public class StudentController {
         }
     }
 
-    // UTIL
-
-    // Vide les champs texte
+    // Clear all input fields
     private void clearFields() {
         firstNameField.clear();
         lastNameField.clear();
+        birthDatePicker.setValue(null);
     }
 
-    // Affiche une alerte simple (message utilisateur)
+    // Show warning message
     private void showAlert(String message) {
-
         Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("Attention");
+        alert.setTitle("Warning");
         alert.setContentText(message);
         alert.showAndWait();
     }
 
-    // Affiche une erreur technique
+    // Show error message and print stack trace
     private void showError(Exception e) {
-
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Erreur");
+        alert.setTitle("Error");
         alert.setContentText(e.getMessage());
         alert.showAndWait();
-
-        // Log console pour debug
         e.printStackTrace();
     }
 }
