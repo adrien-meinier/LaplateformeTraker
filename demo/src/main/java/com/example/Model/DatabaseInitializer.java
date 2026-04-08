@@ -5,9 +5,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
- * Handles the PostgreSQL connection and creates all required tables
- * (student, grades, app_user) if they do not already exist.
- */
+Handles the PostgreSQL connection and creates all required tables
+(student, grades, app_user) if they do not already exist.
+*/
 public class DatabaseInitializer {
 
 
@@ -68,7 +68,7 @@ public class DatabaseInitializer {
     throws SQLException if any DDL statement fails
     */
     public static void initialize() throws SQLException {
-        // Load the PostgreSQL JDBC driver (auto-loaded in modern JVMs, but explicit is safer)
+        // Load the PostgreSQL JDBC driver
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
@@ -78,7 +78,7 @@ public class DatabaseInitializer {
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {
 
-            // Create tables in dependency order (app_user and student before grades)
+            // Create tables in dependency order
             stmt.execute(CREATE_TABLE_APP_USER);
             System.out.println("Table 'app_user' is ready.");
 
