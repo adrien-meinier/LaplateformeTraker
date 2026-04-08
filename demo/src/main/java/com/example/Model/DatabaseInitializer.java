@@ -18,7 +18,7 @@ public class DatabaseInitializer {
     private static final String DB_USER     = "postgres";
     private static final String DB_PASSWORD = "root";
 
-    private static void createDatabaseIfNotExists() throws SQLException {
+    public static void createDatabaseIfNotExists() throws SQLException {
         String url = "jdbc:postgresql://" + DB_HOST + ":" + DB_PORT + "/postgres";
 
         try (Connection conn = DriverManager.getConnection(url, DB_USER, DB_PASSWORD);

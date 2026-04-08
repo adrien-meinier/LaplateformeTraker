@@ -11,6 +11,12 @@ public class Main{
     public static void main(String[] args) {
 
         try {
+            DatabaseInitializer.createDatabaseIfNotExists();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        try {
             DatabaseInitializer.initialize();
         } catch (SQLException e) {
             e.printStackTrace();
