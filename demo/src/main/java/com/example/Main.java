@@ -3,7 +3,7 @@ package com.example;
 import java.sql.SQLException;
 
 import com.example.Model.DatabaseInitializer;
-
+import com.example.Model.StudentSeeder;
 import com.example.view.App;
 
 public class Main{
@@ -12,6 +12,12 @@ public class Main{
 
         try {
             DatabaseInitializer.initialize();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            StudentSeeder.seed(DatabaseInitializer.getConnection());
         } catch (SQLException e) {
             e.printStackTrace();
         }
