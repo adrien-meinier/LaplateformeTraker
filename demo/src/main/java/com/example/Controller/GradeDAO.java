@@ -1,11 +1,11 @@
-package com.example.Controller;
+package com.example.controller;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.example.Model.DatabaseInitializer;
-import com.example.Model.GradeModel;
+import com.example.model.DatabaseInitializer;
+import com.example.model.GradeModel;
 
 /*
  Data Access Object for the grades table.
