@@ -1,4 +1,4 @@
-package model;
+package com.example.model;
 public class PasswordVerifier {
 
     public static boolean verify(String inputPassword, String salt, String storedHash) throws Exception {
