@@ -1,6 +1,6 @@
 package com.example.view;
 
-import com.example.AuthService;
+import com.example.model.PasswordVerifier;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -11,12 +11,17 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
 /**
- * LoginView — écran de connexion.
+ * LoginView — Écran de connexion avec vérification de hachage intégrée.
  */
 public class LoginView {
 
     private final Stage stage;
     private int attempts = 0;
+
+    // Simulation de données "Base de données" pour l'admin@admin.fr / admin
+    private static final String ADMIN_EMAIL = "admin@admin.fr";
+    private static final String ADMIN_SALT  = "c2FsdF9kZW1vXzEyMw=="; // "salt_demo_123" en Base64
+    private static final String ADMIN_HASH  = "votre_hash_genere_ici"; // À remplacer par le vrai hash généré
 
     private TextField     tfUsername;
     private PasswordField pfPassword;
@@ -31,6 +36,7 @@ public class LoginView {
         stage.setHeight(520);
         stage.setScene(buildScene());
         stage.centerOnScreen();
+        stage.setTitle("Connexion - Student Manager");
         stage.show();
     }
 
@@ -99,31 +105,47 @@ public class LoginView {
     }
 
     private void doLogin() {
-        String user = tfUsername.getText().trim();
-        String pass = pfPassword.getText();
+        String emailInput = tfUsername.getText().trim();
+        String passInput = pfPassword.getText();
 
-        if (user.isEmpty() || pass.isEmpty()) {
+        if (emailInput.isEmpty() || passInput.isEmpty()) {
             showError("Veuillez remplir tous les champs.");
             return;
         }
 
         try {
-            AuthService auth = new AuthService();
-            if (auth.login(user, pass)) {
-                new MainMenuView(stage, auth).show();
-            } else {
-                attempts++;
-                if (attempts >= 3) {
-                    showError("Trop de tentatives. Fermez et relancez l'application.");
-                    tfUsername.setDisable(true);
-                    pfPassword.setDisable(true);
-                } else {
-                    showError("Identifiants incorrects. " + (3 - attempts) + " tentative(s) restante(s).");
-                    pfPassword.clear();
-                }
+            boolean isAuthenticated = false;
+
+            // Vérification spécifique pour l'admin par défaut
+            if (emailInput.equalsIgnoreCase(ADMIN_EMAIL)) {
+                // Utilisation de votre PasswordVerifier
+                isAuthenticated = PasswordVerifier.verify(passInput, ADMIN_SALT, ADMIN_HASH);
             }
+
+            if (isAuthenticated) {
+                // Redirection (ajustez selon vos classes existantes)
+                System.out.println("Connexion réussie !");
+                // new MainMenuView(stage).show(); 
+            } else {
+                handleFailedAttempt();
+            }
+
         } catch (Exception ex) {
-            showError("Erreur de connexion : " + ex.getMessage());
+            // Si APP_PEPPER est null, PasswordHasher lancera une erreur
+            showError("Erreur de hachage : Vérifiez votre configuration Pepper.");
+            ex.printStackTrace();
+        }
+    }
+
+    private void handleFailedAttempt() {
+        attempts++;
+        if (attempts >= 3) {
+            showError("Trop de tentatives. Accès bloqué.");
+            tfUsername.setDisable(true);
+            pfPassword.setDisable(true);
+        } else {
+            showError("Identifiants incorrects. " + (3 - attempts) + " essai(s) restant(s).");
+            pfPassword.clear();
         }
     }
 

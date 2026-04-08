@@ -7,23 +7,19 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Arc;
-import javafx.scene.shape.ArcType;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * StatistiquesView — tableau de bord des statistiques de la classe.
+ * StatistiquesView — Tableau de bord des statistiques.
+ * Nettoyé de toute logique de hachage/pepper.
  */
 public class StatistiquesView {
 
@@ -33,25 +29,24 @@ public class StatistiquesView {
         this.dao = dao;
     }
 
-    @SuppressWarnings("unchecked")
     public Node build() {
         ScrollPane scroll = new ScrollPane();
         scroll.setFitToWidth(true);
         scroll.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
 
         VBox root = new VBox(20);
-        root.setPadding(new Insets(0, 0, 20, 0));
+        root.setPadding(new Insets(20));
 
         // Titre
-        Label title = new Label("📊 Statistiques");
+        Label title = new Label("📊 Statistiques de la classe");
         title.setFont(Font.font("System", FontWeight.BOLD, 22));
-        title.setStyle(StyleFactory.titleStyle());
+        title.setStyle("-fx-text-fill: " + StyleFactory.C_PRIMARY + ";");
 
         try {
             List<StudentModel> students = dao.getAllStudents();
             Stats stats = computeStats(students);
 
-            // ── KPI Cards 
+            // ── Cartes KPI (Indicateurs clés)
             HBox kpiRow = new HBox(14);
             kpiRow.setFillHeight(true);
 
@@ -62,7 +57,7 @@ public class StatistiquesView {
                     kpi("👴 Plus âgé", String.format("%d ans", stats.maxAge), StyleFactory.C_WARNING, "")
             );
 
-            // ── Diagramme répartition par âge
+            // ── Graphique de répartition
             HBox charts = new HBox(16);
             charts.setFillHeight(true);
 
@@ -82,6 +77,9 @@ public class StatistiquesView {
         return scroll;
     }
 
+    /**
+     * Calcule les statistiques à partir de la liste des étudiants.
+     */
     private Stats computeStats(List<StudentModel> students) {
         int total = students.size();
         
@@ -90,21 +88,24 @@ public class StatistiquesView {
         }
 
         List<Integer> ages = students.stream()
+                .filter(s -> s.getBirthDate() != null)
                 .map(s -> Period.between(s.getBirthDate(), LocalDate.now()).getYears())
                 .collect(Collectors.toList());
+
+        if (ages.isEmpty()) return new Stats(total, 0, 0, 0, Map.of());
 
         int minAge = ages.stream().mapToInt(Integer::intValue).min().orElse(0);
         int maxAge = ages.stream().mapToInt(Integer::intValue).max().orElse(0);
         double avgAge = ages.stream().mapToInt(Integer::intValue).average().orElse(0);
 
-        // Distribution par tranches d'âge
-        var ageDist = ages.stream()
+        // Répartition par tranches
+        Map<String, Integer> ageDist = ages.stream()
                 .collect(Collectors.groupingBy(
                     age -> {
-                        if (age < 18) return "<18";
-                        if (age < 25) return "18-24";
-                        if (age < 30) return "25-29";
-                        return "30+";
+                        if (age < 18) return "< 18 ans";
+                        if (age < 25) return "18-24 ans";
+                        if (age < 30) return "25-29 ans";
+                        return "30 ans +";
                     },
                     Collectors.summingInt(e -> 1)
                 ));
@@ -112,97 +113,81 @@ public class StatistiquesView {
         return new Stats(total, avgAge, minAge, maxAge, ageDist);
     }
 
-    // ── KPI card 
     private VBox kpi(String label, String value, String color, String sub) {
         VBox card = new VBox(4);
-        card.setPadding(new Insets(18, 20, 18, 20));
-        card.setStyle("-fx-background-color: white;" +
-                "-fx-background-radius: 10;" +
-                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 8, 0, 0, 2);");
-        card.setAlignment(Pos.CENTER_LEFT);
-        card.setMinWidth(160);
+        card.setPadding(new Insets(15));
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 10; " +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);");
+        card.setMinWidth(150);
         HBox.setHgrow(card, Priority.ALWAYS);
 
         Label lblTitle = new Label(label);
-        lblTitle.setStyle("-fx-font-size: 12px; -fx-text-fill: " + StyleFactory.C_TEXT_GREY + ";");
+        lblTitle.setStyle("-fx-font-size: 13px; -fx-text-fill: #7f8c8d;");
 
         Label lblVal = new Label(value);
-        lblVal.setFont(Font.font("System", FontWeight.BOLD, 26));
+        lblVal.setFont(Font.font("System", FontWeight.BOLD, 24));
         lblVal.setStyle("-fx-text-fill: " + color + ";");
 
         Label lblSub = new Label(sub);
-        lblSub.setStyle("-fx-font-size: 11px; -fx-text-fill: " + StyleFactory.C_TEXT_GREY + ";");
+        lblSub.setStyle("-fx-font-size: 11px; -fx-text-fill: #95a5a6;");
 
         card.getChildren().addAll(lblTitle, lblVal, lblSub);
         return card;
     }
 
-    // ── Barres distribution par âge 
-    private VBox buildAgeBarChart(java.util.Map<String, Integer> ageDist) {
-        VBox card = new VBox(14);
-        card.setPadding(new Insets(18, 20, 18, 20));
-        card.setStyle("-fx-background-color: white;" +
-                "-fx-background-radius: 10;" +
-                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 8, 0, 0, 2);");
+    private VBox buildAgeBarChart(Map<String, Integer> ageDist) {
+        VBox card = new VBox(15);
+        card.setPadding(new Insets(20));
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 10; " +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);");
 
-        Label lbl = new Label("Répartition par tranche d'âge");
-        lbl.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;" +
-                "-fx-text-fill: " + StyleFactory.C_PRIMARY + ";");
+        Label lbl = new Label("Répartition par tranches d'âge");
+        lbl.setFont(Font.font("System", FontWeight.BOLD, 16));
 
-        int maxVal = ageDist.values().stream().mapToInt(Integer::intValue).max().orElse(1);
+        VBox barsContainer = new VBox(12);
+        
+        int totalStudents = ageDist.values().stream().mapToInt(Integer::intValue).sum();
+        if (totalStudents == 0) totalStudents = 1;
 
-        VBox bars = new VBox(10);
-        String[] colors = {StyleFactory.C_ACCENT, StyleFactory.C_SUCCESS,
-                          StyleFactory.C_WARNING, StyleFactory.C_DANGER};
-        int ci = 0;
-        for (var e : ageDist.entrySet()) {
-            String key = e.getKey();
-            int val = e.getValue();
-            double pct = (double) val / maxVal;
-            String col = colors[ci % colors.length];
-            ci++;
+        String[] colors = {StyleFactory.C_PRIMARY, StyleFactory.C_SUCCESS, StyleFactory.C_WARNING, StyleFactory.C_DANGER};
+        int i = 0;
 
-            Label lblKey = new Label(key);
-            lblKey.setMinWidth(50);
-            lblKey.setStyle("-fx-font-size: 12px; -fx-text-fill: " + StyleFactory.C_TEXT_DARK + ";");
+        for (Map.Entry<String, Integer> entry : ageDist.entrySet()) {
+            double progress = (double) entry.getValue() / totalStudents;
+            String color = colors[i % colors.length];
 
-            StackPane barBg = new StackPane();
-            barBg.setStyle("-fx-background-color: " + StyleFactory.C_LIGHT + ";" +
-                    "-fx-background-radius: 4;");
-            barBg.setMaxHeight(18); barBg.setPrefHeight(18);
-            HBox.setHgrow(barBg, Priority.ALWAYS);
+            VBox row = new VBox(5);
+            HBox labels = new HBox();
+            Label name = new Label(entry.getKey());
+            Label count = new Label(entry.getValue() + " étudiant(s)");
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+            labels.getChildren().addAll(name, spacer, count);
 
-            StackPane barFill = new StackPane();
-            barFill.setStyle("-fx-background-color: " + col + ";" +
-                    "-fx-background-radius: 4;");
-            barFill.setPrefWidth(pct * 200);
-            barFill.setMaxWidth(pct * 200);
-            barFill.setPrefHeight(18);
-            barBg.getChildren().add(barFill);
-            StackPane.setAlignment(barFill, Pos.CENTER_LEFT);
+            ProgressBar pb = new ProgressBar(progress);
+            pb.setMaxWidth(Double.MAX_VALUE);
+            pb.setPrefHeight(15);
+            // On applique la couleur via CSS inline
+            pb.setStyle("-fx-accent: " + color + ";");
 
-            Label lblVal = new Label(String.valueOf(val));
-            lblVal.setMinWidth(25);
-            lblVal.setStyle("-fx-font-size: 12px; -fx-font-weight: bold;" +
-                    "-fx-text-fill: " + col + ";");
-
-            HBox row = new HBox(10, lblKey, barBg, lblVal);
-            row.setAlignment(Pos.CENTER_LEFT);
-            bars.getChildren().add(row);
+            row.getChildren().addAll(labels, pb);
+            barsContainer.getChildren().add(row);
+            i++;
         }
 
-        card.getChildren().addAll(lbl, bars);
+        card.getChildren().addAll(lbl, barsContainer);
         return card;
     }
 
-    // Classe interne pour les stats
+    /**
+     * Structure de données pour stocker les calculs.
+     */
     private static class Stats {
         final int total, minAge, maxAge;
         final double avgAge;
-        final java.util.Map<String, Integer> ageDist;
+        final Map<String, Integer> ageDist;
 
-        Stats(int total, double avgAge, int minAge, int maxAge, 
-              java.util.Map<String, Integer> ageDist) {
+        Stats(int total, double avgAge, int minAge, int maxAge, Map<String, Integer> ageDist) {
             this.total = total;
             this.avgAge = avgAge;
             this.minAge = minAge;
