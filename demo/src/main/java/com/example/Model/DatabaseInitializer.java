@@ -4,19 +4,37 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-/**
+/*
 Handles the PostgreSQL connection and creates all required tables
 (student, grades, app_user) if they do not already exist.
 */
 public class DatabaseInitializer {
-
 
     // Connection settings
     private static final String DB_HOST     = "localhost";
     private static final String DB_PORT     = "5432";
     private static final String DB_NAME     = "laplateformetracker";
     private static final String DB_USER     = "postgres";
-    private static final String DB_PASSWORD = "your_password_here";
+    private static final String DB_PASSWORD = "root";
+
+    private static void createDatabaseIfNotExists() throws SQLException {
+    String url = "jdbc:postgresql://" + DB_HOST + ":" + DB_PORT + "/postgres";
+
+    try (Connection conn = DriverManager.getConnection(url, DB_USER, DB_PASSWORD);
+         Statement stmt = conn.createStatement()) {
+
+        String checkDb = "SELECT 1 FROM pg_database WHERE datname = '" + DB_NAME + "';";
+        var rs = stmt.executeQuery(checkDb);
+
+        if (!rs.next()) {
+            System.out.println("Database '" + DB_NAME + "' does not exist. Creating...");
+            stmt.execute("CREATE DATABASE " + DB_NAME + ";");
+            System.out.println("Database created successfully.");
+        } else {
+            System.out.println("Database '" + DB_NAME + "' already exists.");
+            }
+        }
+    }
 
     private static final String JDBC_URL =
             "jdbc:postgresql://" + DB_HOST + ":" + DB_PORT + "/" + DB_NAME;

@@ -1,5 +1,9 @@
 package com.example;
 
+import java.sql.SQLException;
+
+import com.example.Model.DatabaseInitializer;
+
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -28,6 +32,11 @@ public class Main extends Application {
     }
     public static void main(String[] args) {
 
+        try {
+            DatabaseInitializer.initialize();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         launch(args);
 
     }
