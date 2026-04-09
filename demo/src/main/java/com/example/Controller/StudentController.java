@@ -16,11 +16,11 @@ public class StudentController {
     // -----------------------------
     // FXML UI Components
     // -----------------------------
-    @FXML private TextField firstNameField;       // Input field for student's first name
-    @FXML private TextField lastNameField;        // Input field for student's last name
-    @FXML private DatePicker birthDatePicker;     // DatePicker for student's birth date
+    @FXML private TextField firstNameField;       
+    @FXML private TextField lastNameField;        
+    @FXML private DatePicker birthDatePicker;     
 
-    @FXML private TableView<StudentModel> studentTable;  // Table to display all students
+    @FXML private TableView<StudentModel> studentTable;  
 
     // Table columns
     @FXML private TableColumn<StudentModel, Integer> colId;
@@ -33,23 +33,26 @@ public class StudentController {
     // DAO object to interact with the database
     private StudentDAO studentDAO = new StudentDAO();
 
-    
-    // Initialize method called automatically when the view is loaded
-    
     @FXML
     public void initialize() {
-
-        // Bind each table column to the corresponding property in StudentModel
-        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colFirstName.setCellValueFactory(new PropertyValueFactory<>("firstName"));
-        colLastName.setCellValueFactory(new PropertyValueFactory<>("lastName"));
+        // --- Use SimpleObjectProperty for all columns ---
+        colId.setCellValueFactory(cellData ->
+                new SimpleObjectProperty<>(cellData.getValue().getId())
+        );
+        colFirstName.setCellValueFactory(cellData ->
+                new SimpleObjectProperty<>(cellData.getValue().getFirstName())
+        );
+        colLastName.setCellValueFactory(cellData ->
+                new SimpleObjectProperty<>(cellData.getValue().getLastName())
+        );
         colBirthDate.setCellValueFactory(cellData ->
                 new SimpleObjectProperty<>(cellData.getValue().getBirthDate())
         );
-
-        // For creationDate and lastModifiedDate, convert LocalDateTime (from DB) to LocalDate
         colCreationDate.setCellValueFactory(cellData ->
-                new SimpleObjectProperty<>(cellData.getValue().getCreationDate().toLocalDate())
+                new SimpleObjectProperty<>(
+                        cellData.getValue().getCreationDate() != null ?
+                        cellData.getValue().getCreationDate().toLocalDate() : null
+                )
         );
         colLastModifiedDate.setCellValueFactory(cellData ->
                 new SimpleObjectProperty<>(
@@ -58,7 +61,7 @@ public class StudentController {
                 )
         );
 
-        // Listener: when a student is selected in the table, populate the input fields
+        // Listener: populate input fields when a student is selected
         studentTable.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldSelection, newSelection) -> {
                     if (newSelection != null) {
@@ -69,7 +72,7 @@ public class StudentController {
                 }
         );
 
-        // Load all students from the database when UI starts
+        // Load all students
         try {
             loadStudents();
         } catch (Exception e) {
@@ -77,25 +80,18 @@ public class StudentController {
         }
     }
 
-    
     // CREATE: Add a new student
     @FXML
     public void handleAdd() {
         try {
-            // Validate that all fields are filled
-            if (firstNameField.getText().isEmpty() || lastNameField.getText().isEmpty() || birthDatePicker.getValue() == null) {
-                showAlert("All fields are required!");
-                return;
-            }
+            if (!validateFields()) return;
 
-            // Call DAO to insert the new student into the database
-            int newId = studentDAO.addStudent(
-                    firstNameField.getText(),
-                    lastNameField.getText(),
+            studentDAO.addStudent(
+                    firstNameField.getText().trim(),
+                    lastNameField.getText().trim(),
                     birthDatePicker.getValue()
             );
 
-            // Clear input fields and refresh table
             clearFields();
             loadStudents();
 
@@ -104,21 +100,15 @@ public class StudentController {
         }
     }
 
-    
-    // READ: Load all students from database and display in TableView
-
+    // READ: Load all students from database
     public void loadStudents() throws Exception {
-        // Get all students from DAO
         ObservableList<StudentModel> list = FXCollections.observableArrayList(studentDAO.getAllStudents());
-        // Set data in TableView
         studentTable.setItems(list);
     }
-
 
     // UPDATE: Modify selected student
     @FXML
     public void handleUpdate() {
-        // Get the selected student from the table
         StudentModel selected = studentTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
             showAlert("No student selected!");
@@ -126,34 +116,26 @@ public class StudentController {
         }
 
         try {
-            // Validate input fields
-            if (firstNameField.getText().isEmpty() || lastNameField.getText().isEmpty() || birthDatePicker.getValue() == null) {
-                showAlert("All fields are required!");
-                return;
-            }
+            if (!validateFields()) return;
 
-            // Call DAO to update the student in the database
             studentDAO.updateStudent(
                     selected.getId(),
-                    firstNameField.getText(),
-                    lastNameField.getText(),
+                    firstNameField.getText().trim(),
+                    lastNameField.getText().trim(),
                     birthDatePicker.getValue()
             );
 
-            // Refresh table and clear input fields
-            loadStudents();
             clearFields();
+            loadStudents();
 
         } catch (Exception e) {
             showError(e);
         }
     }
 
-
     // DELETE: Remove selected student
     @FXML
     public void handleDelete() {
-        // Get selected student
         StudentModel selected = studentTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
             showAlert("No student selected!");
@@ -161,17 +143,15 @@ public class StudentController {
         }
 
         try {
-            // Show confirmation dialog before deleting
             Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
             confirm.setTitle("Confirmation");
             confirm.setContentText("Delete this student?");
             Optional<ButtonType> result = confirm.showAndWait();
 
             if (result.isPresent() && result.get() == ButtonType.OK) {
-                // Delete student from database
                 studentDAO.deleteStudent(selected.getId());
-                loadStudents();
                 clearFields();
+                loadStudents();
             }
 
         } catch (Exception e) {
@@ -179,16 +159,16 @@ public class StudentController {
         }
     }
 
+    // -----------------------------
     // Helper Methods
+    // -----------------------------
 
-    // Clear all input fields
     private void clearFields() {
         firstNameField.clear();
         lastNameField.clear();
         birthDatePicker.setValue(null);
     }
 
-    // Show a warning alert
     private void showAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Warning");
@@ -196,12 +176,21 @@ public class StudentController {
         alert.showAndWait();
     }
 
-    // Show an error alert and print stack trace
     private void showError(Exception e) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");
         alert.setContentText(e.getMessage());
         alert.showAndWait();
         e.printStackTrace();
+    }
+
+    private boolean validateFields() {
+        if (firstNameField.getText().trim().isEmpty() ||
+            lastNameField.getText().trim().isEmpty() ||
+            birthDatePicker.getValue() == null) {
+            showAlert("All fields are required!");
+            return false;
+        }
+        return true;
     }
 }
