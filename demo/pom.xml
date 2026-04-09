@@ -70,7 +70,6 @@
             <version>${javafx.version}</version>
         </dependency>
         
-    
         <!-- Junit for unitary tests -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
