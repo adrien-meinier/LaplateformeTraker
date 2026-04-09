@@ -2,7 +2,6 @@ package com.example.view;
 
 import com.example.controller.StudentDAO;
 import com.example.model.StudentModel;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -182,7 +181,6 @@ public class RechercheView {
     private TableView<StudentModel> buildTable() {
         TableView<StudentModel> tv = new TableView<>();
         tv.setStyle(StyleFactory.tableStyle());
-        tv.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         tv.setPlaceholder(new Label("Aucun résultat."));
 
         TableColumn<StudentModel, Integer> colId = simpleCol("ID", "id", 60);
