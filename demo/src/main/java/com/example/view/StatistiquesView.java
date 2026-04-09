@@ -52,9 +52,9 @@ public class StatistiquesView {
 
             kpiRow.getChildren().addAll(
                     kpi("👥 Étudiants", String.valueOf(stats.total), StyleFactory.C_ACCENT, "au total"),
-                    kpi("🎂 Âge moyen", String.format("%.1f ans", stats.avgAge), StyleFactory.C_PRIMARY, ""),
-                    kpi("👶 Plus jeune", String.format("%d ans", stats.minAge), StyleFactory.C_SUCCESS, ""),
-                    kpi("👴 Plus âgé", String.format("%d ans", stats.maxAge), StyleFactory.C_WARNING, "")
+                    kpi("Moyenne des Étudiants", String.format("%.1f", stats.avgAge), StyleFactory.C_PRIMARY, ""),
+                    kpi("Note minimale", String.format("%d", stats.minAge), StyleFactory.C_SUCCESS, ""),
+                    kpi("Note maximale", String.format("%d", stats.maxAge), StyleFactory.C_WARNING, "")
             );
 
             // ── Graphique de répartition
