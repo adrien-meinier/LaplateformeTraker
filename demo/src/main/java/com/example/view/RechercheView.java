@@ -1,8 +1,7 @@
 package com.example.view;
 
-
-import com.studentmanager.model.Student;
-import com.studentmanager.service.StudentService;
+import com.example.controller.StudentDAO;
+import com.example.model.StudentModel;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -14,20 +13,24 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * RechercheView — recherche simple par ID et recherche avancée multi-critères.
  */
 public class RechercheView {
 
-    private final StudentService service;
+    private final StudentDAO dao;
+    private List<StudentModel> allStudents;
 
-    private TableView<Student> table;
-    private Label              lblResultCount;
+    private TableView<StudentModel> table;
+    private Label lblResultCount;
 
-    public RechercheView(StudentService service) {
-        this.service = service;
+    public RechercheView(StudentDAO dao) {
+        this.dao = dao;
     }
 
     public Node build() {
@@ -45,8 +48,8 @@ public class RechercheView {
         cardById.setStyle(StyleFactory.cardBg());
 
         Label lblById = new Label("Recherche par ID");
-        lblById.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;"
-                + "-fx-text-fill: " + StyleFactory.C_PRIMARY + ";");
+        lblById.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;" +
+                "-fx-text-fill: " + StyleFactory.C_PRIMARY + ";");
 
         HBox rowId = new HBox(10);
         rowId.setAlignment(Pos.CENTER_LEFT);
@@ -71,24 +74,20 @@ public class RechercheView {
         cardAdv.setStyle(StyleFactory.cardBg());
 
         Label lblAdv = new Label("Recherche avancée");
-        lblAdv.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;"
-                + "-fx-text-fill: " + StyleFactory.C_PRIMARY + ";");
+        lblAdv.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;" +
+                "-fx-text-fill: " + StyleFactory.C_PRIMARY + ";");
 
         GridPane grid = new GridPane();
         grid.setHgap(14);
         grid.setVgap(10);
 
         TextField tfKeyword = advField("Mot-clé (nom / prénom)");
-        TextField tfMinAge  = advField("Âge min");
-        TextField tfMaxAge  = advField("Âge max");
-        TextField tfMinNote = advField("Note min (0-20)");
-        TextField tfMaxNote = advField("Note max (0-20)");
+        TextField tfMinAge = advField("Âge min");
+        TextField tfMaxAge = advField("Âge max");
 
-        grid.add(fieldGroup("Mot-clé",   tfKeyword), 0, 0, 2, 1);
-        grid.add(fieldGroup("Âge min",   tfMinAge),  0, 1);
-        grid.add(fieldGroup("Âge max",   tfMaxAge),  1, 1);
-        grid.add(fieldGroup("Note min",  tfMinNote), 0, 2);
-        grid.add(fieldGroup("Note max",  tfMaxNote), 1, 2);
+        grid.add(fieldGroup("Mot-clé", tfKeyword), 0, 0, 2, 1);
+        grid.add(fieldGroup("Âge min", tfMinAge), 0, 1);
+        grid.add(fieldGroup("Âge max", tfMaxAge), 1, 1);
 
         ColumnConstraints c1 = new ColumnConstraints(); c1.setPercentWidth(50);
         ColumnConstraints c2 = new ColumnConstraints(); c2.setPercentWidth(50);
@@ -97,20 +96,17 @@ public class RechercheView {
         HBox advButtons = new HBox(10);
         advButtons.setAlignment(Pos.CENTER_RIGHT);
 
-        Button btnReset  = StyleFactory.secondaryBtn("🔄 Réinitialiser");
+        Button btnReset = StyleFactory.secondaryBtn("🔄 Réinitialiser");
         Button btnSearch = StyleFactory.primaryBtn("🔍 Rechercher");
 
         btnReset.setOnAction(e -> {
             tfKeyword.clear(); tfMinAge.clear(); tfMaxAge.clear();
-            tfMinNote.clear(); tfMaxNote.clear();
             refreshAll();
         });
         btnSearch.setOnAction(e -> advancedSearch(
                 tfKeyword.getText().trim(),
                 parseIntOrNull(tfMinAge.getText()),
-                parseIntOrNull(tfMaxAge.getText()),
-                parseDblOrNull(tfMinNote.getText()),
-                parseDblOrNull(tfMaxNote.getText())
+                parseIntOrNull(tfMaxAge.getText())
         ));
 
         advButtons.getChildren().addAll(btnReset, btnSearch);
@@ -130,101 +126,89 @@ public class RechercheView {
     }
 
     // ── Actions 
-
     private void searchById(String raw) {
         if (raw.isEmpty()) { refreshAll(); return; }
         try {
             int id = Integer.parseInt(raw);
-            service.findById(id).ifPresentOrElse(
-                    s -> {
-                        table.setItems(FXCollections.observableArrayList(s));
-                        lblResultCount.setText("1 résultat.");
-                    },
-                    () -> {
-                        table.setItems(FXCollections.emptyObservableList());
-                        lblResultCount.setText("Aucun étudiant avec l'ID " + id);
-                    }
-            );
+            var result = allStudents.stream()
+                    .filter(s -> s.getId() == id)
+                    .collect(Collectors.toList());
+            
+            table.setItems(FXCollections.observableArrayList(result));
+            lblResultCount.setText(result.size() == 1 ? "1 résultat." : 
+                                 result.isEmpty() ? "Aucun étudiant avec l'ID " + id : 
+                                 result.size() + " résultat(s).");
         } catch (NumberFormatException e) {
             showAlert("L'ID doit être un nombre entier.");
-        } catch (Exception ex) {
-            showAlert("Erreur : " + ex.getMessage());
         }
     }
 
-    private void advancedSearch(String keyword, Integer minAge, Integer maxAge,
-                                Double minNote, Double maxNote) {
-        try {
-            List<Student> results = service.advancedSearch(
-                    minAge, maxAge, minNote, maxNote,
-                    keyword.isEmpty() ? null : keyword);
-            table.setItems(FXCollections.observableArrayList(results));
-            lblResultCount.setText(results.size() + " résultat(s) trouvé(s).");
-        } catch (Exception ex) {
-            showAlert("Erreur recherche : " + ex.getMessage());
-        }
+    private void advancedSearch(String keyword, Integer minAge, Integer maxAge) {
+        var results = allStudents.stream()
+                .filter(s -> matchesKeyword(s, keyword))
+                .filter(s -> matchesAge(s, minAge, maxAge))
+                .collect(Collectors.toList());
+        
+        table.setItems(FXCollections.observableArrayList(results));
+        lblResultCount.setText(results.size() + " résultat(s) trouvé(s).");
+    }
+
+    private boolean matchesKeyword(StudentModel s, String keyword) {
+        if (keyword.isEmpty()) return true;
+        String lower = keyword.toLowerCase();
+        return s.getFirstName().toLowerCase().contains(lower) ||
+               s.getLastName().toLowerCase().contains(lower);
+    }
+
+    private boolean matchesAge(StudentModel s, Integer minAge, Integer maxAge) {
+        int age = Period.between(s.getBirthDate(), LocalDate.now()).getYears();
+        if (minAge != null && age < minAge) return false;
+        if (maxAge != null && age > maxAge) return false;
+        return true;
     }
 
     private void refreshAll() {
         try {
-            List<Student> all = service.getAllStudents("id", true);
-            table.setItems(FXCollections.observableArrayList(all));
-            lblResultCount.setText(all.size() + " étudiant(s) au total.");
+            allStudents = dao.getAllStudents();
+            table.setItems(FXCollections.observableArrayList(allStudents));
+            lblResultCount.setText(allStudents.size() + " étudiant(s) au total.");
         } catch (Exception ex) {
             showAlert("Erreur : " + ex.getMessage());
         }
     }
 
     // ── Tableau 
-
     @SuppressWarnings("unchecked")
-    private TableView<Student> buildTable() {
-        TableView<Student> tv = new TableView<>();
+    private TableView<StudentModel> buildTable() {
+        TableView<StudentModel> tv = new TableView<>();
         tv.setStyle(StyleFactory.tableStyle());
         tv.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         tv.setPlaceholder(new Label("Aucun résultat."));
 
-        TableColumn<Student, Integer> colId    = simpleCol("ID",     "id",        60);
-        TableColumn<Student, String>  colPrenom= simpleCol("Prénom", "firstName", 140);
-        TableColumn<Student, String>  colNom   = simpleCol("Nom",    "lastName",  140);
-        TableColumn<Student, Integer> colAge   = simpleCol("Âge",    "age",       70);
+        TableColumn<StudentModel, Integer> colId = simpleCol("ID", "id", 60);
+        TableColumn<StudentModel, String> colPrenom = simpleCol("Prénom", "firstName", 140);
+        TableColumn<StudentModel, String> colNom = simpleCol("Nom", "lastName", 140);
+        TableColumn<StudentModel, Integer> colAge = new TableColumn<>("Âge");
+        
+        colAge.setCellValueFactory(cellData -> {
+        int age = Period.between(cellData.getValue().getBirthDate(), LocalDate.now()).getYears();
+        return new javafx.beans.property.SimpleIntegerProperty(age).asObject();
+     });
 
-        TableColumn<Student, String> colNote = new TableColumn<>("Note");
-        colNote.setCellValueFactory(d ->
-                new SimpleStringProperty(String.format("%.2f / 20", d.getValue().getGrade())));
-        colNote.setCellFactory(c -> new TableCell<>() {
-            @Override protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) { setText(null); setStyle(""); return; }
-                setText(item);
-                Student s = getTableView().getItems().get(getIndex());
-                setStyle(s.getGrade() >= 10
-                        ? "-fx-text-fill:" + StyleFactory.C_SUCCESS + ";-fx-font-weight:bold;"
-                        : "-fx-text-fill:" + StyleFactory.C_DANGER  + ";-fx-font-weight:bold;");
-            }
-        });
-        colNote.setPrefWidth(120);
+        TableColumn<StudentModel, String> colBirth = simpleCol("Naissance", "birthDate", 120);
 
-        TableColumn<Student, String> colMention = new TableColumn<>("Mention");
-        colMention.setCellValueFactory(d ->
-                new SimpleStringProperty(d.getValue().getMention()));
-        colMention.setPrefWidth(110);
-
-        TableColumn<Student, String> colEmail = simpleCol("Email", "email", 200);
-
-        tv.getColumns().addAll(colId, colPrenom, colNom, colAge, colNote, colMention, colEmail);
+        tv.getColumns().addAll(colId, colPrenom, colNom, colAge, colBirth);
         return tv;
     }
 
-    private <T> TableColumn<Student, T> simpleCol(String header, String prop, int w) {
-        TableColumn<Student, T> c = new TableColumn<>(header);
+    private <T> TableColumn<StudentModel, T> simpleCol(String header, String prop, int w) {
+        TableColumn<StudentModel, T> c = new TableColumn<>(header);
         c.setCellValueFactory(new PropertyValueFactory<>(prop));
         c.setPrefWidth(w);
         return c;
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────
-
+    // ── Helpers 
     private TextField advField(String prompt) {
         TextField tf = new TextField();
         tf.setPromptText(prompt);
@@ -245,11 +229,6 @@ public class RechercheView {
 
     private Integer parseIntOrNull(String s) {
         try { return s.isEmpty() ? null : Integer.parseInt(s.trim()); }
-        catch (NumberFormatException e) { return null; }
-    }
-
-    private Double parseDblOrNull(String s) {
-        try { return s.isEmpty() ? null : Double.parseDouble(s.trim().replace(',','.')); }
         catch (NumberFormatException e) { return null; }
     }
 

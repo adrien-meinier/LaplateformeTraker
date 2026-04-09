@@ -9,4 +9,5 @@ public class SaltUtil {
         random.nextBytes(salt);
         return Base64.getEncoder().encodeToString(salt);
     }
+
 }
