@@ -6,10 +6,6 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.Random;
 
-/*
-Seeds the database with fictitious students and random grades.
-Executed only if the student table is empty.
-*/
 public class StudentSeeder {
 
     private static final List<String[]> STUDENTS = List.of(
@@ -35,35 +31,40 @@ public class StudentSeeder {
     );
 
     public static void seed(Connection conn) throws SQLException {
-    try (Statement insertStmt = conn.createStatement();
-         Statement selectStmt = conn.createStatement()) {
 
-        // Insert students
-        for (String[] s : STUDENTS) {
-            insertStmt.executeUpdate(
-                    "INSERT INTO student (first_name, last_name, birth_date) VALUES (" +
-                            "'" + s[0] + "', '" + s[1] + "', '" + s[2] + "');"
-            );
-        }
+        try (Statement stmt = conn.createStatement();
+             Statement insertStmt = conn.createStatement()) {
 
-        // Select student IDs
-        var rs = selectStmt.executeQuery("SELECT id FROM student;");
+            // Reset tables
+            stmt.executeUpdate("DELETE FROM grades;");
+            stmt.executeUpdate("DELETE FROM student;");
 
-        Random random = new Random();
-
-        while (rs.next()) {
-            int studentId = rs.getInt("id");
-
-            for (String subject : SUBJECTS) {
-                int grade = random.nextInt(21);
-                insertStmt.executeUpdate(
-                        "INSERT INTO grades (student_id, grade, subject) VALUES (" +
-                                studentId + ", " + grade + ", '" + subject + "');"
+            // Insert students
+            for (String[] s : STUDENTS) {
+                stmt.executeUpdate(
+                        "INSERT INTO student (first_name, last_name, birth_date) VALUES (" +
+                                "'" + s[0] + "', '" + s[1] + "', '" + s[2] + "');"
                 );
             }
-        }
 
-        System.out.println("Students and grades seeded successfully.");
+            // Fetch IDs
+            var rs = stmt.executeQuery("SELECT id FROM student;");
+            Random random = new Random();
+
+            // Insert random grades
+            while (rs.next()) {
+                int studentId = rs.getInt("id");
+
+                for (String subject : SUBJECTS) {
+                    int grade = random.nextInt(21);
+                    insertStmt.executeUpdate(
+                            "INSERT INTO grades (student_id, grade, subject) VALUES (" +
+                                    studentId + ", " + grade + ", '" + subject + "');"
+                    );
+                }
+            }
+
+            System.out.println("Students and grades seeded successfully.");
+        }
     }
-}
 }

@@ -1,8 +1,6 @@
 package com.example.model;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -45,10 +43,16 @@ public class DatabaseInitializer {
             CREATE TABLE IF NOT EXISTS app_user (
                 email             VARCHAR(255) PRIMARY KEY,
                 password_hash     VARCHAR(512) NOT NULL,
+                salt              VARCHAR(64)  NOT NULL,
                 creation_date     TIMESTAMP    NOT NULL DEFAULT NOW(),
                 is_admin          BOOLEAN      NOT NULL DEFAULT FALSE
             );
             """;
+
+    private static final String MIGRATE_ADD_SALT = """
+        ALTER TABLE app_user
+            ADD COLUMN IF NOT EXISTS salt VARCHAR(64) NOT NULL DEFAULT '';
+        """;
 
     private static final String CREATE_TABLE_STUDENT = """
             CREATE TABLE IF NOT EXISTS student (
@@ -77,25 +81,6 @@ public class DatabaseInitializer {
     private static final String CREATE_INDEX_GRADES_STUDENT =
             "CREATE INDEX IF NOT EXISTS idx_grades_student_id ON grades(student_id);";
 
-    private static final String SEED_STUDENTS = """
-            INSERT INTO student (first_name, last_name, birth_date) VALUES
-                ('Alice',     'Martin',   '2004-03-12'),
-                ('Bob',       'Dupont',   '2003-07-24'),
-                ('Clara',     'Bernard',  '2005-01-08'),
-                ('David',     'Leroy',    '2002-11-30'),
-                ('Emma',      'Moreau',   '2004-06-15'),
-                ('Florian',   'Simon',    '2001-09-03'),
-                ('Gabrielle', 'Laurent',  '2003-04-22'),
-                ('Hugo',      'Michel',   '2002-08-19'),
-                ('Inès',      'Garcia',   '2004-12-05'),
-                ('Jules',     'David',    '2005-02-28'),
-                ('Karine',    'Petit',    '2000-10-14'),
-                ('Lucas',     'Robert',   '2003-05-07'),
-                ('Marie',     'Richard',  '2004-09-18'),
-                ('Nicolas',   'Thomas',   '2002-03-25'),
-                ('Océane',    'Blanc',    '2005-07-11');
-            """;
-
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASSWORD);
     }
@@ -106,37 +91,26 @@ public class DatabaseInitializer {
     throws SQLException if any DDL statement fails
     */
     public static void initialize() throws SQLException {
-        // Load the PostgreSQL JDBC driver
-        try {
-            Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new SQLException("PostgreSQL JDBC driver not found on classpath.", e);
-        }
-
-        try (Connection conn = getConnection();
-             Statement stmt = conn.createStatement()) {
-
-            // Create tables in dependency order
-            stmt.execute(CREATE_TABLE_APP_USER);
-            System.out.println("Table 'app_user' is ready.");
-
-            stmt.execute(CREATE_TABLE_STUDENT);
-            System.out.println("Table 'student' is ready.");
-
-            stmt.execute(CREATE_TABLE_GRADES);
-            System.out.println("Table 'grades' is ready.");
-
-            stmt.execute(CREATE_INDEX_GRADES_STUDENT);
-            System.out.println("Index 'idx_grades_student_id' is ready.");
-
-            // Seed students if table is empty
-            ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM student;");
-            if (rs.next() && rs.getInt(1) == 0) {
-                stmt.execute(SEED_STUDENTS);
-                System.out.println("15 fictitious students inserted.");
-            }
-
-            System.out.println("Database initialization complete.");
-        }
+    try {
+        Class.forName("org.postgresql.Driver");
+    } catch (ClassNotFoundException e) {
+        throw new SQLException("PostgreSQL JDBC driver not found on classpath.", e);
     }
+
+    try (Connection conn = getConnection();
+         Statement stmt = conn.createStatement()) {
+
+        stmt.execute(CREATE_TABLE_APP_USER);
+        stmt.execute(MIGRATE_ADD_SALT);
+        stmt.execute(CREATE_TABLE_STUDENT);
+        stmt.execute(CREATE_TABLE_GRADES);
+        stmt.execute(CREATE_INDEX_GRADES_STUDENT);
+
+        // Always reseed cleanly
+        StudentSeeder.seed(conn);
+
+        System.out.println("Database initialization complete.");
+    }
+}
+
 }
