@@ -44,10 +44,16 @@ public class DatabaseInitializer {
             CREATE TABLE IF NOT EXISTS app_user (
                 email             VARCHAR(255) PRIMARY KEY,
                 password_hash     VARCHAR(512) NOT NULL,
+                salt              VARCHAR(64)  NOT NULL,
                 creation_date     TIMESTAMP    NOT NULL DEFAULT NOW(),
                 is_admin          BOOLEAN      NOT NULL DEFAULT FALSE
             );
             """;
+
+    private static final String MIGRATE_ADD_SALT = """
+        ALTER TABLE app_user
+            ADD COLUMN IF NOT EXISTS salt VARCHAR(64) NOT NULL DEFAULT '';
+        """;
 
     private static final String CREATE_TABLE_STUDENT = """
             CREATE TABLE IF NOT EXISTS student (
@@ -118,6 +124,9 @@ public class DatabaseInitializer {
             // Create tables in dependency order
             stmt.execute(CREATE_TABLE_APP_USER);
             System.out.println("Table 'app_user' is ready.");
+
+            stmt.execute(MIGRATE_ADD_SALT);  
+            System.out.println("Column 'salt' in 'app_user' is ready.");
 
             stmt.execute(CREATE_TABLE_STUDENT);
             System.out.println("Table 'student' is ready.");
