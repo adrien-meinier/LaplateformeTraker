@@ -3,7 +3,6 @@ package com.example.view;
 import com.example.controller.StudentDAO;
 import com.example.model.StudentModel;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
