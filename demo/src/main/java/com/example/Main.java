@@ -3,24 +3,14 @@ package com.example;
 import java.sql.SQLException;
 import com.example.model.DatabaseInitializer;
 import com.example.model.StudentSeeder;
-import com.example.view.LoginView; // On importe LoginView
+import com.example.view.LoginView; 
 import javafx.application.Application;
 import javafx.stage.Stage;
 
-import com.example.model.DatabaseInitializer;
-import com.example.model.StudentSeeder;
-import com.example.view.App;
-
-public class Main{
+public class Main extends Application {
 
     public static void main(String[] args) {
         // 1. Initialisation de la base de données
-        try {
-            DatabaseInitializer.createDatabaseIfNotExists();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
         try {
             DatabaseInitializer.initialize();
             // On peuple la base de données si elle est vide
