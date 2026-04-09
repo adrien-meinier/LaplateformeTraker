@@ -15,7 +15,7 @@ import java.util.List;
 
 /**
  * BulletinController — génère et télécharge le bulletin CSV
- * d'un étudiant en récupérant ses notes via GradeDAO.
+ * des etudiants avec leurs notes et mentions.
  */
 public class BulletinController {
 
@@ -99,4 +99,7 @@ public class BulletinController {
         if (note >= 10) return "Passable";
         return "Insuffisant";
     }
+    //bouton telecharger le bulletin dans la vue statistique
+
+    
 }
