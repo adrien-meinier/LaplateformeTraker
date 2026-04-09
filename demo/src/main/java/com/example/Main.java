@@ -3,7 +3,7 @@ package com.example;
 import java.sql.SQLException;
 import com.example.model.DatabaseInitializer;
 import com.example.model.StudentSeeder;
-import com.example.view.LoginView; // On importe LoginView
+import com.example.view.LoginView; 
 import javafx.application.Application;
 import javafx.stage.Stage;
 
