@@ -25,5 +25,25 @@ public class UserModelTest {
         assertEquals("a very salty salt", user.getSalt());
         assertEquals(created, user.getCreationDate());
         assertEquals(false, user.isAdmin());
+
+    }
+
+    @Test
+    void testToString() { 
+        
+        LocalDateTime created = LocalDateTime.of(2024, 1, 1, 10, 0);
+
+        // Initialize a new UserModel to test the toString
+        UserModel user = new UserModel(
+                "coucou@hihi.com",
+                "qdfgsdhdfhf123547342",
+                "a very salty salt",
+                created,
+                false
+        );
+
+        String expected = "UserModel{email='coucou@hihi.com', isAdmin=false, creationDate=" + created + "}";
+        assertEquals(expected, user.toString());
+
     }
 }
