@@ -48,7 +48,6 @@ public final class StyleFactory {
     public static final String D_BORDER    = "#2a2d3a";
     public static final String D_INPUT     = "#1e2130";
 
-    // Constantes internes
     private static final String RADIUS = "8";
     private static final String BTN_H  = "42";
 
@@ -58,29 +57,24 @@ public final class StyleFactory {
     //  STYLES DE FOND
     // ════════════════════════════════════════════════════════════════════ //
 
-    /** Fond gris clair (dashboard). */
     public static String rootBg() {
         return "-fx-background-color:" + C_BG + ";";
     }
 
-    /** Carte blanche avec ombre (dashboard). */
     public static String cardBg() {
         return "-fx-background-color:" + C_WHITE + ";"
              + "-fx-background-radius:" + RADIUS + ";"
              + "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.08),10,0,0,2);";
     }
 
-    /** Sidebar bleu marine (dashboard). */
     public static String sidebarBg() {
         return "-fx-background-color:" + C_PRIMARY + ";";
     }
 
-    /** Fond sombre pour login/register. */
     public static String darkBg() {
         return "-fx-background-color:" + D_BG + ";";
     }
 
-    /** Fond panneau gauche login/register. */
     public static String darkLeftBg() {
         return "-fx-background-color:" + D_LEFT + ";";
     }
@@ -166,12 +160,42 @@ public final class StyleFactory {
         return lightBtn(text, C_LIGHT, C_TEXT_DARK);
     }
 
+    /**
+     * Bouton vert "📥 Exporter tout" — export global de tous les étudiants.
+     * Utilisé dans EtudiantsView (en-tête).
+     */
+    public static Button exportBtn(String text) {
+        Button btn = new Button(text);
+        btn.setPrefHeight(Double.parseDouble(BTN_H));
+        String base  = exportBtnStyle(C_SUCCESS, "0.90");
+        String hover = exportBtnStyle(darken(C_SUCCESS), "1.0");
+        btn.setStyle(base);
+        btn.setOnMouseEntered(e -> btn.setStyle(hover));
+        btn.setOnMouseExited (e -> btn.setStyle(base));
+        return btn;
+    }
+
+    /**
+     * Bouton bleu ciel "📄 Bulletin" — bulletin individuel par ligne.
+     * Utilisé dans la colonne Actions de EtudiantsView.
+     */
+    public static Button bulletinBtn(String text) {
+        Button btn = new Button(text);
+        btn.setPrefHeight(30);
+        String base  = bulletinBtnStyle(C_ACCENT, "0.90");
+        String hover = bulletinBtnStyle(darken(C_ACCENT), "1.0");
+        btn.setStyle(base);
+        btn.setOnMouseEntered(e -> btn.setStyle(hover));
+        btn.setOnMouseExited (e -> btn.setStyle(base));
+        return btn;
+    }
+
     /** Bouton sidebar (fond transparent, texte blanc, hover semi-transparent). */
     public static Button sidebarBtn(String text) {
         Button btn = new Button(text);
         btn.setMaxWidth(Double.MAX_VALUE);
         btn.setPrefHeight(Double.parseDouble(BTN_H));
-        String normal = sidebarBtnStyle("transparent");
+        String normal  = sidebarBtnStyle("transparent");
         String hovered = sidebarBtnStyle("rgba(255,255,255,0.12)");
         String active  = sidebarBtnStyle("rgba(255,255,255,0.22)")
                        + "-fx-border-color:transparent transparent transparent " + C_ACCENT + ";"
@@ -195,13 +219,6 @@ public final class StyleFactory {
     //  BOUTONS — mode sombre (login / register)
     // ════════════════════════════════════════════════════════════════════ //
 
-    /**
-     * Bouton dégradé gauche→droite (login : bleu→violet).
-     *
-     * @param c1      couleur gauche (ex: D_ACCENT)
-     * @param c2      couleur droite (ex: D_ACCENT2)
-     * @param label   texte du bouton
-     */
     public static Button gradientBtn(String label, String c1, String c2) {
         Button btn = new Button(label);
         btn.setMaxWidth(Double.MAX_VALUE);
@@ -212,12 +229,10 @@ public final class StyleFactory {
         return btn;
     }
 
-    /** Raccourci : bouton dégradé bleu→violet (connexion). */
     public static Button loginBtn(String label) {
         return gradientBtn(label, D_ACCENT, D_ACCENT2);
     }
 
-    /** Raccourci : bouton dégradé vert→vert foncé (inscription). */
     public static Button registerBtn(String label) {
         return gradientBtn(label, D_SUCCESS, "#16a34a");
     }
@@ -226,14 +241,6 @@ public final class StyleFactory {
     //  ANIMATIONS
     // ════════════════════════════════════════════════════════════════════ //
 
-    /**
-     * Entrée en fondu + glissement horizontal.
-     * Utilisé pour le panneau droit de LoginView / RegisterView.
-     *
-     * @param node      nœud à animer
-     * @param fromX     translation de départ (ex: 24)
-     * @param durationMs durée en millisecondes
-     */
     public static void animateFadeSlideIn(javafx.scene.Node node, double fromX, long durationMs) {
         node.setOpacity(0);
         node.setTranslateX(fromX);
@@ -245,12 +252,6 @@ public final class StyleFactory {
         new ParallelTransition(ft, tt).play();
     }
 
-    /**
-     * Secousse horizontale (erreur de saisie).
-     *
-     * @param node      nœud à secouer (bouton, champ…)
-     * @param amplitude amplitude en px (ex: 7)
-     */
     public static void animateShake(javafx.scene.Node node, double amplitude) {
         TranslateTransition tt = new TranslateTransition(Duration.millis(55), node);
         tt.setFromX(0);
@@ -261,12 +262,6 @@ public final class StyleFactory {
         tt.play();
     }
 
-    /**
-     * Fondu d'entrée simple (opacité 0 → 1).
-     *
-     * @param node      nœud cible
-     * @param durationMs durée
-     */
     public static void animateFadeIn(javafx.scene.Node node, long durationMs) {
         node.setOpacity(0);
         FadeTransition ft = new FadeTransition(Duration.millis(durationMs), node);
@@ -274,11 +269,6 @@ public final class StyleFactory {
         ft.play();
     }
 
-    /**
-     * Pulse (zoom léger) sur un nœud — attire l'attention.
-     *
-     * @param node nœud cible
-     */
     public static void animatePulse(javafx.scene.Node node) {
         ScaleTransition st = new ScaleTransition(Duration.millis(180), node);
         st.setFromX(1.0); st.setFromY(1.0);
@@ -288,16 +278,6 @@ public final class StyleFactory {
         st.play();
     }
 
-    /**
-     * Orbe décorative flottante animée en boucle infinie.
-     *
-     * @param radius  rayon du cercle
-     * @param color   couleur hex
-     * @param opacity opacité (0.0 – 1.0)
-     * @param dx      déplacement X par cycle
-     * @param dy      déplacement Y par cycle
-     * @param ms      durée d'un demi-cycle en ms
-     */
     public static Circle animatedOrb(double radius, String color, double opacity,
                                      double dx, double dy, long ms) {
         Circle c = new Circle(radius);
@@ -314,9 +294,6 @@ public final class StyleFactory {
         return c;
     }
 
-    /**
-     * Anime une orbe existante (si déjà créée sans animation).
-     */
     public static void floatOrb(Circle orb, double dx, double dy, long ms) {
         TranslateTransition tt = new TranslateTransition(Duration.millis(ms), orb);
         tt.setByX(dx); tt.setByY(dy);
@@ -326,14 +303,6 @@ public final class StyleFactory {
         tt.play();
     }
 
-    /**
-     * Met un bouton en état "succès" (vert + texte) puis exécute un callback.
-     *
-     * @param btn        bouton à transformer
-     * @param successMsg texte affiché (ex: "✓  Connexion réussie")
-     * @param delayMs    délai avant callback
-     * @param onDone     action exécutée après le délai
-     */
     public static void animateSuccess(Button btn, String successMsg,
                                       long delayMs, Runnable onDone) {
         btn.setText(successMsg);
@@ -368,6 +337,22 @@ public final class StyleFactory {
              + "-fx-cursor:hand;-fx-opacity:" + opacity + ";";
     }
 
+    private static String exportBtnStyle(String bg, String opacity) {
+        return "-fx-background-color:" + bg + ";"
+             + "-fx-text-fill:" + C_WHITE + ";"
+             + "-fx-font-size:13px;-fx-font-weight:bold;"
+             + "-fx-background-radius:" + RADIUS + ";"
+             + "-fx-padding:0 16;-fx-cursor:hand;-fx-opacity:" + opacity + ";";
+    }
+
+    private static String bulletinBtnStyle(String bg, String opacity) {
+        return "-fx-background-color:" + bg + ";"
+             + "-fx-text-fill:" + C_WHITE + ";"
+             + "-fx-font-size:11px;-fx-font-weight:bold;"
+             + "-fx-background-radius:4;"
+             + "-fx-padding:4 8;-fx-cursor:hand;-fx-opacity:" + opacity + ";";
+    }
+
     private static String sidebarBtnStyle(String bg) {
         return "-fx-background-color:" + bg + ";"
              + "-fx-text-fill:" + C_WHITE + ";"
@@ -386,7 +371,6 @@ public final class StyleFactory {
         return btn.getStyle().contains("border-width:0 0 0 4");
     }
 
-    /** Assombrit une couleur hex de 15 %. */
     private static String darken(String hex) {
         try {
             String h = hex.replace("#", "");
@@ -397,7 +381,6 @@ public final class StyleFactory {
         } catch (Exception e) { return hex; }
     }
 
-    /** Spacer vertical utilitaire. */
     public static Region spacer(double height) {
         Region r = new Region();
         r.setPrefHeight(height);
