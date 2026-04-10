@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StudentDAO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">student-manager</a> &gt; <a href="index.source.html" class="el_package">com.example.controller</a> &gt; <span class="el_source">StudentDAO.java</span></div><h1>StudentDAO.java</h1><pre class="source lang-java linenums">package com.example.controller;
+
+import java.sql.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.example.model.DatabaseInitializer;
+import com.example.model.StudentModel;
+
+/*
+ Data Access Object for the student table.
+ Provides CRUD operations using prepared statements to prevent SQL injection.
+*/
+<span class="nc" id="L15">public class StudentDAO {</span>
+
+    // Inserts a new student and returns the generated ID
+    public int addStudent(String firstName, String lastName, LocalDate birthDate) throws SQLException {
+<span class="nc" id="L19">        String sql = &quot;&quot;&quot;</span>
+                INSERT INTO student (first_name, last_name, birth_date)
+                VALUES (?, ?, ?)
+                RETURNING id;
+                &quot;&quot;&quot;;
+
+<span class="nc" id="L25">        try (Connection conn = DatabaseInitializer.getConnection();</span>
+<span class="nc" id="L26">             PreparedStatement stmt = conn.prepareStatement(sql)) {</span>
+
+<span class="nc" id="L28">            stmt.setString(1, firstName);</span>
+<span class="nc" id="L29">            stmt.setString(2, lastName);</span>
+<span class="nc" id="L30">            stmt.setDate(3, Date.valueOf(birthDate));</span>
+
+<span class="nc" id="L32">            try (ResultSet rs = stmt.executeQuery()) {</span>
+<span class="nc bnc" id="L33" title="All 2 branches missed.">                if (rs.next()) {</span>
+<span class="nc" id="L34">                    return rs.getInt(&quot;id&quot;);</span>
+                }
+<span class="nc bnc" id="L36" title="All 2 branches missed.">            }</span>
+<span class="nc bnc" id="L37" title="All 4 branches missed.">        }</span>
+<span class="nc" id="L38">        throw new SQLException(&quot;Failed to insert student.&quot;);</span>
+    }
+
+    // Updates an existing student by ID
+    public boolean updateStudent(int id, String firstName, String lastName, LocalDate birthDate) throws SQLException {
+<span class="nc" id="L43">        String sql = &quot;&quot;&quot;</span>
+                UPDATE student
+                SET first_name = ?, last_name = ?, birth_date = ?, last_modified_date = NOW()
+                WHERE id = ?;
+                &quot;&quot;&quot;;
+
+<span class="nc" id="L49">        try (Connection conn = DatabaseInitializer.getConnection();</span>
+<span class="nc" id="L50">             PreparedStatement stmt = conn.prepareStatement(sql)) {</span>
+
+<span class="nc" id="L52">            stmt.setString(1, firstName);</span>
+<span class="nc" id="L53">            stmt.setString(2, lastName);</span>
+<span class="nc" id="L54">            stmt.setDate(3, Date.valueOf(birthDate));</span>
+<span class="nc" id="L55">            stmt.setInt(4, id);</span>
+
+<span class="nc bnc" id="L57" title="All 2 branches missed.">            return stmt.executeUpdate() &gt; 0;</span>
+        }
+    }
+
+    // Deletes a student by ID (grades are deleted automatically via ON DELETE CASCADE)
+    public boolean deleteStudent(int id) throws SQLException {
+<span class="nc" id="L63">        String sql = &quot;DELETE FROM student WHERE id = ?;&quot;;</span>
+
+<span class="nc" id="L65">        try (Connection conn = DatabaseInitializer.getConnection();</span>
+<span class="nc" id="L66">             PreparedStatement stmt = conn.prepareStatement(sql)) {</span>
+
+<span class="nc" id="L68">            stmt.setInt(1, id);</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">            return stmt.executeUpdate() &gt; 0;</span>
+        }
+    }
+
+    // Retrieves a single student by ID
+    public StudentModel getStudentById(int id) throws SQLException {
+<span class="nc" id="L75">        String sql = &quot;&quot;&quot;</span>
+                SELECT id, first_name, last_name, birth_date, creation_date, last_modified_date
+                FROM student
+                WHERE id = ?;
+                &quot;&quot;&quot;;
+
+<span class="nc" id="L81">        try (Connection conn = DatabaseInitializer.getConnection();</span>
+<span class="nc" id="L82">             PreparedStatement stmt = conn.prepareStatement(sql)) {</span>
+
+<span class="nc" id="L84">            stmt.setInt(1, id);</span>
+
+<span class="nc" id="L86">            try (ResultSet rs = stmt.executeQuery()) {</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">                if (rs.next()) {</span>
+<span class="nc" id="L88">                    return new StudentModel(</span>
+<span class="nc" id="L89">                            rs.getInt(&quot;id&quot;),</span>
+<span class="nc" id="L90">                            rs.getString(&quot;first_name&quot;),</span>
+<span class="nc" id="L91">                            rs.getString(&quot;last_name&quot;),</span>
+<span class="nc" id="L92">                            rs.getDate(&quot;birth_date&quot;).toLocalDate(),</span>
+<span class="nc" id="L93">                            rs.getTimestamp(&quot;creation_date&quot;).toLocalDateTime(),</span>
+<span class="nc" id="L94">                            rs.getTimestamp(&quot;last_modified_date&quot;).toLocalDateTime()</span>
+                    );
+                }
+<span class="nc bnc" id="L97" title="All 2 branches missed.">            }</span>
+<span class="nc bnc" id="L98" title="All 4 branches missed.">        }</span>
+<span class="nc" id="L99">        return null;</span>
+    }
+
+    // Retrieves all students
+    public List&lt;StudentModel&gt; getAllStudents() throws SQLException {
+<span class="nc" id="L104">        String sql = &quot;&quot;&quot;</span>
+                SELECT id, first_name, last_name, birth_date, creation_date, last_modified_date
+                FROM student
+                ORDER BY id;
+                &quot;&quot;&quot;;
+
+<span class="nc" id="L110">        List&lt;StudentModel&gt; students = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L112">        try (Connection conn = DatabaseInitializer.getConnection();</span>
+<span class="nc" id="L113">             PreparedStatement stmt = conn.prepareStatement(sql);</span>
+<span class="nc" id="L114">             ResultSet rs = stmt.executeQuery()) {</span>
+
+<span class="nc bnc" id="L116" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L117">                students.add(new StudentModel(</span>
+<span class="nc" id="L118">                        rs.getInt(&quot;id&quot;),</span>
+<span class="nc" id="L119">                        rs.getString(&quot;first_name&quot;),</span>
+<span class="nc" id="L120">                        rs.getString(&quot;last_name&quot;),</span>
+<span class="nc" id="L121">                        rs.getDate(&quot;birth_date&quot;).toLocalDate(),</span>
+<span class="nc" id="L122">                        rs.getTimestamp(&quot;creation_date&quot;).toLocalDateTime(),</span>
+<span class="nc" id="L123">                        rs.getTimestamp(&quot;last_modified_date&quot;).toLocalDateTime()</span>
+                ));
+            }
+        }
+
+<span class="nc" id="L128">        return students;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

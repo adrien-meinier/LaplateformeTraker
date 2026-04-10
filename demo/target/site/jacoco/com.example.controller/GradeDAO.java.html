@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GradeDAO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">student-manager</a> &gt; <a href="index.source.html" class="el_package">com.example.controller</a> &gt; <span class="el_source">GradeDAO.java</span></div><h1>GradeDAO.java</h1><pre class="source lang-java linenums">package com.example.controller;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.example.model.DatabaseInitializer;
+import com.example.model.GradeModel;
+
+/*
+ Data Access Object for the grades table.
+ Provides CRUD operations using prepared statements.
+*/
+<span class="nc" id="L14">public class GradeDAO {</span>
+
+    // Insert a new grade for a student
+    public int addGrade(int studentId, int grade, String subject) throws SQLException {
+<span class="nc" id="L18">        String sql = &quot;&quot;&quot;</span>
+                INSERT INTO grades (student_id, grade, subject)
+                VALUES (?, ?, ?)
+                RETURNING id;
+                &quot;&quot;&quot;;
+
+<span class="nc" id="L24">        try (Connection conn = DatabaseInitializer.getConnection();</span>
+<span class="nc" id="L25">             PreparedStatement stmt = conn.prepareStatement(sql)) {</span>
+
+<span class="nc" id="L27">            stmt.setInt(1, studentId);</span>
+<span class="nc" id="L28">            stmt.setInt(2, grade);</span>
+<span class="nc" id="L29">            stmt.setString(3, subject);</span>
+
+<span class="nc" id="L31">            try (ResultSet rs = stmt.executeQuery()) {</span>
+<span class="nc bnc" id="L32" title="All 2 branches missed.">                if (rs.next()) {</span>
+<span class="nc" id="L33">                    return rs.getInt(&quot;id&quot;);</span>
+                }
+<span class="nc bnc" id="L35" title="All 2 branches missed.">            }</span>
+<span class="nc bnc" id="L36" title="All 4 branches missed.">        }</span>
+<span class="nc" id="L37">        throw new SQLException(&quot;Failed to insert grade.&quot;);</span>
+    }
+
+    // Update an existing grade
+    public boolean updateGrade(int id, int grade, String subject) throws SQLException {
+<span class="nc" id="L42">        String sql = &quot;&quot;&quot;</span>
+                UPDATE grades
+                SET grade = ?, subject = ?, last_modified_date = NOW()
+                WHERE id = ?;
+                &quot;&quot;&quot;;
+
+<span class="nc" id="L48">        try (Connection conn = DatabaseInitializer.getConnection();</span>
+<span class="nc" id="L49">             PreparedStatement stmt = conn.prepareStatement(sql)) {</span>
+
+<span class="nc" id="L51">            stmt.setInt(1, grade);</span>
+<span class="nc" id="L52">            stmt.setString(2, subject);</span>
+<span class="nc" id="L53">            stmt.setInt(3, id);</span>
+
+<span class="nc bnc" id="L55" title="All 2 branches missed.">            return stmt.executeUpdate() &gt; 0;</span>
+        }
+    }
+
+    // Delete a grade by ID
+    public boolean deleteGrade(int id) throws SQLException {
+<span class="nc" id="L61">        String sql = &quot;DELETE FROM grades WHERE id = ?;&quot;;</span>
+
+<span class="nc" id="L63">        try (Connection conn = DatabaseInitializer.getConnection();</span>
+<span class="nc" id="L64">             PreparedStatement stmt = conn.prepareStatement(sql)) {</span>
+
+<span class="nc" id="L66">            stmt.setInt(1, id);</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">            return stmt.executeUpdate() &gt; 0;</span>
+        }
+    }
+
+    // Retrieve a grade by ID
+    public GradeModel getGradeById(int id) throws SQLException {
+<span class="nc" id="L73">        String sql = &quot;&quot;&quot;</span>
+                SELECT id, student_id, grade, subject, creation_date, last_modified_date
+                FROM grades
+                WHERE id = ?;
+                &quot;&quot;&quot;;
+
+<span class="nc" id="L79">        try (Connection conn = DatabaseInitializer.getConnection();</span>
+<span class="nc" id="L80">             PreparedStatement stmt = conn.prepareStatement(sql)) {</span>
+
+<span class="nc" id="L82">            stmt.setInt(1, id);</span>
+
+<span class="nc" id="L84">            try (ResultSet rs = stmt.executeQuery()) {</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">                if (rs.next()) {</span>
+<span class="nc" id="L86">                    return new GradeModel(</span>
+<span class="nc" id="L87">                            rs.getInt(&quot;id&quot;),</span>
+<span class="nc" id="L88">                            rs.getInt(&quot;student_id&quot;),</span>
+<span class="nc" id="L89">                            rs.getInt(&quot;grade&quot;),</span>
+<span class="nc" id="L90">                            rs.getString(&quot;subject&quot;),</span>
+<span class="nc" id="L91">                            rs.getTimestamp(&quot;creation_date&quot;).toLocalDateTime(),</span>
+<span class="nc" id="L92">                            rs.getTimestamp(&quot;last_modified_date&quot;).toLocalDateTime()</span>
+                    );
+                }
+<span class="nc bnc" id="L95" title="All 2 branches missed.">            }</span>
+<span class="nc bnc" id="L96" title="All 4 branches missed.">        }</span>
+<span class="nc" id="L97">        return null;</span>
+    }
+
+    // Retrieve all grades for a given student
+    public List&lt;GradeModel&gt; getGradesByStudentId(int studentId) throws SQLException {
+<span class="nc" id="L102">        String sql = &quot;&quot;&quot;</span>
+                SELECT id, student_id, grade, subject, creation_date, last_modified_date
+                FROM grades
+                WHERE student_id = ?
+                ORDER BY subject;
+                &quot;&quot;&quot;;
+
+<span class="nc" id="L109">        List&lt;GradeModel&gt; grades = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L111">        try (Connection conn = DatabaseInitializer.getConnection();</span>
+<span class="nc" id="L112">             PreparedStatement stmt = conn.prepareStatement(sql)) {</span>
+
+<span class="nc" id="L114">            stmt.setInt(1, studentId);</span>
+
+<span class="nc" id="L116">            try (ResultSet rs = stmt.executeQuery()) {</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">                while (rs.next()) {</span>
+<span class="nc" id="L118">                    grades.add(new GradeModel(</span>
+<span class="nc" id="L119">                            rs.getInt(&quot;id&quot;),</span>
+<span class="nc" id="L120">                            rs.getInt(&quot;student_id&quot;),</span>
+<span class="nc" id="L121">                            rs.getInt(&quot;grade&quot;),</span>
+<span class="nc" id="L122">                            rs.getString(&quot;subject&quot;),</span>
+<span class="nc" id="L123">                            rs.getTimestamp(&quot;creation_date&quot;).toLocalDateTime(),</span>
+<span class="nc" id="L124">                            rs.getTimestamp(&quot;last_modified_date&quot;).toLocalDateTime()</span>
+                    ));
+                }
+            }
+        }
+
+<span class="nc" id="L130">        return grades;</span>
+    }
+
+    // Retrieve all grades in the database
+    public List&lt;GradeModel&gt; getAllGrades() throws SQLException {
+<span class="nc" id="L135">        String sql = &quot;&quot;&quot;</span>
+                SELECT id, student_id, grade, subject, creation_date, last_modified_date
+                FROM grades
+                ORDER BY id;
+                &quot;&quot;&quot;;
+
+<span class="nc" id="L141">        List&lt;GradeModel&gt; grades = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L143">        try (Connection conn = DatabaseInitializer.getConnection();</span>
+<span class="nc" id="L144">             PreparedStatement stmt = conn.prepareStatement(sql);</span>
+<span class="nc" id="L145">             ResultSet rs = stmt.executeQuery()) {</span>
+
+<span class="nc bnc" id="L147" title="All 2 branches missed.">            while (rs.next()) {</span>
+<span class="nc" id="L148">                grades.add(new GradeModel(</span>
+<span class="nc" id="L149">                        rs.getInt(&quot;id&quot;),</span>
+<span class="nc" id="L150">                        rs.getInt(&quot;student_id&quot;),</span>
+<span class="nc" id="L151">                        rs.getInt(&quot;grade&quot;),</span>
+<span class="nc" id="L152">                        rs.getString(&quot;subject&quot;),</span>
+<span class="nc" id="L153">                        rs.getTimestamp(&quot;creation_date&quot;).toLocalDateTime(),</span>
+<span class="nc" id="L154">                        rs.getTimestamp(&quot;last_modified_date&quot;).toLocalDateTime()</span>
+                ));
+            }
+        }
+
+<span class="nc" id="L159">        return grades;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

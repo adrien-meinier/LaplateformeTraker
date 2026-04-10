@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RegisterView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">student-manager</a> &gt; <a href="index.source.html" class="el_package">com.example.view</a> &gt; <span class="el_source">RegisterView.java</span></div><h1>RegisterView.java</h1><pre class="source lang-java linenums">package com.example.view;
+
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+
+/**
+ * RegisterView — écran d'inscription premium.
+ *
+ * Toutes les animations et boutons sont délégués à {@link StyleFactory}.
+ * Après inscription réussie, retour automatique vers LoginView.
+ */
+public class RegisterView {
+
+    private final Stage stage;
+
+    private TextField     tfUsername;
+    private TextField     tfEmail;
+    private PasswordField pfPass;
+    private PasswordField pfConfirm;
+    private Label         lblError;
+    private Button        btnRegister;
+    private Rectangle[]   strengthBars;
+    private Label         lblStrength;
+
+<span class="nc" id="L38">    public RegisterView(Stage stage) { this.stage = stage; }</span>
+
+    public void show() {
+<span class="nc" id="L41">        stage.setWidth(900);</span>
+<span class="nc" id="L42">        stage.setHeight(620);</span>
+<span class="nc" id="L43">        stage.setResizable(false);</span>
+<span class="nc" id="L44">        stage.setTitle(&quot;Student Manager — Inscription&quot;);</span>
+
+<span class="nc" id="L46">        HBox root = new HBox();</span>
+<span class="nc" id="L47">        StackPane left  = buildLeft();</span>
+<span class="nc" id="L48">        StackPane right = buildRight();</span>
+<span class="nc" id="L49">        left.setPrefWidth(380);</span>
+<span class="nc" id="L50">        right.setPrefWidth(520);</span>
+<span class="nc" id="L51">        HBox.setHgrow(left,  Priority.ALWAYS);</span>
+<span class="nc" id="L52">        HBox.setHgrow(right, Priority.ALWAYS);</span>
+<span class="nc" id="L53">        root.getChildren().addAll(left, right);</span>
+
+<span class="nc" id="L55">        stage.setScene(new Scene(root, 900, 620));</span>
+<span class="nc" id="L56">        stage.centerOnScreen();</span>
+<span class="nc" id="L57">        stage.show();</span>
+
+        // Animation d'entrée via StyleFactory
+<span class="nc" id="L60">        StyleFactory.animateFadeSlideIn(right, 24, 480);</span>
+<span class="nc" id="L61">    }</span>
+
+    // ── Panneau gauche ────────────────────────────────────────────────────
+    private StackPane buildLeft() {
+<span class="nc" id="L65">        StackPane pane = new StackPane();</span>
+<span class="nc" id="L66">        pane.setStyle(StyleFactory.darkLeftBg());</span>
+
+<span class="nc" id="L68">        Rectangle bg = new Rectangle(380, 620);</span>
+<span class="nc" id="L69">        bg.setFill(new LinearGradient(0,0,1,1,true, CycleMethod.NO_CYCLE,</span>
+<span class="nc" id="L70">                new Stop(0, Color.web(&quot;#111420&quot;)),</span>
+<span class="nc" id="L71">                new Stop(1, Color.web(&quot;#0d0f1a&quot;))));</span>
+
+<span class="nc" id="L73">        Pane dots = buildDotGrid(380, 620);</span>
+
+        // Orbes via StyleFactory — couleurs différentes du Login
+<span class="nc" id="L76">        Circle orb1 = StyleFactory.animatedOrb(140, StyleFactory.D_SUCCESS, 0.22, -7,  10, 4200);</span>
+<span class="nc" id="L77">        Circle orb2 = StyleFactory.animatedOrb(100, StyleFactory.D_ACCENT2, 0.28,  8,  -9, 5100);</span>
+<span class="nc" id="L78">        Circle orb3 = StyleFactory.animatedOrb( 55, &quot;#f472b6&quot;,              0.20,  4,   7, 3300);</span>
+<span class="nc" id="L79">        StackPane.setAlignment(orb1, Pos.TOP_RIGHT);    StackPane.setMargin(orb1, new Insets(-40,-40,0,0));</span>
+<span class="nc" id="L80">        StackPane.setAlignment(orb2, Pos.BOTTOM_LEFT);  StackPane.setMargin(orb2, new Insets(0,0,-30,-30));</span>
+<span class="nc" id="L81">        StackPane.setAlignment(orb3, Pos.CENTER);       StackPane.setMargin(orb3, new Insets(-40,-60,0,0));</span>
+
+<span class="nc" id="L83">        VBox content = new VBox(14);</span>
+<span class="nc" id="L84">        content.setAlignment(Pos.CENTER);</span>
+<span class="nc" id="L85">        content.setPadding(new Insets(0, 40, 0, 40));</span>
+
+<span class="nc" id="L87">        StackPane iconBox = new StackPane();</span>
+<span class="nc" id="L88">        Circle iconBg = new Circle(38);</span>
+<span class="nc" id="L89">        iconBg.setFill(new LinearGradient(0,0,1,1,true, CycleMethod.NO_CYCLE,</span>
+<span class="nc" id="L90">                new Stop(0, Color.web(StyleFactory.D_SUCCESS)),</span>
+<span class="nc" id="L91">                new Stop(1, Color.web(StyleFactory.D_ACCENT))));</span>
+<span class="nc" id="L92">        Text iconTxt = new Text(&quot;✨&quot;); iconTxt.setFont(Font.font(26));</span>
+<span class="nc" id="L93">        iconBox.getChildren().addAll(iconBg, iconTxt);</span>
+
+<span class="nc" id="L95">        Text t1 = new Text(&quot;Rejoignez&quot;);</span>
+<span class="nc" id="L96">        t1.setFont(Font.font(&quot;Georgia&quot;, FontWeight.BOLD, 36));</span>
+<span class="nc" id="L97">        t1.setFill(Color.web(StyleFactory.D_TEXT));</span>
+
+<span class="nc" id="L99">        Text t2 = new Text(&quot;l'équipe&quot;);</span>
+<span class="nc" id="L100">        t2.setFont(Font.font(&quot;Georgia&quot;, FontWeight.BOLD, 36));</span>
+<span class="nc" id="L101">        t2.setFill(new LinearGradient(0,0,1,0,true, CycleMethod.NO_CYCLE,</span>
+<span class="nc" id="L102">                new Stop(0, Color.web(StyleFactory.D_SUCCESS)),</span>
+<span class="nc" id="L103">                new Stop(1, Color.web(StyleFactory.D_ACCENT))));</span>
+
+<span class="nc" id="L105">        Text sub = new Text(&quot;Créez votre compte en quelques\nsecondes et gérez vos étudiants.&quot;);</span>
+<span class="nc" id="L106">        sub.setFont(Font.font(&quot;System&quot;, 13));</span>
+<span class="nc" id="L107">        sub.setFill(Color.web(StyleFactory.D_SUBTEXT));</span>
+<span class="nc" id="L108">        sub.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);</span>
+
+<span class="nc" id="L110">        VBox perks = new VBox(8); perks.setAlignment(Pos.CENTER_LEFT);</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        for (String perk : new String[]{</span>
+                &quot;✓  Accès complet au tableau de bord&quot;,
+                &quot;✓  Gestion des étudiants en temps réel&quot;,
+                &quot;✓  Export CSV, JSON, PDF&quot;}) {
+<span class="nc" id="L115">            Text pt = new Text(perk);</span>
+<span class="nc" id="L116">            pt.setFont(Font.font(&quot;System&quot;, 12));</span>
+<span class="nc" id="L117">            pt.setFill(Color.web(&quot;#4ade80&quot;));</span>
+<span class="nc" id="L118">            perks.getChildren().add(pt);</span>
+        }
+
+<span class="nc" id="L121">        content.getChildren().addAll(iconBox, t1, t2, sub, perks);</span>
+<span class="nc" id="L122">        pane.getChildren().addAll(bg, dots, orb1, orb2, orb3, content);</span>
+<span class="nc" id="L123">        return pane;</span>
+    }
+
+    // ── Panneau droit ─────────────────────────────────────────────────────
+    private StackPane buildRight() {
+<span class="nc" id="L128">        StackPane pane = new StackPane();</span>
+<span class="nc" id="L129">        pane.setStyle(StyleFactory.darkBg());</span>
+
+<span class="nc" id="L131">        Rectangle div = new Rectangle(1, 620);</span>
+<span class="nc" id="L132">        div.setFill(Color.web(StyleFactory.D_BORDER));</span>
+<span class="nc" id="L133">        StackPane.setAlignment(div, Pos.CENTER_LEFT);</span>
+
+<span class="nc" id="L135">        VBox form = new VBox(0);</span>
+<span class="nc" id="L136">        form.setAlignment(Pos.CENTER);</span>
+<span class="nc" id="L137">        form.setPadding(new Insets(0, 48, 0, 48));</span>
+<span class="nc" id="L138">        form.setMaxWidth(380);</span>
+
+        // Titre
+<span class="nc" id="L141">        VBox welcome = new VBox(5); welcome.setAlignment(Pos.CENTER_LEFT);</span>
+<span class="nc" id="L142">        Text tag = new Text(&quot;NOUVEAU COMPTE&quot;);</span>
+<span class="nc" id="L143">        tag.setFont(Font.font(&quot;System&quot;, FontWeight.BOLD, 10));</span>
+<span class="nc" id="L144">        tag.setFill(Color.web(StyleFactory.D_SUCCESS));</span>
+<span class="nc" id="L145">        Text heading = new Text(&quot;Inscription&quot;);</span>
+<span class="nc" id="L146">        heading.setFont(Font.font(&quot;Georgia&quot;, FontWeight.BOLD, 27));</span>
+<span class="nc" id="L147">        heading.setFill(Color.web(StyleFactory.D_TEXT));</span>
+<span class="nc" id="L148">        Text subTxt = new Text(&quot;Remplissez le formulaire pour commencer.&quot;);</span>
+<span class="nc" id="L149">        subTxt.setFont(Font.font(&quot;System&quot;, 13));</span>
+<span class="nc" id="L150">        subTxt.setFill(Color.web(StyleFactory.D_SUBTEXT));</span>
+<span class="nc" id="L151">        welcome.getChildren().addAll(tag, heading, subTxt);</span>
+<span class="nc" id="L152">        VBox.setMargin(welcome, new Insets(0,0,20,0));</span>
+
+        // Champs
+<span class="nc" id="L155">        VBox fUser    = fieldBox(&quot;Nom d'utilisateur&quot;, &quot;ex: alice&quot;,                false);</span>
+<span class="nc" id="L156">        tfUsername    = (TextField) fUser.getChildren().get(1);</span>
+
+<span class="nc" id="L158">        VBox fEmail   = fieldBox(&quot;Adresse e-mail&quot;, &quot;ex: alice@example.com&quot;,       false);</span>
+<span class="nc" id="L159">        tfEmail       = (TextField) fEmail.getChildren().get(1);</span>
+
+<span class="nc" id="L161">        VBox fPass    = fieldBox(&quot;Mot de passe&quot;, &quot;8 car. min. + 1 Maj + 1 Spécial&quot;, true);</span>
+<span class="nc" id="L162">        pfPass        = (PasswordField) fPass.getChildren().get(1);</span>
+<span class="nc" id="L163">        pfPass.textProperty().addListener((o, old, val) -&gt; updateStrength(val));</span>
+
+<span class="nc" id="L165">        VBox fConfirm = fieldBox(&quot;Confirmer le mot de passe&quot;, &quot;Répétez votre mot de passe&quot;, true);</span>
+<span class="nc" id="L166">        pfConfirm     = (PasswordField) fConfirm.getChildren().get(1);</span>
+
+        // Barre de force
+<span class="nc" id="L169">        VBox strengthBox = buildStrengthMeter();</span>
+
+        // Erreur
+<span class="nc" id="L172">        lblError = new Label();</span>
+<span class="nc" id="L173">        lblError.setStyle(&quot;-fx-text-fill:&quot; + StyleFactory.D_DANGER + &quot;;-fx-font-size:12px;&quot;);</span>
+<span class="nc" id="L174">        lblError.setWrapText(true);</span>
+<span class="nc" id="L175">        lblError.setVisible(false); lblError.setManaged(false);</span>
+<span class="nc" id="L176">        VBox.setMargin(lblError, new Insets(4,0,0,0));</span>
+
+        // Bouton — via StyleFactory
+<span class="nc" id="L179">        btnRegister = StyleFactory.registerBtn(&quot;Créer mon compte  →&quot;);</span>
+<span class="nc" id="L180">        btnRegister.setOnAction(e -&gt; doRegister());</span>
+
+        // Lien vers login
+<span class="nc" id="L183">        HBox loginLink = new HBox(4); loginLink.setAlignment(Pos.CENTER);</span>
+<span class="nc" id="L184">        Text alreadyTxt = new Text(&quot;Déjà un compte ?&quot;);</span>
+<span class="nc" id="L185">        alreadyTxt.setFont(Font.font(&quot;System&quot;, 12));</span>
+<span class="nc" id="L186">        alreadyTxt.setFill(Color.web(StyleFactory.D_SUBTEXT));</span>
+<span class="nc" id="L187">        Text loginBtn = new Text(&quot;Se connecter&quot;);</span>
+<span class="nc" id="L188">        loginBtn.setFont(Font.font(&quot;System&quot;, FontWeight.BOLD, 12));</span>
+<span class="nc" id="L189">        loginBtn.setFill(Color.web(StyleFactory.D_ACCENT));</span>
+<span class="nc" id="L190">        loginBtn.setStyle(&quot;-fx-cursor:hand;&quot;);</span>
+<span class="nc" id="L191">        loginBtn.setOnMouseEntered(e -&gt; loginBtn.setFill(Color.web(StyleFactory.D_ACCENT2)));</span>
+<span class="nc" id="L192">        loginBtn.setOnMouseExited (e -&gt; loginBtn.setFill(Color.web(StyleFactory.D_ACCENT)));</span>
+<span class="nc" id="L193">        loginBtn.setOnMouseClicked(e -&gt; new LoginView(stage).show());</span>
+<span class="nc" id="L194">        loginLink.getChildren().addAll(alreadyTxt, loginBtn);</span>
+<span class="nc" id="L195">        VBox.setMargin(loginLink, new Insets(12,0,0,0));</span>
+
+<span class="nc" id="L197">        form.getChildren().addAll(</span>
+                welcome,
+<span class="nc" id="L199">                fUser,    StyleFactory.spacer(9),</span>
+<span class="nc" id="L200">                fEmail,   StyleFactory.spacer(9),</span>
+<span class="nc" id="L201">                fPass,    StyleFactory.spacer(4),</span>
+<span class="nc" id="L202">                strengthBox, StyleFactory.spacer(7),</span>
+                fConfirm,
+<span class="nc" id="L204">                lblError, StyleFactory.spacer(16),</span>
+                btnRegister,
+                loginLink
+        );
+
+<span class="nc" id="L209">        pane.getChildren().addAll(div, form);</span>
+<span class="nc" id="L210">        StackPane.setAlignment(form, Pos.CENTER);</span>
+<span class="nc" id="L211">        return pane;</span>
+    }
+
+    // ── Barre de force du mot de passe ────────────────────────────────────
+    private VBox buildStrengthMeter() {
+<span class="nc" id="L216">        VBox box = new VBox(4);</span>
+<span class="nc" id="L217">        HBox bars = new HBox(4);</span>
+<span class="nc" id="L218">        strengthBars = new Rectangle[4];</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">        for (int i = 0; i &lt; 4; i++) {</span>
+<span class="nc" id="L220">            Rectangle r = new Rectangle(0, 4);</span>
+<span class="nc" id="L221">            r.setArcWidth(4); r.setArcHeight(4);</span>
+<span class="nc" id="L222">            r.setFill(Color.web(StyleFactory.D_BORDER));</span>
+<span class="nc" id="L223">            strengthBars[i] = r;</span>
+<span class="nc" id="L224">            bars.getChildren().add(r);</span>
+        }
+<span class="nc" id="L226">        lblStrength = new Label(&quot;Saisissez un mot de passe&quot;);</span>
+<span class="nc" id="L227">        lblStrength.setStyle(&quot;-fx-font-size:11px;-fx-text-fill:&quot; + StyleFactory.D_SUBTEXT + &quot;;&quot;);</span>
+
+        // Ajuster largeur des barres dynamiquement
+<span class="nc" id="L230">        bars.widthProperty().addListener((o, old, w) -&gt; {</span>
+<span class="nc" id="L231">            double bw = (w.doubleValue() - 12) / 4;</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">            for (Rectangle r : strengthBars) r.setWidth(bw);</span>
+<span class="nc" id="L233">        });</span>
+<span class="nc" id="L234">        box.getChildren().addAll(bars, lblStrength);</span>
+<span class="nc" id="L235">        return box;</span>
+    }
+
+    private void updateStrength(String pass) {
+<span class="nc" id="L239">        int score = 0;</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">        if (pass.length() &gt;= 8)                              score++;</span>
+<span class="nc bnc" id="L241" title="All 2 branches missed.">        if (pass.matches(&quot;.*[A-Z].*&quot;))                       score++;</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">        if (pass.matches(&quot;.*[0-9].*&quot;))                       score++;</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">        if (pass.matches(&quot;.*[!@#$%^&amp;*(),.?\&quot;:{}|&lt;&gt;].*&quot;))    score++;</span>
+
+<span class="nc" id="L245">        String[] colors = { StyleFactory.D_DANGER, StyleFactory.D_WARNING, &quot;#eab308&quot;, StyleFactory.D_SUCCESS };</span>
+<span class="nc" id="L246">        String[] labels = { &quot;Très faible&quot;, &quot;Faible&quot;, &quot;Moyen&quot;, &quot;Fort&quot; };</span>
+
+<span class="nc bnc" id="L248" title="All 2 branches missed.">        for (int i = 0; i &lt; 4; i++)</span>
+<span class="nc bnc" id="L249" title="All 2 branches missed.">            strengthBars[i].setFill(Color.web(i &lt; score ? colors[score-1] : StyleFactory.D_BORDER));</span>
+
+<span class="nc bnc" id="L251" title="All 2 branches missed.">        if (pass.isEmpty()) {</span>
+<span class="nc" id="L252">            lblStrength.setText(&quot;Saisissez un mot de passe&quot;);</span>
+<span class="nc" id="L253">            lblStrength.setStyle(&quot;-fx-font-size:11px;-fx-text-fill:&quot; + StyleFactory.D_SUBTEXT + &quot;;&quot;);</span>
+        } else {
+<span class="nc" id="L255">            int idx = Math.max(0, score - 1);</span>
+<span class="nc" id="L256">            lblStrength.setText(&quot;Force : &quot; + labels[idx]);</span>
+<span class="nc" id="L257">            lblStrength.setStyle(&quot;-fx-font-size:11px;-fx-text-fill:&quot; + colors[idx] + &quot;;&quot;);</span>
+        }
+<span class="nc" id="L259">    }</span>
+
+    // ── Validation &amp; inscription ──────────────────────────────────────────
+    private void doRegister() {
+<span class="nc" id="L263">        String user    = tfUsername.getText().trim();</span>
+<span class="nc" id="L264">        String email   = tfEmail.getText().trim();</span>
+<span class="nc" id="L265">        String pass    = pfPass.getText();</span>
+<span class="nc" id="L266">        String confirm = pfConfirm.getText();</span>
+
+<span class="nc bnc" id="L268" title="All 8 branches missed.">        if (user.isEmpty() || email.isEmpty() || pass.isEmpty() || confirm.isEmpty()) {</span>
+<span class="nc" id="L269">            err(&quot;Veuillez remplir tous les champs.&quot;); return;</span>
+        }
+<span class="nc bnc" id="L271" title="All 2 branches missed.">        if (!email.matches(&quot;^[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}$&quot;)) {</span>
+<span class="nc" id="L272">            err(&quot;Adresse e-mail invalide.&quot;); return;</span>
+        }
+<span class="nc bnc" id="L274" title="All 2 branches missed.">        if (!pass.matches(&quot;^(?=.*[A-Z])(?=.*[!@#$%^&amp;*(),.?\&quot;:{}|&lt;&gt;]).{8,}$&quot;)) {</span>
+<span class="nc" id="L275">            err(&quot;Mot de passe : 8 car. min., 1 majuscule, 1 caractère spécial.&quot;); return;</span>
+        }
+<span class="nc bnc" id="L277" title="All 2 branches missed.">        if (!pass.equals(confirm)) {</span>
+<span class="nc" id="L278">            err(&quot;Les mots de passe ne correspondent pas.&quot;);</span>
+<span class="nc" id="L279">            StyleFactory.animateShake(btnRegister, 7); // Animation shake via StyleFactory</span>
+<span class="nc" id="L280">            return;</span>
+        }
+
+        // Animation succès via StyleFactory
+<span class="nc" id="L284">        StyleFactory.animateSuccess(btnRegister, &quot;✓  Compte créé !&quot;, 800,</span>
+<span class="nc" id="L285">                () -&gt; new LoginView(stage).show());</span>
+<span class="nc" id="L286">    }</span>
+
+    private void err(String msg) {
+<span class="nc" id="L289">        lblError.setText(&quot;⚠  &quot; + msg);</span>
+<span class="nc" id="L290">        lblError.setVisible(true); lblError.setManaged(true);</span>
+<span class="nc" id="L291">    }</span>
+
+    // ── Helpers ───────────────────────────────────────────────────────────
+    private VBox fieldBox(String label, String prompt, boolean password) {
+<span class="nc" id="L295">        VBox box = new VBox(6);</span>
+<span class="nc" id="L296">        Text lbl = new Text(label);</span>
+<span class="nc" id="L297">        lbl.setFont(Font.font(&quot;System&quot;, FontWeight.BOLD, 12));</span>
+<span class="nc" id="L298">        lbl.setFill(Color.web(&quot;#94a3b8&quot;));</span>
+        Control field;
+<span class="nc bnc" id="L300" title="All 2 branches missed.">        if (password) {</span>
+<span class="nc" id="L301">            PasswordField pf = new PasswordField();</span>
+<span class="nc" id="L302">            pf.setPromptText(prompt); pf.setPrefHeight(44);</span>
+<span class="nc" id="L303">            pf.setStyle(StyleFactory.darkInputStyle(false));</span>
+<span class="nc" id="L304">            pf.focusedProperty().addListener((o,old,f) -&gt; pf.setStyle(StyleFactory.darkInputStyle(f)));</span>
+<span class="nc" id="L305">            field = pf;</span>
+<span class="nc" id="L306">        } else {</span>
+<span class="nc" id="L307">            TextField tf = new TextField();</span>
+<span class="nc" id="L308">            tf.setPromptText(prompt); tf.setPrefHeight(44);</span>
+<span class="nc" id="L309">            tf.setStyle(StyleFactory.darkInputStyle(false));</span>
+<span class="nc" id="L310">            tf.focusedProperty().addListener((o,old,f) -&gt; tf.setStyle(StyleFactory.darkInputStyle(f)));</span>
+<span class="nc" id="L311">            field = tf;</span>
+        }
+<span class="nc" id="L313">        box.getChildren().addAll(lbl, field); return box;</span>
+    }
+
+    private Pane buildDotGrid(double w, double h) {
+<span class="nc" id="L317">        Pane p = new Pane(); p.setPrefSize(w, h); p.setMouseTransparent(true);</span>
+<span class="nc bnc" id="L318" title="All 2 branches missed.">        for (int x = 24; x &lt; w; x += 28)</span>
+<span class="nc bnc" id="L319" title="All 2 branches missed.">            for (int y = 24; y &lt; h; y += 28) {</span>
+<span class="nc" id="L320">                Circle d = new Circle(1.2, Color.web(&quot;rgba(255,255,255,0.05)&quot;));</span>
+<span class="nc" id="L321">                d.setCenterX(x); d.setCenterY(y); p.getChildren().add(d);</span>
+            }
+<span class="nc" id="L323">        return p;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

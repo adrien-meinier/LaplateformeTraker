@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserDAO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">student-manager</a> &gt; <a href="index.source.html" class="el_package">com.example.controller</a> &gt; <span class="el_source">UserDAO.java</span></div><h1>UserDAO.java</h1><pre class="source lang-java linenums">package com.example.controller;
+
+import java.sql.*;
+
+import com.example.model.DatabaseInitializer;
+import com.example.model.PasswordHasher;
+import com.example.model.PasswordVerifier;
+import com.example.model.SaltUtil;
+import com.example.model.UserModel;
+
+/*
+ * Data Access Object pour la table app_user.
+ *
+ * Gère l'inscription (register) et l'authentification (login) en utilisant
+ * les utilitaires de hachage existants 
+
+ */
+<span class="nc" id="L18">public class UserDAO {</span>
+
+    /**
+    Inscrit un nouvel utilisateur.
+     *
+     * @param email    adresse e-mail (clé primaire)
+     * @param password mot de passe en clair (jamais stocké)
+     * @param isAdmin  vrai si le compte doit avoir les droits admin
+     * @return true si l'insertion a réussi
+     * @throws SQLException si une erreur SQL survient (ex. email déjà pris)
+     * @throws Exception    si le hachage du mot de passe échoue
+     */
+    public boolean register(String email, String password, boolean isAdmin)
+            throws Exception {
+
+<span class="nc" id="L33">        String salt         = SaltUtil.generateSalt();</span>
+<span class="nc" id="L34">        String passwordHash = PasswordHasher.hashPassword(password, salt);</span>
+
+<span class="nc" id="L36">        String sql = &quot;&quot;&quot;</span>
+                INSERT INTO app_user (email, password_hash, salt, is_admin)
+                VALUES (?, ?, ?, ?);
+                &quot;&quot;&quot;;
+
+<span class="nc" id="L41">        try (Connection conn = DatabaseInitializer.getConnection();</span>
+<span class="nc" id="L42">             PreparedStatement stmt = conn.prepareStatement(sql)) {</span>
+
+<span class="nc" id="L44">            stmt.setString(1, email);</span>
+<span class="nc" id="L45">            stmt.setString(2, passwordHash);</span>
+<span class="nc" id="L46">            stmt.setString(3, salt);</span>
+<span class="nc" id="L47">            stmt.setBoolean(4, isAdmin);</span>
+
+<span class="nc bnc" id="L49" title="All 2 branches missed.">            return stmt.executeUpdate() &gt; 0;</span>
+        }
+    }
+
+    /**
+     * Vérifie les identifiants d'un utilisateur.
+     *
+     * @param email    adresse e-mail
+     * @param password mot de passe en clair à vérifier
+     * @return le UserModel correspondant si les identifiants sont corrects,
+     *         null sinon (email inexistant ou mot de passe incorrect)
+     * @throws SQLException si une erreur SQL survient
+     * @throws Exception    si la vérification du hash échoue
+     */
+    public UserModel login(String email, String password) throws Exception {
+
+<span class="nc" id="L65">        UserModel user = getUserByEmail(email);</span>
+
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (user == null) {</span>
+<span class="nc" id="L68">            return null;   // email inconnu</span>
+        }
+
+<span class="nc" id="L71">        boolean valid = PasswordVerifier.verify(password, user.getSalt(), user.getPasswordHash());</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        return valid ? user : null;</span>
+    }
+
+    /**
+     * Récupère un utilisateur par son e-mail.
+     *
+     * @param email adresse e-mail à rechercher
+     * @return le UserModel, ou null si introuvable
+     * @throws SQLException si une erreur SQL survient
+     */
+    public UserModel getUserByEmail(String email) throws SQLException {
+
+<span class="nc" id="L84">        String sql = &quot;&quot;&quot;</span>
+                SELECT email, password_hash, salt, creation_date, is_admin
+                FROM app_user
+                WHERE email = ?;
+                &quot;&quot;&quot;;
+
+<span class="nc" id="L90">        try (Connection conn = DatabaseInitializer.getConnection();</span>
+<span class="nc" id="L91">             PreparedStatement stmt = conn.prepareStatement(sql)) {</span>
+
+<span class="nc" id="L93">            stmt.setString(1, email);</span>
+
+<span class="nc" id="L95">            try (ResultSet rs = stmt.executeQuery()) {</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">                if (rs.next()) {</span>
+<span class="nc" id="L97">                    return mapRow(rs);</span>
+                }
+<span class="nc bnc" id="L99" title="All 2 branches missed.">            }</span>
+<span class="nc bnc" id="L100" title="All 4 branches missed.">        }</span>
+<span class="nc" id="L101">        return null;</span>
+    }
+
+    /**
+     * Vérifie si une adresse e-mail est déjà enregistrée.
+     *
+     * @param email adresse e-mail à tester
+     * @return true si l'e-mail existe en base
+     * @throws SQLException si une erreur SQL survient
+     */
+    public boolean emailExists(String email) throws SQLException {
+<span class="nc" id="L112">        String sql = &quot;SELECT 1 FROM app_user WHERE email = ?;&quot;;</span>
+
+<span class="nc" id="L114">        try (Connection conn = DatabaseInitializer.getConnection();</span>
+<span class="nc" id="L115">             PreparedStatement stmt = conn.prepareStatement(sql)) {</span>
+
+<span class="nc" id="L117">            stmt.setString(1, email);</span>
+
+<span class="nc" id="L119">            try (ResultSet rs = stmt.executeQuery()) {</span>
+<span class="nc" id="L120">                return rs.next();</span>
+            }
+        }
+    }
+
+    /**
+     * Met à jour le mot de passe d'un utilisateur existant.
+     * Un nouveau sel est généré à chaque changement de mot de passe.
+     *
+     * @param email       adresse e-mail de l'utilisateur
+     * @param newPassword nouveau mot de passe en clair
+     * @return true si la mise à jour a réussi
+     * @throws SQLException si une erreur SQL survient
+     * @throws Exception    si le hachage du nouveau mot de passe échoue
+     */
+    public boolean updatePassword(String email, String newPassword) throws Exception {
+
+<span class="nc" id="L137">        String newSalt = SaltUtil.generateSalt();</span>
+<span class="nc" id="L138">        String newHash = PasswordHasher.hashPassword(newPassword, newSalt);</span>
+
+<span class="nc" id="L140">        String sql = &quot;&quot;&quot;</span>
+                UPDATE app_user
+                SET password_hash = ?, salt = ?
+                WHERE email = ?;
+                &quot;&quot;&quot;;
+
+<span class="nc" id="L146">        try (Connection conn = DatabaseInitializer.getConnection();</span>
+<span class="nc" id="L147">             PreparedStatement stmt = conn.prepareStatement(sql)) {</span>
+
+<span class="nc" id="L149">            stmt.setString(1, newHash);</span>
+<span class="nc" id="L150">            stmt.setString(2, newSalt);</span>
+<span class="nc" id="L151">            stmt.setString(3, email);</span>
+
+<span class="nc bnc" id="L153" title="All 2 branches missed.">            return stmt.executeUpdate() &gt; 0;</span>
+        }
+    }
+
+    /**
+     * Supprime un utilisateur par son e-mail.
+     *
+     * @param email adresse e-mail à supprimer
+     * @return true si la suppression a réussi
+     * @throws SQLException si une erreur SQL survient
+     */
+    public boolean deleteUser(String email) throws SQLException {
+
+<span class="nc" id="L166">        String sql = &quot;DELETE FROM app_user WHERE email = ?;&quot;;</span>
+
+<span class="nc" id="L168">        try (Connection conn = DatabaseInitializer.getConnection();</span>
+<span class="nc" id="L169">             PreparedStatement stmt = conn.prepareStatement(sql)) {</span>
+
+<span class="nc" id="L171">            stmt.setString(1, email);</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">            return stmt.executeUpdate() &gt; 0;</span>
+        }
+    }
+
+    /** Construit un UserModel à partir d'une ligne ResultSet. */
+    private UserModel mapRow(ResultSet rs) throws SQLException {
+<span class="nc" id="L178">        return new UserModel(</span>
+<span class="nc" id="L179">                rs.getString(&quot;email&quot;),</span>
+<span class="nc" id="L180">                rs.getString(&quot;password_hash&quot;),</span>
+<span class="nc" id="L181">                rs.getString(&quot;salt&quot;),</span>
+<span class="nc" id="L182">                rs.getTimestamp(&quot;creation_date&quot;).toLocalDateTime(),</span>
+<span class="nc" id="L183">                rs.getBoolean(&quot;is_admin&quot;)</span>
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RechercheView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">student-manager</a> &gt; <a href="index.source.html" class="el_package">com.example.view</a> &gt; <span class="el_source">RechercheView.java</span></div><h1>RechercheView.java</h1><pre class="source lang-java linenums">package com.example.view;
+
+import com.example.controller.StudentDAO;
+import com.example.model.StudentModel;
+import javafx.collections.FXCollections;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.*;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+
+import java.time.LocalDate;
+import java.time.Period;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * RechercheView — recherche simple par ID et recherche avancée multi-critères.
+ */
+public class RechercheView {
+
+    private final StudentDAO dao;
+    private List&lt;StudentModel&gt; allStudents;
+
+    private TableView&lt;StudentModel&gt; table;
+    private Label lblResultCount;
+
+<span class="nc" id="L31">    public RechercheView(StudentDAO dao) {</span>
+<span class="nc" id="L32">        this.dao = dao;</span>
+<span class="nc" id="L33">    }</span>
+
+    public Node build() {
+<span class="nc" id="L36">        VBox root = new VBox(20);</span>
+<span class="nc" id="L37">        root.setPadding(new Insets(0));</span>
+
+        // Titre
+<span class="nc" id="L40">        Label title = new Label(&quot;🔎 Recherche&quot;);</span>
+<span class="nc" id="L41">        title.setFont(Font.font(&quot;System&quot;, FontWeight.BOLD, 22));</span>
+<span class="nc" id="L42">        title.setStyle(StyleFactory.titleStyle());</span>
+
+        // ── Bloc Recherche par ID 
+<span class="nc" id="L45">        VBox cardById = new VBox(12);</span>
+<span class="nc" id="L46">        cardById.setPadding(new Insets(18, 20, 18, 20));</span>
+<span class="nc" id="L47">        cardById.setStyle(StyleFactory.cardBg());</span>
+
+<span class="nc" id="L49">        Label lblById = new Label(&quot;Recherche par ID&quot;);</span>
+<span class="nc" id="L50">        lblById.setStyle(&quot;-fx-font-weight: bold; -fx-font-size: 14px;&quot; +</span>
+                &quot;-fx-text-fill: &quot; + StyleFactory.C_PRIMARY + &quot;;&quot;);
+
+<span class="nc" id="L53">        HBox rowId = new HBox(10);</span>
+<span class="nc" id="L54">        rowId.setAlignment(Pos.CENTER_LEFT);</span>
+<span class="nc" id="L55">        TextField tfId = new TextField();</span>
+<span class="nc" id="L56">        tfId.setPromptText(&quot;Entrez l'ID de l'étudiant&quot;);</span>
+<span class="nc" id="L57">        tfId.setStyle(StyleFactory.textFieldStyle());</span>
+<span class="nc" id="L58">        tfId.setPrefHeight(40);</span>
+<span class="nc" id="L59">        tfId.setPrefWidth(220);</span>
+<span class="nc" id="L60">        tfId.focusedProperty().addListener((obs, o, f) -&gt;</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">                tfId.setStyle(f ? StyleFactory.textFieldFocusStyle() : StyleFactory.textFieldStyle()));</span>
+
+<span class="nc" id="L63">        Button btnSearchId = StyleFactory.primaryBtn(&quot;🔍 Rechercher&quot;);</span>
+<span class="nc" id="L64">        btnSearchId.setOnAction(e -&gt; searchById(tfId.getText().trim()));</span>
+<span class="nc" id="L65">        tfId.setOnAction(e -&gt; searchById(tfId.getText().trim()));</span>
+
+<span class="nc" id="L67">        rowId.getChildren().addAll(tfId, btnSearchId);</span>
+<span class="nc" id="L68">        cardById.getChildren().addAll(lblById, rowId);</span>
+
+        // ── Bloc Recherche avancée 
+<span class="nc" id="L71">        VBox cardAdv = new VBox(14);</span>
+<span class="nc" id="L72">        cardAdv.setPadding(new Insets(18, 20, 18, 20));</span>
+<span class="nc" id="L73">        cardAdv.setStyle(StyleFactory.cardBg());</span>
+
+<span class="nc" id="L75">        Label lblAdv = new Label(&quot;Recherche avancée&quot;);</span>
+<span class="nc" id="L76">        lblAdv.setStyle(&quot;-fx-font-weight: bold; -fx-font-size: 14px;&quot; +</span>
+                &quot;-fx-text-fill: &quot; + StyleFactory.C_PRIMARY + &quot;;&quot;);
+
+<span class="nc" id="L79">        GridPane grid = new GridPane();</span>
+<span class="nc" id="L80">        grid.setHgap(14);</span>
+<span class="nc" id="L81">        grid.setVgap(10);</span>
+
+<span class="nc" id="L83">        TextField tfKeyword = advField(&quot;Mot-clé (nom / prénom)&quot;);</span>
+<span class="nc" id="L84">        TextField tfMinAge = advField(&quot;Âge min&quot;);</span>
+<span class="nc" id="L85">        TextField tfMaxAge = advField(&quot;Âge max&quot;);</span>
+
+<span class="nc" id="L87">        grid.add(fieldGroup(&quot;Mot-clé&quot;, tfKeyword), 0, 0, 2, 1);</span>
+<span class="nc" id="L88">        grid.add(fieldGroup(&quot;Âge min&quot;, tfMinAge), 0, 1);</span>
+<span class="nc" id="L89">        grid.add(fieldGroup(&quot;Âge max&quot;, tfMaxAge), 1, 1);</span>
+
+<span class="nc" id="L91">        ColumnConstraints c1 = new ColumnConstraints(); c1.setPercentWidth(50);</span>
+<span class="nc" id="L92">        ColumnConstraints c2 = new ColumnConstraints(); c2.setPercentWidth(50);</span>
+<span class="nc" id="L93">        grid.getColumnConstraints().addAll(c1, c2);</span>
+
+<span class="nc" id="L95">        HBox advButtons = new HBox(10);</span>
+<span class="nc" id="L96">        advButtons.setAlignment(Pos.CENTER_RIGHT);</span>
+
+<span class="nc" id="L98">        Button btnReset = StyleFactory.secondaryBtn(&quot;🔄 Réinitialiser&quot;);</span>
+<span class="nc" id="L99">        Button btnSearch = StyleFactory.primaryBtn(&quot;🔍 Rechercher&quot;);</span>
+
+<span class="nc" id="L101">        btnReset.setOnAction(e -&gt; {</span>
+<span class="nc" id="L102">            tfKeyword.clear(); tfMinAge.clear(); tfMaxAge.clear();</span>
+<span class="nc" id="L103">            refreshAll();</span>
+<span class="nc" id="L104">        });</span>
+<span class="nc" id="L105">        btnSearch.setOnAction(e -&gt; advancedSearch(</span>
+<span class="nc" id="L106">                tfKeyword.getText().trim(),</span>
+<span class="nc" id="L107">                parseIntOrNull(tfMinAge.getText()),</span>
+<span class="nc" id="L108">                parseIntOrNull(tfMaxAge.getText())</span>
+        ));
+
+<span class="nc" id="L111">        advButtons.getChildren().addAll(btnReset, btnSearch);</span>
+<span class="nc" id="L112">        cardAdv.getChildren().addAll(lblAdv, grid, advButtons);</span>
+
+        // ── Résultats 
+<span class="nc" id="L115">        lblResultCount = new Label();</span>
+<span class="nc" id="L116">        lblResultCount.setStyle(StyleFactory.subtitleStyle());</span>
+
+<span class="nc" id="L118">        table = buildTable();</span>
+
+<span class="nc" id="L120">        root.getChildren().addAll(title, cardById, cardAdv, lblResultCount, table);</span>
+<span class="nc" id="L121">        VBox.setVgrow(table, Priority.ALWAYS);</span>
+
+<span class="nc" id="L123">        refreshAll();</span>
+<span class="nc" id="L124">        return root;</span>
+    }
+
+    // ── Actions 
+    private void searchById(String raw) {
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        if (raw.isEmpty()) { refreshAll(); return; }</span>
+        try {
+<span class="nc" id="L131">            int id = Integer.parseInt(raw);</span>
+<span class="nc" id="L132">            var result = allStudents.stream()</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">                    .filter(s -&gt; s.getId() == id)</span>
+<span class="nc" id="L134">                    .collect(Collectors.toList());</span>
+            
+<span class="nc" id="L136">            table.setItems(FXCollections.observableArrayList(result));</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">            lblResultCount.setText(result.size() == 1 ? &quot;1 résultat.&quot; : </span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">                                 result.isEmpty() ? &quot;Aucun étudiant avec l'ID &quot; + id : </span>
+<span class="nc" id="L139">                                 result.size() + &quot; résultat(s).&quot;);</span>
+<span class="nc" id="L140">        } catch (NumberFormatException e) {</span>
+<span class="nc" id="L141">            showAlert(&quot;L'ID doit être un nombre entier.&quot;);</span>
+<span class="nc" id="L142">        }</span>
+<span class="nc" id="L143">    }</span>
+
+    private void advancedSearch(String keyword, Integer minAge, Integer maxAge) {
+<span class="nc" id="L146">        var results = allStudents.stream()</span>
+<span class="nc" id="L147">                .filter(s -&gt; matchesKeyword(s, keyword))</span>
+<span class="nc" id="L148">                .filter(s -&gt; matchesAge(s, minAge, maxAge))</span>
+<span class="nc" id="L149">                .collect(Collectors.toList());</span>
+        
+<span class="nc" id="L151">        table.setItems(FXCollections.observableArrayList(results));</span>
+<span class="nc" id="L152">        lblResultCount.setText(results.size() + &quot; résultat(s) trouvé(s).&quot;);</span>
+<span class="nc" id="L153">    }</span>
+
+    private boolean matchesKeyword(StudentModel s, String keyword) {
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        if (keyword.isEmpty()) return true;</span>
+<span class="nc" id="L157">        String lower = keyword.toLowerCase();</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">        return s.getFirstName().toLowerCase().contains(lower) ||</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">               s.getLastName().toLowerCase().contains(lower);</span>
+    }
+
+    private boolean matchesAge(StudentModel s, Integer minAge, Integer maxAge) {
+<span class="nc" id="L163">        int age = Period.between(s.getBirthDate(), LocalDate.now()).getYears();</span>
+<span class="nc bnc" id="L164" title="All 4 branches missed.">        if (minAge != null &amp;&amp; age &lt; minAge) return false;</span>
+<span class="nc bnc" id="L165" title="All 4 branches missed.">        if (maxAge != null &amp;&amp; age &gt; maxAge) return false;</span>
+<span class="nc" id="L166">        return true;</span>
+    }
+
+    private void refreshAll() {
+        try {
+<span class="nc" id="L171">            allStudents = dao.getAllStudents();</span>
+<span class="nc" id="L172">            table.setItems(FXCollections.observableArrayList(allStudents));</span>
+<span class="nc" id="L173">            lblResultCount.setText(allStudents.size() + &quot; étudiant(s) au total.&quot;);</span>
+<span class="nc" id="L174">        } catch (Exception ex) {</span>
+<span class="nc" id="L175">            showAlert(&quot;Erreur : &quot; + ex.getMessage());</span>
+<span class="nc" id="L176">        }</span>
+<span class="nc" id="L177">    }</span>
+
+    // ── Tableau 
+    @SuppressWarnings(&quot;unchecked&quot;)
+    private TableView&lt;StudentModel&gt; buildTable() {
+<span class="nc" id="L182">        TableView&lt;StudentModel&gt; tv = new TableView&lt;&gt;();</span>
+<span class="nc" id="L183">        tv.setStyle(StyleFactory.tableStyle());</span>
+<span class="nc" id="L184">        tv.setPlaceholder(new Label(&quot;Aucun résultat.&quot;));</span>
+
+<span class="nc" id="L186">        TableColumn&lt;StudentModel, Integer&gt; colId = simpleCol(&quot;ID&quot;, &quot;id&quot;, 60);</span>
+<span class="nc" id="L187">        TableColumn&lt;StudentModel, String&gt; colPrenom = simpleCol(&quot;Prénom&quot;, &quot;firstName&quot;, 140);</span>
+<span class="nc" id="L188">        TableColumn&lt;StudentModel, String&gt; colNom = simpleCol(&quot;Nom&quot;, &quot;lastName&quot;, 140);</span>
+<span class="nc" id="L189">        TableColumn&lt;StudentModel, Integer&gt; colAge = new TableColumn&lt;&gt;(&quot;Âge&quot;);</span>
+        
+<span class="nc" id="L191">        colAge.setCellValueFactory(cellData -&gt; {</span>
+<span class="nc" id="L192">        int age = Period.between(cellData.getValue().getBirthDate(), LocalDate.now()).getYears();</span>
+<span class="nc" id="L193">        return new javafx.beans.property.SimpleIntegerProperty(age).asObject();</span>
+     });
+
+<span class="nc" id="L196">        TableColumn&lt;StudentModel, String&gt; colBirth = simpleCol(&quot;Naissance&quot;, &quot;birthDate&quot;, 120);</span>
+
+<span class="nc" id="L198">        tv.getColumns().addAll(colId, colPrenom, colNom, colAge, colBirth);</span>
+<span class="nc" id="L199">        return tv;</span>
+    }
+
+    private &lt;T&gt; TableColumn&lt;StudentModel, T&gt; simpleCol(String header, String prop, int w) {
+<span class="nc" id="L203">        TableColumn&lt;StudentModel, T&gt; c = new TableColumn&lt;&gt;(header);</span>
+<span class="nc" id="L204">        c.setCellValueFactory(new PropertyValueFactory&lt;&gt;(prop));</span>
+<span class="nc" id="L205">        c.setPrefWidth(w);</span>
+<span class="nc" id="L206">        return c;</span>
+    }
+
+    // ── Helpers 
+    private TextField advField(String prompt) {
+<span class="nc" id="L211">        TextField tf = new TextField();</span>
+<span class="nc" id="L212">        tf.setPromptText(prompt);</span>
+<span class="nc" id="L213">        tf.setStyle(StyleFactory.textFieldStyle());</span>
+<span class="nc" id="L214">        tf.setPrefHeight(38);</span>
+<span class="nc" id="L215">        tf.focusedProperty().addListener((obs, o, f) -&gt;</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">                tf.setStyle(f ? StyleFactory.textFieldFocusStyle() : StyleFactory.textFieldStyle()));</span>
+<span class="nc" id="L217">        return tf;</span>
+    }
+
+    private VBox fieldGroup(String label, Node ctrl) {
+<span class="nc" id="L221">        Label lbl = new Label(label);</span>
+<span class="nc" id="L222">        lbl.setStyle(StyleFactory.labelStyle());</span>
+<span class="nc" id="L223">        VBox b = new VBox(4, lbl, ctrl);</span>
+<span class="nc" id="L224">        b.setFillWidth(true);</span>
+<span class="nc" id="L225">        return b;</span>
+    }
+
+    private Integer parseIntOrNull(String s) {
+<span class="nc bnc" id="L229" title="All 2 branches missed.">        try { return s.isEmpty() ? null : Integer.parseInt(s.trim()); }</span>
+<span class="nc" id="L230">        catch (NumberFormatException e) { return null; }</span>
+    }
+
+    private void showAlert(String msg) {
+<span class="nc" id="L234">        Alert a = new Alert(Alert.AlertType.WARNING, msg, ButtonType.OK);</span>
+<span class="nc" id="L235">        a.setHeaderText(null); a.showAndWait();</span>
+<span class="nc" id="L236">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

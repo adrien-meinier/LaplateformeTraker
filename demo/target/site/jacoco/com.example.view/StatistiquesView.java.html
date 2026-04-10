@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StatistiquesView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">student-manager</a> &gt; <a href="index.source.html" class="el_package">com.example.view</a> &gt; <span class="el_source">StatistiquesView.java</span></div><h1>StatistiquesView.java</h1><pre class="source lang-java linenums">package com.example.view;
+
+import com.example.controller.StudentDAO;
+import com.example.model.StudentModel;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.Period;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+/**
+ * StatistiquesView — Tableau de bord des statistiques.
+ * Nettoyé de toute logique de hachage/pepper.
+ */
+public class StatistiquesView {
+
+    private final StudentDAO dao;
+
+<span class="nc" id="L27">    public StatistiquesView(StudentDAO dao) {</span>
+<span class="nc" id="L28">        this.dao = dao;</span>
+<span class="nc" id="L29">    }</span>
+
+    public Node build() {
+<span class="nc" id="L32">        ScrollPane scroll = new ScrollPane();</span>
+<span class="nc" id="L33">        scroll.setFitToWidth(true);</span>
+<span class="nc" id="L34">        scroll.setStyle(&quot;-fx-background-color: transparent; -fx-background: transparent;&quot;);</span>
+
+<span class="nc" id="L36">        VBox root = new VBox(20);</span>
+<span class="nc" id="L37">        root.setPadding(new Insets(20));</span>
+
+        // Titre
+<span class="nc" id="L40">        Label title = new Label(&quot;📊 Statistiques de la classe&quot;);</span>
+<span class="nc" id="L41">        title.setFont(Font.font(&quot;System&quot;, FontWeight.BOLD, 22));</span>
+<span class="nc" id="L42">        title.setStyle(&quot;-fx-text-fill: &quot; + StyleFactory.C_PRIMARY + &quot;;&quot;);</span>
+
+        try {
+<span class="nc" id="L45">            List&lt;StudentModel&gt; students = dao.getAllStudents();</span>
+<span class="nc" id="L46">            Stats stats = computeStats(students);</span>
+
+            // ── Cartes KPI (Indicateurs clés)
+<span class="nc" id="L49">            HBox kpiRow = new HBox(14);</span>
+<span class="nc" id="L50">            kpiRow.setFillHeight(true);</span>
+
+<span class="nc" id="L52">            kpiRow.getChildren().addAll(</span>
+<span class="nc" id="L53">                    kpi(&quot;👥 Étudiants&quot;, String.valueOf(stats.total), StyleFactory.C_ACCENT, &quot;au total&quot;),</span>
+<span class="nc" id="L54">                    kpi(&quot;Moyenne des Étudiants&quot;, String.format(&quot;%.1f&quot;, stats.avgAge), StyleFactory.C_PRIMARY, &quot;&quot;),</span>
+<span class="nc" id="L55">                    kpi(&quot;Note minimale&quot;, String.format(&quot;%d&quot;, stats.minAge), StyleFactory.C_SUCCESS, &quot;&quot;),</span>
+<span class="nc" id="L56">                    kpi(&quot;Note maximale&quot;, String.format(&quot;%d&quot;, stats.maxAge), StyleFactory.C_WARNING, &quot;&quot;)</span>
+            );
+
+            // ── Graphique de répartition
+<span class="nc" id="L60">            HBox charts = new HBox(16);</span>
+<span class="nc" id="L61">            charts.setFillHeight(true);</span>
+
+<span class="nc" id="L63">            VBox ageCard = buildAgeBarChart(stats.ageDist);</span>
+<span class="nc" id="L64">            HBox.setHgrow(ageCard, Priority.ALWAYS);</span>
+<span class="nc" id="L65">            charts.getChildren().add(ageCard);</span>
+
+<span class="nc" id="L67">            root.getChildren().addAll(title, kpiRow, charts);</span>
+
+<span class="nc" id="L69">        } catch (SQLException ex) {</span>
+<span class="nc" id="L70">            Label err = new Label(&quot;Erreur lors du chargement des statistiques : &quot; + ex.getMessage());</span>
+<span class="nc" id="L71">            err.setStyle(&quot;-fx-text-fill: &quot; + StyleFactory.C_DANGER + &quot;;&quot;);</span>
+<span class="nc" id="L72">            root.getChildren().addAll(title, err);</span>
+<span class="nc" id="L73">        }</span>
+
+<span class="nc" id="L75">        scroll.setContent(root);</span>
+<span class="nc" id="L76">        return scroll;</span>
+    }
+
+    /**
+     * Calcule les statistiques à partir de la liste des étudiants.
+     */
+    private Stats computeStats(List&lt;StudentModel&gt; students) {
+<span class="nc" id="L83">        int total = students.size();</span>
+        
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        if (total == 0) {</span>
+<span class="nc" id="L86">            return new Stats(0, 0, 0, 0, Map.of());</span>
+        }
+
+<span class="nc" id="L89">        List&lt;Integer&gt; ages = students.stream()</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">                .filter(s -&gt; s.getBirthDate() != null)</span>
+<span class="nc" id="L91">                .map(s -&gt; Period.between(s.getBirthDate(), LocalDate.now()).getYears())</span>
+<span class="nc" id="L92">                .collect(Collectors.toList());</span>
+
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        if (ages.isEmpty()) return new Stats(total, 0, 0, 0, Map.of());</span>
+
+<span class="nc" id="L96">        int minAge = ages.stream().mapToInt(Integer::intValue).min().orElse(0);</span>
+<span class="nc" id="L97">        int maxAge = ages.stream().mapToInt(Integer::intValue).max().orElse(0);</span>
+<span class="nc" id="L98">        double avgAge = ages.stream().mapToInt(Integer::intValue).average().orElse(0);</span>
+
+        // Répartition par tranches
+<span class="nc" id="L101">        Map&lt;String, Integer&gt; ageDist = ages.stream()</span>
+<span class="nc" id="L102">                .collect(Collectors.groupingBy(</span>
+                    age -&gt; {
+<span class="nc bnc" id="L104" title="All 2 branches missed.">                        if (age &lt; 18) return &quot;&lt; 18 ans&quot;;</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">                        if (age &lt; 25) return &quot;18-24 ans&quot;;</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">                        if (age &lt; 30) return &quot;25-29 ans&quot;;</span>
+<span class="nc" id="L107">                        return &quot;30 ans +&quot;;</span>
+                    },
+<span class="nc" id="L109">                    Collectors.summingInt(e -&gt; 1)</span>
+                ));
+
+<span class="nc" id="L112">        return new Stats(total, avgAge, minAge, maxAge, ageDist);</span>
+    }
+
+    private VBox kpi(String label, String value, String color, String sub) {
+<span class="nc" id="L116">        VBox card = new VBox(4);</span>
+<span class="nc" id="L117">        card.setPadding(new Insets(15));</span>
+<span class="nc" id="L118">        card.setStyle(&quot;-fx-background-color: white; -fx-background-radius: 10; &quot; +</span>
+                &quot;-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);&quot;);
+<span class="nc" id="L120">        card.setMinWidth(150);</span>
+<span class="nc" id="L121">        HBox.setHgrow(card, Priority.ALWAYS);</span>
+
+<span class="nc" id="L123">        Label lblTitle = new Label(label);</span>
+<span class="nc" id="L124">        lblTitle.setStyle(&quot;-fx-font-size: 13px; -fx-text-fill: #7f8c8d;&quot;);</span>
+
+<span class="nc" id="L126">        Label lblVal = new Label(value);</span>
+<span class="nc" id="L127">        lblVal.setFont(Font.font(&quot;System&quot;, FontWeight.BOLD, 24));</span>
+<span class="nc" id="L128">        lblVal.setStyle(&quot;-fx-text-fill: &quot; + color + &quot;;&quot;);</span>
+
+<span class="nc" id="L130">        Label lblSub = new Label(sub);</span>
+<span class="nc" id="L131">        lblSub.setStyle(&quot;-fx-font-size: 11px; -fx-text-fill: #95a5a6;&quot;);</span>
+
+<span class="nc" id="L133">        card.getChildren().addAll(lblTitle, lblVal, lblSub);</span>
+<span class="nc" id="L134">        return card;</span>
+    }
+
+    private VBox buildAgeBarChart(Map&lt;String, Integer&gt; ageDist) {
+<span class="nc" id="L138">        VBox card = new VBox(15);</span>
+<span class="nc" id="L139">        card.setPadding(new Insets(20));</span>
+<span class="nc" id="L140">        card.setStyle(&quot;-fx-background-color: white; -fx-background-radius: 10; &quot; +</span>
+                &quot;-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);&quot;);
+
+<span class="nc" id="L143">        Label lbl = new Label(&quot;Répartition par tranches d'âge&quot;);</span>
+<span class="nc" id="L144">        lbl.setFont(Font.font(&quot;System&quot;, FontWeight.BOLD, 16));</span>
+
+<span class="nc" id="L146">        VBox barsContainer = new VBox(12);</span>
+        
+<span class="nc" id="L148">        int totalStudents = ageDist.values().stream().mapToInt(Integer::intValue).sum();</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">        if (totalStudents == 0) totalStudents = 1;</span>
+
+<span class="nc" id="L151">        String[] colors = {StyleFactory.C_PRIMARY, StyleFactory.C_SUCCESS, StyleFactory.C_WARNING, StyleFactory.C_DANGER};</span>
+<span class="nc" id="L152">        int i = 0;</span>
+
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        for (Map.Entry&lt;String, Integer&gt; entry : ageDist.entrySet()) {</span>
+<span class="nc" id="L155">            double progress = (double) entry.getValue() / totalStudents;</span>
+<span class="nc" id="L156">            String color = colors[i % colors.length];</span>
+
+<span class="nc" id="L158">            VBox row = new VBox(5);</span>
+<span class="nc" id="L159">            HBox labels = new HBox();</span>
+<span class="nc" id="L160">            Label name = new Label(entry.getKey());</span>
+<span class="nc" id="L161">            Label count = new Label(entry.getValue() + &quot; étudiant(s)&quot;);</span>
+<span class="nc" id="L162">            Region spacer = new Region();</span>
+<span class="nc" id="L163">            HBox.setHgrow(spacer, Priority.ALWAYS);</span>
+<span class="nc" id="L164">            labels.getChildren().addAll(name, spacer, count);</span>
+
+<span class="nc" id="L166">            ProgressBar pb = new ProgressBar(progress);</span>
+<span class="nc" id="L167">            pb.setMaxWidth(Double.MAX_VALUE);</span>
+<span class="nc" id="L168">            pb.setPrefHeight(15);</span>
+            // On applique la couleur via CSS inline
+<span class="nc" id="L170">            pb.setStyle(&quot;-fx-accent: &quot; + color + &quot;;&quot;);</span>
+
+<span class="nc" id="L172">            row.getChildren().addAll(labels, pb);</span>
+<span class="nc" id="L173">            barsContainer.getChildren().add(row);</span>
+<span class="nc" id="L174">            i++;</span>
+<span class="nc" id="L175">        }</span>
+
+<span class="nc" id="L177">        card.getChildren().addAll(lbl, barsContainer);</span>
+<span class="nc" id="L178">        return card;</span>
+    }
+
+    /**
+     * Structure de données pour stocker les calculs.
+     */
+    private static class Stats {
+        final int total, minAge, maxAge;
+        final double avgAge;
+        final Map&lt;String, Integer&gt; ageDist;
+
+<span class="nc" id="L189">        Stats(int total, double avgAge, int minAge, int maxAge, Map&lt;String, Integer&gt; ageDist) {</span>
+<span class="nc" id="L190">            this.total = total;</span>
+<span class="nc" id="L191">            this.avgAge = avgAge;</span>
+<span class="nc" id="L192">            this.minAge = minAge;</span>
+<span class="nc" id="L193">            this.maxAge = maxAge;</span>
+<span class="nc" id="L194">            this.ageDist = ageDist;</span>
+<span class="nc" id="L195">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

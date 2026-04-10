@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DatabaseInitializer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">student-manager</a> &gt; <a href="index.source.html" class="el_package">com.example.model</a> &gt; <span class="el_source">DatabaseInitializer.java</span></div><h1>DatabaseInitializer.java</h1><pre class="source lang-java linenums">package com.example.model;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+/*
+Handles the PostgreSQL connection and creates all required tables
+(student, grades, app_user) if they do not already exist.
+*/
+<span class="nc" id="L12">public class DatabaseInitializer {</span>
+
+    // Connection settings
+    private static final String DB_HOST     = &quot;localhost&quot;;
+    private static final String DB_PORT     = &quot;5432&quot;;
+    private static final String DB_NAME     = &quot;laplateformetracker&quot;;
+    private static final String DB_USER     = &quot;postgres&quot;;
+    private static final String DB_PASSWORD = &quot;root&quot;;
+
+    public static void createDatabaseIfNotExists() throws SQLException {
+<span class="nc" id="L22">        String url = &quot;jdbc:postgresql://&quot; + DB_HOST + &quot;:&quot; + DB_PORT + &quot;/postgres&quot;;</span>
+
+<span class="nc" id="L24">        try (Connection conn = DriverManager.getConnection(url, DB_USER, DB_PASSWORD);</span>
+<span class="nc" id="L25">             Statement stmt = conn.createStatement()) {</span>
+
+<span class="nc" id="L27">            String checkDb = &quot;SELECT 1 FROM pg_database WHERE datname = '&quot; + DB_NAME + &quot;';&quot;;</span>
+<span class="nc" id="L28">            var rs = stmt.executeQuery(checkDb);</span>
+
+<span class="nc bnc" id="L30" title="All 2 branches missed.">            if (!rs.next()) {</span>
+<span class="nc" id="L31">                System.out.println(&quot;Database '&quot; + DB_NAME + &quot;' does not exist. Creating...&quot;);</span>
+<span class="nc" id="L32">                stmt.execute(&quot;CREATE DATABASE &quot; + DB_NAME + &quot;;&quot;);</span>
+<span class="nc" id="L33">                System.out.println(&quot;Database created successfully.&quot;);</span>
+            } else {
+<span class="nc" id="L35">                System.out.println(&quot;Database '&quot; + DB_NAME + &quot;' already exists.&quot;);</span>
+            }
+        }
+<span class="nc" id="L38">    }</span>
+
+    private static final String JDBC_URL =
+            &quot;jdbc:postgresql://&quot; + DB_HOST + &quot;:&quot; + DB_PORT + &quot;/&quot; + DB_NAME;
+
+    private static final String CREATE_TABLE_APP_USER = &quot;&quot;&quot;
+            CREATE TABLE IF NOT EXISTS app_user (
+                email             VARCHAR(255) PRIMARY KEY,
+                password_hash     VARCHAR(512) NOT NULL,
+                salt              VARCHAR(64)  NOT NULL,
+                creation_date     TIMESTAMP    NOT NULL DEFAULT NOW(),
+                is_admin          BOOLEAN      NOT NULL DEFAULT FALSE
+            );
+            &quot;&quot;&quot;;
+
+    private static final String MIGRATE_ADD_SALT = &quot;&quot;&quot;
+        ALTER TABLE app_user
+            ADD COLUMN IF NOT EXISTS salt VARCHAR(64) NOT NULL DEFAULT '';
+        &quot;&quot;&quot;;
+
+    private static final String CREATE_TABLE_STUDENT = &quot;&quot;&quot;
+            CREATE TABLE IF NOT EXISTS student (
+                id                 SERIAL       PRIMARY KEY,
+                first_name         VARCHAR(100) NOT NULL,
+                last_name          VARCHAR(100) NOT NULL,
+                birth_date         DATE         NOT NULL,
+                creation_date      TIMESTAMP    NOT NULL DEFAULT NOW(),
+                last_modified_date TIMESTAMP    NOT NULL DEFAULT NOW()
+            );
+            &quot;&quot;&quot;;
+
+    private static final String CREATE_TABLE_GRADES = &quot;&quot;&quot;
+            CREATE TABLE IF NOT EXISTS grades (
+                id                 SERIAL       PRIMARY KEY,
+                student_id         INT          NOT NULL
+                                    REFERENCES student(id) ON DELETE CASCADE,
+                grade              INT          NOT NULL
+                                    CHECK (grade &gt;= 0 AND grade &lt;= 20),
+                subject            VARCHAR(100) NOT NULL,
+                creation_date      TIMESTAMP    NOT NULL DEFAULT NOW(),
+                last_modified_date TIMESTAMP    NOT NULL DEFAULT NOW()
+            );
+            &quot;&quot;&quot;;
+
+    private static final String CREATE_INDEX_GRADES_STUDENT =
+            &quot;CREATE INDEX IF NOT EXISTS idx_grades_student_id ON grades(student_id);&quot;;
+
+    public static Connection getConnection() throws SQLException {
+<span class="fc" id="L86">        return DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASSWORD);</span>
+    }
+
+    /*
+    Creates all required tables and indexes if they do not already exist.
+    Seeds 15 fictitious students ONLY if the student table is empty.
+    */
+    public static void initialize() throws SQLException {
+        try {
+<span class="fc" id="L95">            Class.forName(&quot;org.postgresql.Driver&quot;);</span>
+<span class="nc" id="L96">        } catch (ClassNotFoundException e) {</span>
+<span class="nc" id="L97">            throw new SQLException(&quot;PostgreSQL JDBC driver not found on classpath.&quot;, e);</span>
+<span class="fc" id="L98">        }</span>
+
+<span class="fc" id="L100">    try (Connection conn = getConnection();</span>
+<span class="fc" id="L101">         Statement stmt = conn.createStatement()) {</span>
+
+<span class="fc" id="L103">            stmt.execute(CREATE_TABLE_APP_USER);</span>
+<span class="fc" id="L104">            stmt.execute(MIGRATE_ADD_SALT);</span>
+<span class="fc" id="L105">            stmt.execute(CREATE_TABLE_STUDENT);</span>
+<span class="fc" id="L106">            stmt.execute(CREATE_TABLE_GRADES);</span>
+<span class="fc" id="L107">            stmt.execute(CREATE_INDEX_GRADES_STUDENT);</span>
+
+            // ✔ Seed uniquement si la table est vide
+<span class="fc" id="L110">            var rs = stmt.executeQuery(&quot;SELECT COUNT(*) FROM student&quot;);</span>
+<span class="pc bpc" id="L111" title="2 of 4 branches missed.">            if (rs.next() &amp;&amp; rs.getInt(1) == 0) {</span>
+<span class="fc" id="L112">                StudentSeeder.seed(conn);</span>
+<span class="fc" id="L113">                System.out.println(&quot;Student table was empty → seeded 15 students.&quot;);</span>
+            } else {
+<span class="nc" id="L115">                System.out.println(&quot;Student table already contains data → no seeding.&quot;);</span>
+            }
+
+<span class="fc" id="L118">            System.out.println(&quot;Database initialization complete.&quot;);</span>
+        }
+<span class="fc" id="L120">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

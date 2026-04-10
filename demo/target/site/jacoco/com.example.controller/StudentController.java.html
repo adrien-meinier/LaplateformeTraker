@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StudentController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">student-manager</a> &gt; <a href="index.source.html" class="el_package">com.example.controller</a> &gt; <span class="el_source">StudentController.java</span></div><h1>StudentController.java</h1><pre class="source lang-java linenums">package com.example.controller;
+
+import com.example.model.StudentModel;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import javafx.scene.control.Alert.AlertType;
+
+import java.time.LocalDate;
+import java.util.Optional;
+
+/**
+ * StudentController — Contrôleur FXML pour la gestion des étudiants.
+ * Assurez-vous que les fx:id dans votre fichier FXML correspondent exactement aux noms des variables ci-dessous.
+ */
+<span class="nc" id="L18">public class StudentController {</span>
+
+    // ─── Composants FXML ──────────────────────────────────────────────────
+    @FXML private TextField firstNameField;
+    @FXML private TextField lastNameField;
+    @FXML private DatePicker birthDatePicker;
+
+    @FXML private TableView&lt;StudentModel&gt; studentTable;
+
+    // Colonnes de la TableView
+    @FXML private TableColumn&lt;StudentModel, Integer&gt; colId;
+    @FXML private TableColumn&lt;StudentModel, String&gt; colFirstName;
+    @FXML private TableColumn&lt;StudentModel, String&gt; colLastName;
+    @FXML private TableColumn&lt;StudentModel, LocalDate&gt; colBirthDate;
+    @FXML private TableColumn&lt;StudentModel, LocalDate&gt; colCreationDate;
+    @FXML private TableColumn&lt;StudentModel, LocalDate&gt; colLastModifiedDate;
+
+    // DAO pour l'accès aux données
+<span class="nc" id="L36">    private final StudentDAO studentDAO = new StudentDAO();</span>
+
+    /**
+     * Méthode appelée automatiquement par JavaFX après le chargement du FXML.
+     */
+    @FXML
+    public void initialize() {
+        // 1. Configuration des CellValueFactories (Liaison données &lt;-&gt; colonnes)
+<span class="nc" id="L44">        colId.setCellValueFactory(data -&gt; new SimpleObjectProperty&lt;&gt;(data.getValue().getId()));</span>
+<span class="nc" id="L45">        colFirstName.setCellValueFactory(data -&gt; new SimpleObjectProperty&lt;&gt;(data.getValue().getFirstName()));</span>
+<span class="nc" id="L46">        colLastName.setCellValueFactory(data -&gt; new SimpleObjectProperty&lt;&gt;(data.getValue().getLastName()));</span>
+<span class="nc" id="L47">        colBirthDate.setCellValueFactory(data -&gt; new SimpleObjectProperty&lt;&gt;(data.getValue().getBirthDate()));</span>
+
+        // Conversion sécurisée des LocalDateTime en LocalDate pour l'affichage
+<span class="nc" id="L50">        colCreationDate.setCellValueFactory(data -&gt; {</span>
+<span class="nc" id="L51">            var date = data.getValue().getCreationDate();</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">            return new SimpleObjectProperty&lt;&gt;(date != null ? date.toLocalDate() : null);</span>
+        });
+
+<span class="nc" id="L55">        colLastModifiedDate.setCellValueFactory(data -&gt; {</span>
+<span class="nc" id="L56">            var date = data.getValue().getLastModifiedDate();</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">            return new SimpleObjectProperty&lt;&gt;(date != null ? date.toLocalDate() : null);</span>
+        });
+
+        // 2. Listener de sélection : remplit le formulaire quand on clique sur une ligne
+<span class="nc" id="L61">        studentTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -&gt; {</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">            if (newSelection != null) {</span>
+<span class="nc" id="L63">                firstNameField.setText(newSelection.getFirstName());</span>
+<span class="nc" id="L64">                lastNameField.setText(newSelection.getLastName());</span>
+<span class="nc" id="L65">                birthDatePicker.setValue(newSelection.getBirthDate());</span>
+            }
+<span class="nc" id="L67">        });</span>
+
+        // 3. Chargement initial des données
+<span class="nc" id="L70">        refreshTable();</span>
+<span class="nc" id="L71">    }</span>
+
+    // ─── Actions Boutons ──────────────────────────────────────────────────
+
+    @FXML
+    public void handleAdd() {
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (!validateFields()) return;</span>
+
+        try {
+<span class="nc" id="L80">            studentDAO.addStudent(</span>
+<span class="nc" id="L81">                    firstNameField.getText().trim(),</span>
+<span class="nc" id="L82">                    lastNameField.getText().trim(),</span>
+<span class="nc" id="L83">                    birthDatePicker.getValue()</span>
+            );
+<span class="nc" id="L85">            clearFields();</span>
+<span class="nc" id="L86">            refreshTable();</span>
+<span class="nc" id="L87">        } catch (Exception e) {</span>
+<span class="nc" id="L88">            showError(&quot;Erreur lors de l'ajout&quot;, e);</span>
+<span class="nc" id="L89">        }</span>
+<span class="nc" id="L90">    }</span>
+
+    @FXML
+    public void handleUpdate() {
+<span class="nc" id="L94">        StudentModel selected = studentTable.getSelectionModel().getSelectedItem();</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        if (selected == null) {</span>
+<span class="nc" id="L96">            showAlert(&quot;Sélection requise&quot;, &quot;Veuillez sélectionner un étudiant dans la table.&quot;);</span>
+<span class="nc" id="L97">            return;</span>
+        }
+
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        if (!validateFields()) return;</span>
+
+        try {
+<span class="nc" id="L103">            studentDAO.updateStudent(</span>
+<span class="nc" id="L104">                    selected.getId(),</span>
+<span class="nc" id="L105">                    firstNameField.getText().trim(),</span>
+<span class="nc" id="L106">                    lastNameField.getText().trim(),</span>
+<span class="nc" id="L107">                    birthDatePicker.getValue()</span>
+            );
+<span class="nc" id="L109">            refreshTable();</span>
+<span class="nc" id="L110">        } catch (Exception e) {</span>
+<span class="nc" id="L111">            showError(&quot;Erreur lors de la modification&quot;, e);</span>
+<span class="nc" id="L112">        }</span>
+<span class="nc" id="L113">    }</span>
+
+    @FXML
+    public void handleDelete() {
+<span class="nc" id="L117">        StudentModel selected = studentTable.getSelectionModel().getSelectedItem();</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        if (selected == null) {</span>
+<span class="nc" id="L119">            showAlert(&quot;Sélection requise&quot;, &quot;Veuillez sélectionner un étudiant à supprimer.&quot;);</span>
+<span class="nc" id="L120">            return;</span>
+        }
+
+<span class="nc" id="L123">        Alert confirm = new Alert(AlertType.CONFIRMATION, &quot;Supprimer l'étudiant &quot; + selected.getFirstName() + &quot; ?&quot;, ButtonType.YES, ButtonType.NO);</span>
+<span class="nc" id="L124">        confirm.setHeaderText(null);</span>
+<span class="nc" id="L125">        Optional&lt;ButtonType&gt; result = confirm.showAndWait();</span>
+
+<span class="nc bnc" id="L127" title="All 4 branches missed.">        if (result.isPresent() &amp;&amp; result.get() == ButtonType.YES) {</span>
+            try {
+<span class="nc" id="L129">                studentDAO.deleteStudent(selected.getId());</span>
+<span class="nc" id="L130">                clearFields();</span>
+<span class="nc" id="L131">                refreshTable();</span>
+<span class="nc" id="L132">            } catch (Exception e) {</span>
+<span class="nc" id="L133">                showError(&quot;Erreur lors de la suppression&quot;, e);</span>
+<span class="nc" id="L134">            }</span>
+        }
+<span class="nc" id="L136">    }</span>
+
+    // ─── Méthodes Utilitaires ──────────────────────────────────────────────
+
+    /**
+     * Recharge les données depuis la base de données.
+     */
+    private void refreshTable() {
+        try {
+<span class="nc" id="L145">            ObservableList&lt;StudentModel&gt; list = FXCollections.observableArrayList(studentDAO.getAllStudents());</span>
+<span class="nc" id="L146">            studentTable.setItems(list);</span>
+<span class="nc" id="L147">        } catch (Exception e) {</span>
+<span class="nc" id="L148">            showError(&quot;Erreur de chargement des données&quot;, e);</span>
+<span class="nc" id="L149">        }</span>
+<span class="nc" id="L150">    }</span>
+
+    private void clearFields() {
+<span class="nc" id="L153">        firstNameField.clear();</span>
+<span class="nc" id="L154">        lastNameField.clear();</span>
+<span class="nc" id="L155">        birthDatePicker.setValue(null);</span>
+<span class="nc" id="L156">        studentTable.getSelectionModel().clearSelection();</span>
+<span class="nc" id="L157">    }</span>
+
+    private boolean validateFields() {
+<span class="nc bnc" id="L160" title="All 2 branches missed.">        if (firstNameField.getText().trim().isEmpty() || </span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">            lastNameField.getText().trim().isEmpty() || </span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">            birthDatePicker.getValue() == null) {</span>
+<span class="nc" id="L163">            showAlert(&quot;Champs manquants&quot;, &quot;Tous les champs (*) sont obligatoires.&quot;);</span>
+<span class="nc" id="L164">            return false;</span>
+        }
+<span class="nc" id="L166">        return true;</span>
+    }
+
+    private void showAlert(String title, String content) {
+<span class="nc" id="L170">        Alert alert = new Alert(AlertType.WARNING);</span>
+<span class="nc" id="L171">        alert.setTitle(title);</span>
+<span class="nc" id="L172">        alert.setHeaderText(null);</span>
+<span class="nc" id="L173">        alert.setContentText(content);</span>
+<span class="nc" id="L174">        alert.showAndWait();</span>
+<span class="nc" id="L175">    }</span>
+
+    private void showError(String title, Exception e) {
+<span class="nc" id="L178">        Alert alert = new Alert(AlertType.ERROR);</span>
+<span class="nc" id="L179">        alert.setTitle(&quot;Erreur&quot;);</span>
+<span class="nc" id="L180">        alert.setHeaderText(title);</span>
+<span class="nc" id="L181">        alert.setContentText(e.getMessage());</span>
+<span class="nc" id="L182">        alert.showAndWait();</span>
+<span class="nc" id="L183">        e.printStackTrace();</span>
+<span class="nc" id="L184">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
