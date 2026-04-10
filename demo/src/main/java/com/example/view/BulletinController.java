@@ -15,10 +15,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * BulletinController — génère et télécharge le bulletin CSV
- * d'un étudiant en récupérant ses notes via GradeDAO.
+ * BulletinController — exporte le bulletin d'un étudiant en CSV.
+ * Nettoyé de toute logique de hachage/pepper.
  */
-public class BulletinController {
+
+public class BulletinController{
 
     private final GradeDAO gradeDAO = new GradeDAO();
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -42,41 +43,45 @@ public class BulletinController {
             try (FileWriter writer = new FileWriter(file)) {
 
                 writer.write("BULLETIN DE NOTES\n");
-                writer.write("Étudiant;" + etudiant.getFirstName() + " " + etudiant.getLastName() + "\n");
+                writer.write("Etudiant;" + etudiant.getFirstName() + " " + etudiant.getLastName() + "\n");
+
                 if (etudiant.getBirthDate() != null) {
                     writer.write("Date de naissance;" + etudiant.getBirthDate().format(FMT) + "\n");
                     int age = Period.between(etudiant.getBirthDate(), LocalDate.now()).getYears();
-                    writer.write("Âge;" + age + " ans\n");
+                    writer.write("Age;" + age + " ans\n");
                 }
-                writer.write("Date d'édition;" + LocalDate.now().format(FMT) + "\n");
+
+                writer.write("Date edition;" + LocalDate.now().format(FMT) + "\n");
                 writer.write("\n");
-                writer.write("Matière;Note /20;Mention\n");
+                writer.write("Matiere;Note /20;Mention\n");
 
                 if (notes.isEmpty()) {
-                    writer.write("Aucune note enregistrée;;\n");
+                    writer.write("Aucune note enregistree;;\n");
                 } else {
                     double total = 0;
                     for (GradeModel note : notes) {
-                        writer.write(note.getSubject() + ";" + note.getGrade()
-                                + ";" + mention(note.getGrade()) + "\n");
+                        writer.write(note.getSubject() + ";"
+                                + note.getGrade() + ";"
+                                + mention(note.getGrade()) + "\n");
                         total += note.getGrade();
                     }
                     double moyenne = total / notes.size();
                     writer.write("\n");
-                    writer.write("MOYENNE GÉNÉRALE;" + String.format("%.2f", moyenne)
-                            + ";" + mention((int) Math.round(moyenne)) + "\n");
+                    writer.write("MOYENNE GENERALE;"
+                            + String.format("%.2f", moyenne) + ";"
+                            + mention((int) Math.round(moyenne)) + "\n");
                 }
             }
 
             Alert ok = new Alert(Alert.AlertType.INFORMATION,
-                    "Bulletin enregistré :\n" + file.getAbsolutePath(), ButtonType.OK);
-            ok.setTitle("Téléchargement réussi");
+                    "Bulletin enregistre :\n" + file.getAbsolutePath(), ButtonType.OK);
+            ok.setTitle("Telechargement reussi");
             ok.setHeaderText(null);
             ok.showAndWait();
 
         } catch (Exception e) {
             Alert err = new Alert(Alert.AlertType.ERROR,
-                    "Erreur lors de la génération : " + e.getMessage(), ButtonType.OK);
+                    "Erreur : " + e.getMessage(), ButtonType.OK);
             err.setTitle("Erreur");
             err.setHeaderText(null);
             err.showAndWait();
@@ -84,7 +89,7 @@ public class BulletinController {
     }
 
     private String mention(int note) {
-        if (note >= 18) return "Très Bien";
+        if (note >= 18) return "Tres Bien";
         if (note >= 16) return "Bien";
         if (note >= 14) return "Assez Bien";
         if (note >= 10) return "Passable";
