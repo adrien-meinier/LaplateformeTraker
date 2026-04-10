@@ -1,7 +1,5 @@
-package com.example.view;
+package com.example.controller;
 
-import com.example.controller.GradeDAO;
-import com.example.controller.StudentDAO;
 import com.example.model.GradeModel;
 import com.example.model.StudentModel;
 import javafx.scene.control.Alert;

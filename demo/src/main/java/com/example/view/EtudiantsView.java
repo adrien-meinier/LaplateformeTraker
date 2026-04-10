@@ -1,5 +1,7 @@
 package com.example.view;
 
+import com.example.controller.BulletinController;
+import com.example.controller.ExportController;
 import com.example.controller.StudentDAO;
 import com.example.model.StudentModel;
 
