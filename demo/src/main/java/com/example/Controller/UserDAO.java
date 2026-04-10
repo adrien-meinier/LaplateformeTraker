@@ -8,25 +8,9 @@ import com.example.model.PasswordVerifier;
 import com.example.model.SaltUtil;
 import com.example.model.UserModel;
 
-/*
- * Data Access Object pour la table app_user.
- *
- * Gère l'inscription (register) et l'authentification (login) en utilisant
- * les utilitaires de hachage existants 
-
- */
 public class UserDAO {
 
-    /**
-    Inscrit un nouvel utilisateur.
-     *
-     * @param email    adresse e-mail (clé primaire)
-     * @param password mot de passe en clair (jamais stocké)
-     * @param isAdmin  vrai si le compte doit avoir les droits admin
-     * @return true si l'insertion a réussi
-     * @throws SQLException si une erreur SQL survient (ex. email déjà pris)
-     * @throws Exception    si le hachage du mot de passe échoue
-     */
+    /** Inscription d’un nouvel utilisateur */
     public boolean register(String email, String password, boolean isAdmin)
             throws Exception {
 
@@ -50,35 +34,18 @@ public class UserDAO {
         }
     }
 
-    /**
-     * Vérifie les identifiants d'un utilisateur.
-     *
-     * @param email    adresse e-mail
-     * @param password mot de passe en clair à vérifier
-     * @return le UserModel correspondant si les identifiants sont corrects,
-     *         null sinon (email inexistant ou mot de passe incorrect)
-     * @throws SQLException si une erreur SQL survient
-     * @throws Exception    si la vérification du hash échoue
-     */
+    /** Connexion */
     public UserModel login(String email, String password) throws Exception {
 
         UserModel user = getUserByEmail(email);
 
-        if (user == null) {
-            return null;   // email inconnu
-        }
+        if (user == null) return null;
 
         boolean valid = PasswordVerifier.verify(password, user.getSalt(), user.getPasswordHash());
         return valid ? user : null;
     }
 
-    /**
-     * Récupère un utilisateur par son e-mail.
-     *
-     * @param email adresse e-mail à rechercher
-     * @return le UserModel, ou null si introuvable
-     * @throws SQLException si une erreur SQL survient
-     */
+    /** Récupère un utilisateur */
     public UserModel getUserByEmail(String email) throws SQLException {
 
         String sql = """
@@ -94,20 +61,20 @@ public class UserDAO {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return mapRow(rs);
+                    return new UserModel(
+                            rs.getString("email"),
+                            rs.getString("password_hash"),
+                            rs.getString("salt"),
+                            rs.getTimestamp("creation_date").toLocalDateTime(),
+                            rs.getBoolean("is_admin")
+                    );
                 }
             }
         }
         return null;
     }
 
-    /**
-     * Vérifie si une adresse e-mail est déjà enregistrée.
-     *
-     * @param email adresse e-mail à tester
-     * @return true si l'e-mail existe en base
-     * @throws SQLException si une erreur SQL survient
-     */
+    /** Vérifie si un email existe déjà */
     public boolean emailExists(String email) throws SQLException {
         String sql = "SELECT 1 FROM app_user WHERE email = ?;";
 
@@ -122,16 +89,7 @@ public class UserDAO {
         }
     }
 
-    /**
-     * Met à jour le mot de passe d'un utilisateur existant.
-     * Un nouveau sel est généré à chaque changement de mot de passe.
-     *
-     * @param email       adresse e-mail de l'utilisateur
-     * @param newPassword nouveau mot de passe en clair
-     * @return true si la mise à jour a réussi
-     * @throws SQLException si une erreur SQL survient
-     * @throws Exception    si le hachage du nouveau mot de passe échoue
-     */
+    /** Mise à jour du mot de passe */
     public boolean updatePassword(String email, String newPassword) throws Exception {
 
         String newSalt = SaltUtil.generateSalt();
@@ -154,13 +112,7 @@ public class UserDAO {
         }
     }
 
-    /**
-     * Supprime un utilisateur par son e-mail.
-     *
-     * @param email adresse e-mail à supprimer
-     * @return true si la suppression a réussi
-     * @throws SQLException si une erreur SQL survient
-     */
+    /** Suppression */
     public boolean deleteUser(String email) throws SQLException {
 
         String sql = "DELETE FROM app_user WHERE email = ?;";
@@ -171,16 +123,5 @@ public class UserDAO {
             stmt.setString(1, email);
             return stmt.executeUpdate() > 0;
         }
-    }
-
-    /** Construit un UserModel à partir d'une ligne ResultSet. */
-    private UserModel mapRow(ResultSet rs) throws SQLException {
-        return new UserModel(
-                rs.getString("email"),
-                rs.getString("password_hash"),
-                rs.getString("salt"),
-                rs.getTimestamp("creation_date").toLocalDateTime(),
-                rs.getBoolean("is_admin")
-        );
     }
 }
