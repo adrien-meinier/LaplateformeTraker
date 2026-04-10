@@ -83,7 +83,7 @@ public class ChatbotView extends VBox {
         }
     }
 
-    // --- ALGORITHME DE GUIDAGE SIMPLE ---
+    // ---  GUIDAGE SIMPLE ---
     private void processResponse(String msg) {
         if (msg.contains("aide") || msg.contains("bonjour")) {
             addMessage("Je peux vous aider à :\n1. Gérer les étudiants\n2. Voir les statistiques\n3. Exporter des données", false);
