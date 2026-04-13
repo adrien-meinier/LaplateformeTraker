@@ -42,6 +42,7 @@ public class DatabaseInitializer {
 
     private static final String CREATE_TABLE_APP_USER = """
             CREATE TABLE IF NOT EXISTS app_user (
+                username          VARCHAR(50)  UNIQUE NOT NULL,
                 email             VARCHAR(255) PRIMARY KEY,
                 password_hash     VARCHAR(512) NOT NULL,
                 salt              VARCHAR(64)  NOT NULL,
@@ -53,6 +54,15 @@ public class DatabaseInitializer {
     private static final String MIGRATE_ADD_SALT = """
         ALTER TABLE app_user
             ADD COLUMN IF NOT EXISTS salt VARCHAR(64) NOT NULL DEFAULT '';
+        """;
+
+    private static final String MIGRATE_ADD_USERNAME = """
+        ALTER TABLE app_user
+            ADD COLUMN IF NOT EXISTS username VARCHAR(50);
+        UPDATE app_user SET username = split_part(email, '@', 1) WHERE username IS NULL;
+        ALTER TABLE app_user
+            ALTER COLUMN username SET NOT NULL;
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_app_user_username ON app_user(username);
         """;
 
     private static final String CREATE_TABLE_STUDENT = """
@@ -102,6 +112,7 @@ public class DatabaseInitializer {
 
             stmt.execute(CREATE_TABLE_APP_USER);
             stmt.execute(MIGRATE_ADD_SALT);
+            stmt.execute(MIGRATE_ADD_USERNAME);
             stmt.execute(CREATE_TABLE_STUDENT);
             stmt.execute(CREATE_TABLE_GRADES);
             stmt.execute(CREATE_INDEX_GRADES_STUDENT);

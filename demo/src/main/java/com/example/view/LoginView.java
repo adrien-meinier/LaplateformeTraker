@@ -173,17 +173,6 @@ public class LoginView {
         btnLogin = StyleFactory.loginBtn("Se connecter  →");
         btnLogin.setOnAction(e -> doLogin());
 
-        // Hint démo
-        HBox hint = new HBox(6); hint.setAlignment(Pos.CENTER);
-        Rectangle dot = new Rectangle(6,6);
-        dot.setArcWidth(6); dot.setArcHeight(6);
-        dot.setFill(Color.web(StyleFactory.D_SUCCESS));
-        Text hintTxt = new Text("Démo : admin / admin123");
-        hintTxt.setFont(Font.font("System", 11));
-        hintTxt.setFill(Color.web(StyleFactory.D_SUBTEXT));
-        hint.getChildren().addAll(dot, hintTxt);
-        VBox.setMargin(hint, new Insets(14,0,0,0));
-
         // Lien vers inscription
         HBox registerLink = new HBox(4); registerLink.setAlignment(Pos.CENTER);
         Text noAccount = new Text("Pas encore de compte ?");
@@ -204,7 +193,7 @@ public class LoginView {
                 fUser, StyleFactory.spacer(12),
                 fPass,
                 lblError, StyleFactory.spacer(22),
-                btnLogin, hint, registerLink
+                btnLogin, registerLink
         );
 
         pane.getChildren().addAll(div, form);
@@ -217,19 +206,27 @@ public class LoginView {
         String user = tfUser.getText().trim();
         String pass = pfPass.getText();
         if (user.isEmpty() || pass.isEmpty()) { err("Remplissez tous les champs."); return; }
-        if (user.equals("admin") && pass.equals("admin123")) {
-            // Animation succès via StyleFactory
-            StyleFactory.animateSuccess(btnLogin, "✓  Connexion réussie", 650,
-                    () -> new MainMenuView(stage).show());
-        } else {
-            attempts++;
-            if (attempts >= 3) {
-                err("Trop de tentatives. Relancez l'application.");
-                btnLogin.setDisable(true);
+
+        try {
+            com.example.controller.UserDAO dao = new com.example.controller.UserDAO();
+            com.example.model.UserModel loggedIn = dao.login(user, pass);
+
+            if (loggedIn != null) {
+                StyleFactory.animateSuccess(btnLogin, "✓  Connexion réussie", 650,
+                        () -> new MainMenuView(stage).show());
             } else {
-                err("Identifiants incorrects. " + (3 - attempts) + " essai(s).");
-                StyleFactory.animateShake(btnLogin, 7); // Animation shake via StyleFactory
+                attempts++;
+                if (attempts >= 3) {
+                    err("Trop de tentatives. Relancez l'application.");
+                    btnLogin.setDisable(true);
+                } else {
+                    err("Identifiants incorrects. " + (3 - attempts) + " essai(s).");
+                    StyleFactory.animateShake(btnLogin, 7);
+                }
             }
+        } catch (Exception ex) {
+            err("Erreur de connexion : " + ex.getMessage());
+            ex.printStackTrace();
         }
     }
 

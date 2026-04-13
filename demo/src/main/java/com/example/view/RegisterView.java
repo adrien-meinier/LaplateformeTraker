@@ -281,13 +281,18 @@ public class RegisterView {
         try {
             UserDAO dao = new UserDAO();
 
+            if (dao.usernameExists(user)) {
+                err("Ce nom d'utilisateur est déjà pris.");
+                return;
+            }
+
             if (dao.emailExists(email)) {
                 err("Cette adresse e-mail est déjà utilisée.");
                 return;
             }
 
-            // ✔ Enregistrement en base (hash + salt)
-            boolean ok = dao.register(email, pass, false);
+            // ✔ Enregistrement en base (username + hash + salt)
+            boolean ok = dao.register(user, email, pass, false);
 
             if (!ok) {
                 err("Impossible de créer le compte.");

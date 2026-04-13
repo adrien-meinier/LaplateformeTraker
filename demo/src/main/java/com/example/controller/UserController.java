@@ -26,27 +26,27 @@ public class UserController {
     // DAO used to interact with the database
     private UserDAO userDAO = new UserDAO();
 
-    // Handles user login action.
-    // Verifies credentials and displays result.
     @FXML
     private void handleLogin() {
         String email = emailField.getText();
         String password = passwordField.getText();
+        // The login now authenticates by username; we derive it from the email prefix
+        String username = email.contains("@") ? email.split("@")[0] : email;
 
         try {
-            UserModel user = userDAO.login(email, password);
+            UserModel user = userDAO.login(username, password);
 
             if (user != null) {
                 messageLabel.setText("Login successful");
 
                 if (user.isAdmin()) {
-                    System.out.println("Admin logged in");
+                    System.out.println("Admin logged in: " + user.getUsername());
                 } else {
-                    System.out.println("User logged in");
+                    System.out.println("User logged in: " + user.getUsername());
                 }
 
             } else {
-                messageLabel.setText("Invalid email or password");
+                messageLabel.setText("Invalid username or password");
             }
 
         } catch (Exception e) {
@@ -62,14 +62,20 @@ public class UserController {
         String email = emailField.getText();
         String password = passwordField.getText();
         boolean isAdmin = adminCheckBox.isSelected();
+        // Username derived from email prefix as fallback (FXML view has no username field)
+        String username = email.contains("@") ? email.split("@")[0] : email;
 
         try {
+            if (userDAO.usernameExists(username)) {
+                messageLabel.setText("Username already in use");
+                return;
+            }
             if (userDAO.emailExists(email)) {
                 messageLabel.setText("Email already in use");
                 return;
             }
 
-            boolean success = userDAO.register(email, password, isAdmin);
+            boolean success = userDAO.register(username, email, password, isAdmin);
 
             if (success) {
                 messageLabel.setText("Account created");

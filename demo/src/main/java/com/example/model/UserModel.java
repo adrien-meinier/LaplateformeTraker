@@ -6,17 +6,20 @@ import java.time.LocalDateTime;
 
 public class UserModel {
 
+    private final String        username;
     private final String        email;
     private final String        passwordHash;   // Read-only
     private final String        salt;           // Read-only
     private final LocalDateTime creationDate;
     private final boolean       isAdmin;
 
-    public UserModel(String email,
+    public UserModel(String username,
+                     String email,
                      String passwordHash,
                      String salt,
                      LocalDateTime creationDate,
                      boolean isAdmin) {
+        this.username     = username;
         this.email        = email;
         this.passwordHash = passwordHash;
         this.salt         = salt;
@@ -25,6 +28,9 @@ public class UserModel {
     }
 
     // Accessors
+    public String        getUsername()     {
+        return username;
+    }
     public String        getEmail()        { 
         return email; 
     }
@@ -44,7 +50,7 @@ public class UserModel {
     // Print for debug
     @Override
     public String toString() {
-        return "UserModel{email='" + email + "', isAdmin=" + isAdmin
-                + ", creationDate=" + creationDate + "}";
+        return "UserModel{username='" + username + "', email='" + email
+                + "', isAdmin=" + isAdmin + ", creationDate=" + creationDate + "}";
     }
 }
