@@ -290,7 +290,7 @@ public class RegisterView {
         lblError.setVisible(true); lblError.setManaged(true);
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────
+    // ── Helpers 
     private VBox fieldBox(String label, String prompt, boolean password) {
         VBox box = new VBox(6);
         Text lbl = new Text(label);

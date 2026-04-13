@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+// A test class to test the student model
 class StudentModelTests {
 
     @Test
@@ -14,6 +15,7 @@ class StudentModelTests {
         LocalDateTime created = LocalDateTime.of(2024, 1, 1, 10, 0);
         LocalDateTime modified = LocalDateTime.of(2024, 1, 2, 12, 0);
 
+        // Initialize a new Student Model to test the constructor
         StudentModel student = new StudentModel(
                 42,
                 "John",
@@ -23,6 +25,7 @@ class StudentModelTests {
                 modified
         );
 
+        // Test all the getters
         assertEquals(42, student.getId());
         assertEquals("John", student.getFirstName());
         assertEquals("Doe", student.getLastName());

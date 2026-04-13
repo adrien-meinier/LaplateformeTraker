@@ -2,15 +2,13 @@ package com.example.model;
 
 import java.time.LocalDateTime;
 
-/**
- * Représente un enregistrement de la table app_user.
-**/
+// A class to represent an App User
 
 public class UserModel {
 
     private final String        email;
-    private final String        passwordHash;   // lecture seule, jamais modifié directement
-    private final String        salt;           // lecture seule
+    private final String        passwordHash;   // Read-only
+    private final String        salt;           // Read-only
     private final LocalDateTime creationDate;
     private final boolean       isAdmin;
 
@@ -26,12 +24,24 @@ public class UserModel {
         this.isAdmin      = isAdmin;
     }
 
-    public String        getEmail()        { return email; }
-    public String        getPasswordHash() { return passwordHash; }
-    public String        getSalt()         { return salt; }
-    public LocalDateTime getCreationDate() { return creationDate; }
-    public boolean       isAdmin()         { return isAdmin; }
+    // Accessors
+    public String        getEmail()        { 
+        return email; 
+    }
+    public String        getPasswordHash() { 
+        return passwordHash; 
+    }
+    public String        getSalt()         { 
+        return salt; 
+    }
+    public LocalDateTime getCreationDate() { 
+        return creationDate; 
+    }
+    public boolean       isAdmin()         { 
+        return isAdmin; 
+    }
 
+    // Print for debug
     @Override
     public String toString() {
         return "UserModel{email='" + email + "', isAdmin=" + isAdmin

@@ -1,6 +1,5 @@
-package com.example.view;
+package com.example.controller;
 
-import com.example.controller.GradeDAO;
 import com.example.model.GradeModel;
 import com.example.model.StudentModel;
 import javafx.scene.control.Alert;
@@ -10,19 +9,22 @@ import javafx.stage.FileChooser;
 import java.io.File;
 import java.io.FileWriter;
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * BulletinController — génère et télécharge le bulletin CSV
- * des etudiants avec leurs notes et mentions.
+ * BulletinController — exporte le bulletin d'un étudiant en CSV.
+ * Nettoyé de toute logique de hachage/pepper.
  */
-public class BulletinController {
+
+public class BulletinController{
 
     private final GradeDAO gradeDAO = new GradeDAO();
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public void telechargerBulletin(StudentModel etudiant) {
+
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Enregistrer le bulletin");
         fileChooser.setInitialFileName(
@@ -39,67 +41,57 @@ public class BulletinController {
 
             try (FileWriter writer = new FileWriter(file)) {
 
-                // ── En-tête ──────────────────────────────────────────────
                 writer.write("BULLETIN DE NOTES\n");
-                writer.write("Étudiant;%s %s\n".formatted(
-                        etudiant.getFirstName(), etudiant.getLastName()));
-                if (etudiant.getBirthDate() != null) {
-                    writer.write("Date de naissance;%s\n".formatted(
-                            etudiant.getBirthDate().format(FMT)));
-                }
-                writer.write("Âge;%d ans\n".formatted(calculerAge(etudiant.getBirthDate())));
-                writer.write("Date d'édition;%s\n".formatted(LocalDate.now().format(FMT)));
-                writer.write("\n");
+                writer.write("Etudiant;" + etudiant.getFirstName() + " " + etudiant.getLastName() + "\n");
 
-                // ── Notes ────────────────────────────────────────────────
-                writer.write("Matière;Note /20;Mention\n");
+                if (etudiant.getBirthDate() != null) {
+                    writer.write("Date de naissance;" + etudiant.getBirthDate().format(FMT) + "\n");
+                    int age = Period.between(etudiant.getBirthDate(), LocalDate.now()).getYears();
+                    writer.write("Age;" + age + " ans\n");
+                }
+
+                writer.write("Date edition;" + LocalDate.now().format(FMT) + "\n");
+                writer.write("\n");
+                writer.write("Matiere;Note /20;Mention\n");
 
                 if (notes.isEmpty()) {
-                    writer.write("Aucune note enregistrée;;\n");
+                    writer.write("Aucune note enregistree;;\n");
                 } else {
                     double total = 0;
                     for (GradeModel note : notes) {
-                        writer.write("%s;%d;%s\n".formatted(
-                                note.getSubject(),
-                                note.getGrade(),
-                                mention(note.getGrade())));
+                        writer.write(note.getSubject() + ";"
+                                + note.getGrade() + ";"
+                                + mention(note.getGrade()) + "\n");
                         total += note.getGrade();
                     }
                     double moyenne = total / notes.size();
                     writer.write("\n");
-                    writer.write("MOYENNE GÉNÉRALE;%.2f;%s\n".formatted(
-                            moyenne, mention((int) Math.round(moyenne))));
+                    writer.write("MOYENNE GENERALE;"
+                            + String.format("%.2f", moyenne) + ";"
+                            + mention((int) Math.round(moyenne)) + "\n");
                 }
             }
 
             Alert ok = new Alert(Alert.AlertType.INFORMATION,
-                    "Bulletin enregistré :\n" + file.getAbsolutePath(), ButtonType.OK);
-            ok.setTitle("Téléchargement réussi");
+                    "Bulletin enregistre :\n" + file.getAbsolutePath(), ButtonType.OK);
+            ok.setTitle("Telechargement reussi");
             ok.setHeaderText(null);
             ok.showAndWait();
 
         } catch (Exception e) {
             Alert err = new Alert(Alert.AlertType.ERROR,
-                    "Erreur lors de la génération : " + e.getMessage(), ButtonType.OK);
+                    "Erreur : " + e.getMessage(), ButtonType.OK);
             err.setTitle("Erreur");
             err.setHeaderText(null);
             err.showAndWait();
         }
     }
 
-    private int calculerAge(LocalDate birthDate) {
-        if (birthDate == null) return 0;
-        return java.time.Period.between(birthDate, LocalDate.now()).getYears();
-    }
-
     private String mention(int note) {
-        if (note >= 18) return "Très Bien";
+        if (note >= 18) return "Tres Bien";
         if (note >= 16) return "Bien";
         if (note >= 14) return "Assez Bien";
         if (note >= 10) return "Passable";
         return "Insuffisant";
     }
-    //bouton telecharger le bulletin dans la vue statistique
-
-    
 }

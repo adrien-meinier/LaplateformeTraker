@@ -5,13 +5,18 @@ import java.sql.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+// A class to test the database initialization and seeding
+
+// TestMethodOrder allows to execute tests in a certain order
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class DatabaseInitializerTest {
 
+    // Connect to the database
     private Connection getConn() throws SQLException {
         return DatabaseInitializer.getConnection();
     }
 
+    // BeforeEach : this method will be executed before each test
     @BeforeEach
     void cleanDatabase() throws SQLException {
         try (Connection conn = getConn();
@@ -24,6 +29,7 @@ public class DatabaseInitializerTest {
     }
 
     @Test
+    // Order() : the order in which tests will be executed
     @Order(1)
     void testTablesAreCreated() throws SQLException {
         DatabaseInitializer.initialize();
@@ -31,7 +37,7 @@ public class DatabaseInitializerTest {
         try (Connection conn = getConn();
              Statement stmt = conn.createStatement()) {
 
-            // Vérifie que les tables existent
+            // Test that the tables exist
             stmt.executeQuery("SELECT * FROM app_user LIMIT 1;");
             stmt.executeQuery("SELECT * FROM student LIMIT 1;");
             stmt.executeQuery("SELECT * FROM grades LIMIT 1;");
@@ -50,7 +56,7 @@ public class DatabaseInitializerTest {
             assertTrue(rs.next());
             int count = rs.getInt(1);
 
-            // Ton code seed 15 étudiants si table vide
+            // Check if 15 users have been seeded correctly
             assertEquals(15, count);
         }
     }
@@ -67,7 +73,7 @@ public class DatabaseInitializerTest {
             assertTrue(rs.next());
             int count = rs.getInt(1);
 
-            // Tu ne seeds PAS la table grades → elle doit rester vide
+            // Check if 5 grades x 15 users have been seeded
             assertEquals(75, count);
         }
     }

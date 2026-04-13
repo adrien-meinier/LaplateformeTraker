@@ -2,16 +2,21 @@ package com.example.view;
 
 import com.example.controller.StudentDAO;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-/**
- * MainMenuView — conteneur principal avec barre latérale + zone de contenu.
- */
+import java.io.File;
+
 public class MainMenuView {
 
     private final Stage stage;
@@ -20,6 +25,7 @@ public class MainMenuView {
     private BorderPane root;
     private StackPane contentArea;
     private Button activeSidebarBtn;
+    private ImageView profileImageView; // Pour pouvoir changer l'image dynamiquement
 
     public MainMenuView(Stage stage) {
         this.stage = stage;
@@ -52,28 +58,53 @@ public class MainMenuView {
         sidebar.setPrefWidth(220);
         sidebar.setStyle(StyleFactory.sidebarBg());
 
-        VBox header = new VBox(4);
-        header.setPadding(new Insets(28, 20, 24, 20));
-        header.setStyle("-fx-background-color: rgba(0,0,0,0.15);");
+        // ── SECTION PROFIL EN HAUT À GAUCHE ──────────────────────────────
+        VBox profileHeader = new VBox(10);
+        profileHeader.setPadding(new Insets(28, 20, 24, 20));
+        profileHeader.setAlignment(Pos.CENTER_LEFT);
+        profileHeader.setStyle("-fx-background-color: rgba(0,0,0,0.15);");
 
-        Label icon = new Label("🎓");
-        icon.setFont(Font.font(28));
+        // Conteneur pour la photo circulaire
+        StackPane photoContainer = new StackPane();
+        photoContainer.setAlignment(Pos.CENTER_LEFT);
 
-        Label appName = new Label("Student Manager");
+        profileImageView = new ImageView(new Image("https://openmoji.org/data/color/svg/1F468-200D-1F4BB.svg"));
+        profileImageView.setFitHeight(70);
+        profileImageView.setFitWidth(70);
+
+        // Masque circulaire
+        Circle clip = new Circle(35, 35, 35);
+        profileImageView.setClip(clip);
+
+        // Bordure blanche décorative
+        Circle border = new Circle(35, 35, 37);
+        border.setFill(Color.TRANSPARENT);
+        border.setStroke(Color.WHITE);
+        border.setStrokeWidth(2);
+
+        photoContainer.getChildren().addAll(border, profileImageView);
+        photoContainer.setCursor(javafx.scene.Cursor.HAND);
+        
+        // Action pour changer la photo au clic
+        photoContainer.setOnMouseClicked(e -> handleChoosePhoto());
+
+        Label appName = new Label("Admin Panel");
         appName.setStyle("-fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold;");
 
-        Label userLabel = new Label("Mode local");
-        userLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.6); -fx-font-size: 11px;");
+        Hyperlink changePhotoLink = new Hyperlink("Modifier la photo");
+        changePhotoLink.setStyle("-fx-text-fill: rgba(255,255,255,0.7); -fx-font-size: 10px; -fx-padding: 0;");
+        changePhotoLink.setOnAction(e -> handleChoosePhoto());
 
-        header.getChildren().addAll(icon, appName, userLabel);
+        profileHeader.getChildren().addAll(photoContainer, appName, changePhotoLink);
+        // ────────────────────────────────────────────────────────────────
 
         Separator sep = new Separator();
         sep.setStyle("-fx-background-color: rgba(255,255,255,0.15);");
 
-        Button btnEtudiants = navBtn("👨‍🎓  Étudiants", this::showEtudiants);
-        Button btnAjouter = navBtn("➕  Ajouter", this::showAjouterEtudiant);
-        Button btnRecherche = navBtn("🔎  Recherche", this::showRecherche);
-        Button btnStatistiques = navBtn("📊  Statistiques", this::showStatistiques);
+        Button btnEtudiants = navBtn("👨‍🎓  Étudiants", this::showEtudiants);
+        Button btnAjouter = navBtn("➕  Ajouter", this::showAjouterEtudiant);
+        Button btnRecherche = navBtn("🔎  Recherche", this::showRecherche);
+        Button btnStatistiques = navBtn("📊  Statistiques", this::showStatistiques);
 
         activeSidebarBtn = btnEtudiants;
         setActive(btnEtudiants);
@@ -84,17 +115,33 @@ public class MainMenuView {
         Separator sep2 = new Separator();
         sep2.setStyle("-fx-background-color: rgba(255,255,255,0.15);");
 
-        Button btnQuitter = StyleFactory.sidebarBtn("🚪  Quitter");
+        Button btnQuitter = StyleFactory.sidebarBtn("🚪  Quitter");
         btnQuitter.setStyle(btnQuitter.getStyle() + "-fx-text-fill: #e74c3c;");
         btnQuitter.setOnAction(e -> stage.close());
-        VBox.setMargin(btnQuitter, new Insets(0, 0, 16, 0));
 
         sidebar.getChildren().addAll(
-                header, sep,
+                profileHeader, sep,
                 btnEtudiants, btnAjouter, btnRecherche, btnStatistiques,
                 spacer, sep2, btnQuitter
         );
         return sidebar;
+    }
+
+    /**
+     * Ouvre un sélecteur de fichier pour changer la photo de profil
+     */
+    private void handleChoosePhoto() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choisir une photo de profil");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif")
+        );
+
+        File selectedFile = fileChooser.showOpenDialog(stage);
+        if (selectedFile != null) {
+            Image newImage = new Image(selectedFile.toURI().toString());
+            profileImageView.setImage(newImage);
+        }
     }
 
     private Button navBtn(String text, Runnable action) {

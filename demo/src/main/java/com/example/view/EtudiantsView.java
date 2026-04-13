@@ -1,5 +1,7 @@
 package com.example.view;
 
+import com.example.controller.BulletinController;
+import com.example.controller.ExportController;
 import com.example.controller.StudentDAO;
 import com.example.model.StudentModel;
 
@@ -22,13 +24,15 @@ import java.util.Optional;
 
 public class EtudiantsView {
 
-    private final StudentDAO dao;
+    private final StudentDAO         dao;
+    private final BulletinController bulletinCtrl = new BulletinController();
+    private final ExportController   exportCtrl   = new ExportController();
 
     private int currentPage = 1;
     private final int pageSize = 10;
 
     private TableView<StudentModel> table;
-    private Label lblPagination;
+    private Label  lblPagination;
     private Button btnPrev, btnNext;
 
     public EtudiantsView(StudentDAO dao) {
@@ -39,6 +43,7 @@ public class EtudiantsView {
         VBox root = new VBox(16);
         root.setPadding(new Insets(10));
 
+        // ── En-tête ──────────────────────────────────────────────────────
         HBox header = new HBox(10);
         header.setAlignment(Pos.CENTER_LEFT);
 
@@ -48,31 +53,30 @@ public class EtudiantsView {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Button btnAdd = new Button("➕ Ajouter");
+        // Bouton export global — style via StyleFactory.exportBtn()
+        Button btnExport = StyleFactory.exportBtn("📥 Exporter tout");
+        btnExport.setOnAction(e -> exportCtrl.exporterTousLesEtudiants());
+
+        // Bouton ajout — style via StyleFactory.successBtn()
+        Button btnAdd = StyleFactory.successBtn("➕ Ajouter");
         btnAdd.setOnAction(e -> openForm(null));
 
-        header.getChildren().addAll(title, spacer, btnAdd);
+        header.getChildren().addAll(title, spacer, btnExport, btnAdd);
 
+        // ── Tableau ───────────────────────────────────────────────────────
         table = buildTable();
 
+        // ── Pagination ────────────────────────────────────────────────────
         HBox pagination = new HBox(10);
         pagination.setAlignment(Pos.CENTER);
 
-        btnPrev = new Button("◀");
-        btnNext = new Button("▶");
+        btnPrev = StyleFactory.secondaryBtn("◀");
+        btnNext = StyleFactory.secondaryBtn("▶");
         lblPagination = new Label();
+        lblPagination.setStyle(StyleFactory.subtitleStyle());
 
-        btnPrev.setOnAction(e -> {
-            if (currentPage > 1) {
-                currentPage--;
-                refresh();
-            }
-        });
-
-        btnNext.setOnAction(e -> {
-            currentPage++;
-            refresh();
-        });
+        btnPrev.setOnAction(e -> { if (currentPage > 1) { currentPage--; refresh(); } });
+        btnNext.setOnAction(e -> { currentPage++; refresh(); });
 
         pagination.getChildren().addAll(btnPrev, lblPagination, btnNext);
 
@@ -83,30 +87,47 @@ public class EtudiantsView {
         return root;
     }
 
+    // ── Tableau ───────────────────────────────────────────────────────────
+
     private TableView<StudentModel> buildTable() {
         TableView<StudentModel> tv = new TableView<>();
+        tv.setStyle(StyleFactory.tableStyle());
+        tv.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tv.setPlaceholder(new Label("Aucun étudiant trouvé."));
 
-        TableColumn<StudentModel, Integer> colId = col("ID", "id", 60);
-        TableColumn<StudentModel, String> colPrenom = col("Prénom", "firstName", 150);
-        TableColumn<StudentModel, String> colNom = col("Nom", "lastName", 150);
-        TableColumn<StudentModel, LocalDate> colBirthDate = col("Date de naissance", "birthDate", 150);
-        TableColumn<StudentModel, LocalDateTime> colCreated = col("Créé le", "creationDate", 180);
-        TableColumn<StudentModel, LocalDateTime> colModified = col("Modifié le", "lastModifiedDate", 180);
+        TableColumn<StudentModel, Integer>       colId       = col("ID",               "id",               60);
+        TableColumn<StudentModel, String>        colPrenom   = col("Prénom",            "firstName",       150);
+        TableColumn<StudentModel, String>        colNom      = col("Nom",               "lastName",        150);
+        TableColumn<StudentModel, LocalDate>     colBirth    = col("Date de naissance", "birthDate",       150);
+        TableColumn<StudentModel, LocalDateTime> colCreated  = col("Créé le",           "creationDate",    160);
+        TableColumn<StudentModel, LocalDateTime> colModified = col("Modifié le",        "lastModifiedDate",160);
 
+        // ── Colonne Actions : ✏️ | 📄 Bulletin | 🗑️ ─────────────────────
         TableColumn<StudentModel, Void> colActions = new TableColumn<>("Actions");
-        colActions.setPrefWidth(140);
-
+        colActions.setPrefWidth(240);
+        colActions.setSortable(false);
         colActions.setCellFactory(col -> new TableCell<>() {
-            private final Button btnEdit = new Button("✏️");
-            private final Button btnDelete = new Button("🗑️");
-            private final HBox box = new HBox(5, btnEdit, btnDelete);
+
+            // Tous les boutons passent par StyleFactory
+            private final Button btnEdit     = StyleFactory.primaryBtn("✏️");
+            private final Button btnBulletin = StyleFactory.bulletinBtn("📄 Bulletin");
+            private final Button btnDelete   = StyleFactory.dangerBtn("🗑️");
+            private final HBox   box         = new HBox(6, btnEdit, btnBulletin, btnDelete);
 
             {
                 box.setAlignment(Pos.CENTER);
+                btnEdit.setPrefHeight(30);
+                btnDelete.setPrefHeight(30);
 
                 btnEdit.setOnAction(e -> {
                     StudentModel s = getTableRow() == null ? null : getTableRow().getItem();
                     if (s != null) openForm(s);
+                });
+
+                // Bulletin individuel via StyleFactory.bulletinBtn
+                btnBulletin.setOnAction(e -> {
+                    StudentModel s = getTableRow() == null ? null : getTableRow().getItem();
+                    if (s != null) bulletinCtrl.telechargerBulletin(s);
                 });
 
                 btnDelete.setOnAction(e -> {
@@ -122,7 +143,7 @@ public class EtudiantsView {
             }
         });
 
-        tv.getColumns().addAll(colId, colPrenom, colNom, colBirthDate, colCreated, colModified, colActions);
+        tv.getColumns().addAll(colId, colPrenom, colNom, colBirth, colCreated, colModified, colActions);
         return tv;
     }
 
@@ -133,24 +154,26 @@ public class EtudiantsView {
         return col;
     }
 
+    // ── Refresh ───────────────────────────────────────────────────────────
+
     private void refresh() {
         try {
             List<StudentModel> students = dao.getAllStudents();
-            int total = students.size();
+            int total      = students.size();
             int totalPages = Math.max(1, (int) Math.ceil((double) total / pageSize));
 
             if (currentPage > totalPages) currentPage = totalPages;
-            if (currentPage < 1) currentPage = 1;
+            if (currentPage < 1)          currentPage = 1;
 
             int from = (currentPage - 1) * pageSize;
-            int to = Math.min(from + pageSize, total);
+            int to   = Math.min(from + pageSize, total);
 
-            List<StudentModel> page = total == 0 ? List.of() : students.subList(from, to);
-            ObservableList<StudentModel> data = FXCollections.observableArrayList(page);
+            ObservableList<StudentModel> data = FXCollections.observableArrayList(
+                    total == 0 ? List.of() : students.subList(from, to));
 
             table.setItems(data);
-            lblPagination.setText("Page " + currentPage + " / " + totalPages);
-
+            lblPagination.setText("Page " + currentPage + " / " + totalPages
+                    + "  (" + total + " étudiant(s))");
             btnPrev.setDisable(currentPage == 1);
             btnNext.setDisable(currentPage == totalPages);
 
@@ -161,6 +184,8 @@ public class EtudiantsView {
         }
     }
 
+    // ── Formulaire ────────────────────────────────────────────────────────
+
     private void openForm(StudentModel student) {
         Dialog<StudentModel> dialog = new Dialog<>();
         dialog.setTitle(student == null ? "Ajouter" : "Modifier");
@@ -169,9 +194,9 @@ public class EtudiantsView {
         ButtonType btnSave = new ButtonType("Enregistrer", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(btnSave, ButtonType.CANCEL);
 
-        TextField tfPrenom = new TextField();
-        TextField tfNom = new TextField();
-        DatePicker dpBirth = new DatePicker();
+        TextField  tfPrenom = new TextField();
+        TextField  tfNom    = new TextField();
+        DatePicker dpBirth  = new DatePicker();
 
         if (student != null) {
             tfPrenom.setText(student.getFirstName());
@@ -180,20 +205,17 @@ public class EtudiantsView {
         }
 
         GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
+        grid.setHgap(10); grid.setVgap(10);
         grid.setPadding(new Insets(10));
-        grid.addRow(0, new Label("Prénom:"), tfPrenom);
-        grid.addRow(1, new Label("Nom:"), tfNom);
-        grid.addRow(2, new Label("Naissance:"), dpBirth);
-
+        grid.addRow(0, new Label("Prénom :"),    tfPrenom);
+        grid.addRow(1, new Label("Nom :"),       tfNom);
+        grid.addRow(2, new Label("Naissance :"), dpBirth);
         dialog.getDialogPane().setContent(grid);
 
         dialog.setResultConverter(button -> {
             if (button == btnSave) {
-                if (tfPrenom.getText().isBlank() || tfNom.getText().isBlank() || dpBirth.getValue() == null) {
-                    return null;
-                }
+                if (tfPrenom.getText().isBlank() || tfNom.getText().isBlank()
+                        || dpBirth.getValue() == null) return null;
                 return new StudentModel(
                         student == null ? 0 : student.getId(),
                         tfPrenom.getText().trim(),
@@ -209,11 +231,8 @@ public class EtudiantsView {
         Optional<StudentModel> result = dialog.showAndWait();
         result.ifPresent(s -> {
             try {
-                if (student == null) {
-                    dao.addStudent(s.getFirstName(), s.getLastName(), s.getBirthDate());
-                } else {
-                    dao.updateStudent(s.getId(), s.getFirstName(), s.getLastName(), s.getBirthDate());
-                }
+                if (student == null) dao.addStudent(s.getFirstName(), s.getLastName(), s.getBirthDate());
+                else                 dao.updateStudent(s.getId(), s.getFirstName(), s.getLastName(), s.getBirthDate());
                 refresh();
             } catch (SQLException e) {
                 showAlert("Erreur SQL", e.getMessage());
@@ -221,11 +240,12 @@ public class EtudiantsView {
         });
     }
 
+    // ── Suppression ───────────────────────────────────────────────────────
+
     private void confirmDelete(StudentModel s) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
                 "Supprimer " + s.getFirstName() + " " + s.getLastName() + " ?",
                 ButtonType.YES, ButtonType.NO);
-
         alert.showAndWait().ifPresent(btn -> {
             if (btn == ButtonType.YES) {
                 try {
