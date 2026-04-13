@@ -43,7 +43,7 @@ public class EtudiantsView {
         VBox root = new VBox(16);
         root.setPadding(new Insets(10));
 
-        // ── En-tête ──────────────────────────────────────────────────────
+        // Header
         HBox header = new HBox(10);
         header.setAlignment(Pos.CENTER_LEFT);
 
@@ -53,20 +53,20 @@ public class EtudiantsView {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // Bouton export global — style via StyleFactory.exportBtn()
+        // Export button
         Button btnExport = StyleFactory.exportBtn("📥 Exporter tout");
         btnExport.setOnAction(e -> exportCtrl.exporterTousLesEtudiants());
 
-        // Bouton ajout — style via StyleFactory.successBtn()
+        // Add button
         Button btnAdd = StyleFactory.successBtn("➕ Ajouter");
         btnAdd.setOnAction(e -> openForm(null));
 
         header.getChildren().addAll(title, spacer, btnExport, btnAdd);
 
-        // ── Tableau ───────────────────────────────────────────────────────
+        // Table
         table = buildTable();
 
-        // ── Pagination ────────────────────────────────────────────────────
+        // Pagination
         HBox pagination = new HBox(10);
         pagination.setAlignment(Pos.CENTER);
 
@@ -87,12 +87,11 @@ public class EtudiantsView {
         return root;
     }
 
-    // ── Tableau ───────────────────────────────────────────────────────────
+    // Table
 
     private TableView<StudentModel> buildTable() {
         TableView<StudentModel> tv = new TableView<>();
         tv.setStyle(StyleFactory.tableStyle());
-        tv.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         tv.setPlaceholder(new Label("Aucun étudiant trouvé."));
 
         TableColumn<StudentModel, Integer>       colId       = col("ID",               "id",               60);
@@ -102,13 +101,13 @@ public class EtudiantsView {
         TableColumn<StudentModel, LocalDateTime> colCreated  = col("Créé le",           "creationDate",    160);
         TableColumn<StudentModel, LocalDateTime> colModified = col("Modifié le",        "lastModifiedDate",160);
 
-        // ── Colonne Actions : ✏️ | 📄 Bulletin | 🗑️ ─────────────────────
+        // Action column
         TableColumn<StudentModel, Void> colActions = new TableColumn<>("Actions");
         colActions.setPrefWidth(240);
         colActions.setSortable(false);
         colActions.setCellFactory(col -> new TableCell<>() {
 
-            // Tous les boutons passent par StyleFactory
+            // Apply StyleFactory to the buttons
             private final Button btnEdit     = StyleFactory.primaryBtn("✏️");
             private final Button btnBulletin = StyleFactory.bulletinBtn("📄 Bulletin");
             private final Button btnDelete   = StyleFactory.dangerBtn("🗑️");
@@ -124,7 +123,7 @@ public class EtudiantsView {
                     if (s != null) openForm(s);
                 });
 
-                // Bulletin individuel via StyleFactory.bulletinBtn
+                // Individual note report
                 btnBulletin.setOnAction(e -> {
                     StudentModel s = getTableRow() == null ? null : getTableRow().getItem();
                     if (s != null) bulletinCtrl.telechargerBulletin(s);
@@ -154,7 +153,7 @@ public class EtudiantsView {
         return col;
     }
 
-    // ── Refresh ───────────────────────────────────────────────────────────
+    // Refresh
 
     private void refresh() {
         try {
@@ -184,7 +183,7 @@ public class EtudiantsView {
         }
     }
 
-    // ── Formulaire ────────────────────────────────────────────────────────
+    // Form
 
     private void openForm(StudentModel student) {
         Dialog<StudentModel> dialog = new Dialog<>();
@@ -240,7 +239,7 @@ public class EtudiantsView {
         });
     }
 
-    // ── Suppression ───────────────────────────────────────────────────────
+    // Delete
 
     private void confirmDelete(StudentModel s) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
