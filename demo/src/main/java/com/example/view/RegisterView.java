@@ -1,5 +1,6 @@
 package com.example.view;
 
+import com.example.controller.UserDAO;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -16,24 +17,18 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-/**
- * RegisterView — écran d'inscription premium.
- *
- * Toutes les animations et boutons sont délégués à {@link StyleFactory}.
- * Après inscription réussie, retour automatique vers LoginView.
- */
 public class RegisterView {
 
     private final Stage stage;
 
-    private TextField     tfUsername;
-    private TextField     tfEmail;
+    private TextField tfUsername;
+    private TextField tfEmail;
     private PasswordField pfPass;
     private PasswordField pfConfirm;
-    private Label         lblError;
-    private Button        btnRegister;
-    private Rectangle[]   strengthBars;
-    private Label         lblStrength;
+    private Label lblError;
+    private Button btnRegister;
+    private Rectangle[] strengthBars;
+    private Label lblStrength;
 
     public RegisterView(Stage stage) { this.stage = stage; }
 
@@ -56,11 +51,12 @@ public class RegisterView {
         stage.centerOnScreen();
         stage.show();
 
-        // Animation d'entrée via StyleFactory
         StyleFactory.animateFadeSlideIn(right, 24, 480);
     }
 
-    // ── Panneau gauche ────────────────────────────────────────────────────
+    // ───────────────────────────────────────────────────────────────
+    // Panneau gauche
+    // ───────────────────────────────────────────────────────────────
     private StackPane buildLeft() {
         StackPane pane = new StackPane();
         pane.setStyle(StyleFactory.darkLeftBg());
@@ -72,10 +68,10 @@ public class RegisterView {
 
         Pane dots = buildDotGrid(380, 620);
 
-        // Orbes via StyleFactory — couleurs différentes du Login
         Circle orb1 = StyleFactory.animatedOrb(140, StyleFactory.D_SUCCESS, 0.22, -7,  10, 4200);
         Circle orb2 = StyleFactory.animatedOrb(100, StyleFactory.D_ACCENT2, 0.28,  8,  -9, 5100);
-        Circle orb3 = StyleFactory.animatedOrb( 55, "#f472b6",              0.20,  4,   7, 3300);
+        Circle orb3 = StyleFactory.animatedOrb(55, "#f472b6", 0.20, 4, 7, 3300);
+
         StackPane.setAlignment(orb1, Pos.TOP_RIGHT);    StackPane.setMargin(orb1, new Insets(-40,-40,0,0));
         StackPane.setAlignment(orb2, Pos.BOTTOM_LEFT);  StackPane.setMargin(orb2, new Insets(0,0,-30,-30));
         StackPane.setAlignment(orb3, Pos.CENTER);       StackPane.setMargin(orb3, new Insets(-40,-60,0,0));
@@ -111,7 +107,7 @@ public class RegisterView {
         for (String perk : new String[]{
                 "✓  Accès complet au tableau de bord",
                 "✓  Gestion des étudiants en temps réel",
-                "✓  Export CSV, JSON, PDF"}) {
+                "✓  Export CSV"}) {
             Text pt = new Text(perk);
             pt.setFont(Font.font("System", 12));
             pt.setFill(Color.web("#4ade80"));
@@ -123,7 +119,9 @@ public class RegisterView {
         return pane;
     }
 
-    // ── Panneau droit ─────────────────────────────────────────────────────
+    // ───────────────────────────────────────────────────────────────
+    // Panneau droit
+    // ───────────────────────────────────────────────────────────────
     private StackPane buildRight() {
         StackPane pane = new StackPane();
         pane.setStyle(StyleFactory.darkBg());
@@ -137,7 +135,6 @@ public class RegisterView {
         form.setPadding(new Insets(0, 48, 0, 48));
         form.setMaxWidth(380);
 
-        // Titre
         VBox welcome = new VBox(5); welcome.setAlignment(Pos.CENTER_LEFT);
         Text tag = new Text("NOUVEAU COMPTE");
         tag.setFont(Font.font("System", FontWeight.BOLD, 10));
@@ -151,11 +148,10 @@ public class RegisterView {
         welcome.getChildren().addAll(tag, heading, subTxt);
         VBox.setMargin(welcome, new Insets(0,0,20,0));
 
-        // Champs
-        VBox fUser    = fieldBox("Nom d'utilisateur", "ex: alice",                false);
+        VBox fUser    = fieldBox("Nom d'utilisateur", "ex: alice", false);
         tfUsername    = (TextField) fUser.getChildren().get(1);
 
-        VBox fEmail   = fieldBox("Adresse e-mail", "ex: alice@example.com",       false);
+        VBox fEmail   = fieldBox("Adresse e-mail", "ex: alice@example.com", false);
         tfEmail       = (TextField) fEmail.getChildren().get(1);
 
         VBox fPass    = fieldBox("Mot de passe", "8 car. min. + 1 Maj + 1 Spécial", true);
@@ -165,21 +161,17 @@ public class RegisterView {
         VBox fConfirm = fieldBox("Confirmer le mot de passe", "Répétez votre mot de passe", true);
         pfConfirm     = (PasswordField) fConfirm.getChildren().get(1);
 
-        // Barre de force
         VBox strengthBox = buildStrengthMeter();
 
-        // Erreur
         lblError = new Label();
         lblError.setStyle("-fx-text-fill:" + StyleFactory.D_DANGER + ";-fx-font-size:12px;");
         lblError.setWrapText(true);
         lblError.setVisible(false); lblError.setManaged(false);
         VBox.setMargin(lblError, new Insets(4,0,0,0));
 
-        // Bouton — via StyleFactory
         btnRegister = StyleFactory.registerBtn("Créer mon compte  →");
         btnRegister.setOnAction(e -> doRegister());
 
-        // Lien vers login
         HBox loginLink = new HBox(4); loginLink.setAlignment(Pos.CENTER);
         Text alreadyTxt = new Text("Déjà un compte ?");
         alreadyTxt.setFont(Font.font("System", 12));
@@ -211,7 +203,9 @@ public class RegisterView {
         return pane;
     }
 
-    // ── Barre de force du mot de passe ────────────────────────────────────
+    // ───────────────────────────────────────────────────────────────
+    // Barre de force
+    // ───────────────────────────────────────────────────────────────
     private VBox buildStrengthMeter() {
         VBox box = new VBox(4);
         HBox bars = new HBox(4);
@@ -226,7 +220,6 @@ public class RegisterView {
         lblStrength = new Label("Saisissez un mot de passe");
         lblStrength.setStyle("-fx-font-size:11px;-fx-text-fill:" + StyleFactory.D_SUBTEXT + ";");
 
-        // Ajuster largeur des barres dynamiquement
         bars.widthProperty().addListener((o, old, w) -> {
             double bw = (w.doubleValue() - 12) / 4;
             for (Rectangle r : strengthBars) r.setWidth(bw);
@@ -237,10 +230,10 @@ public class RegisterView {
 
     private void updateStrength(String pass) {
         int score = 0;
-        if (pass.length() >= 8)                              score++;
-        if (pass.matches(".*[A-Z].*"))                       score++;
-        if (pass.matches(".*[0-9].*"))                       score++;
-        if (pass.matches(".*[!@#$%^&*(),.?\":{}|<>].*"))    score++;
+        if (pass.length() >= 8) score++;
+        if (pass.matches(".*[A-Z].*")) score++;
+        if (pass.matches(".*[0-9].*")) score++;
+        if (pass.matches(".*[!@#$%^&*(),.?\":{}|<>].*")) score++;
 
         String[] colors = { StyleFactory.D_DANGER, StyleFactory.D_WARNING, "#eab308", StyleFactory.D_SUCCESS };
         String[] labels = { "Très faible", "Faible", "Moyen", "Fort" };
@@ -258,7 +251,9 @@ public class RegisterView {
         }
     }
 
-    // ── Validation & inscription ──────────────────────────────────────────
+    // ───────────────────────────────────────────────────────────────
+    // INSCRIPTION AVEC HASH + SALT + INSERTION EN BASE
+    // ───────────────────────────────────────────────────────────────
     private void doRegister() {
         String user    = tfUsername.getText().trim();
         String email   = tfEmail.getText().trim();
@@ -266,31 +261,54 @@ public class RegisterView {
         String confirm = pfConfirm.getText();
 
         if (user.isEmpty() || email.isEmpty() || pass.isEmpty() || confirm.isEmpty()) {
-            err("Veuillez remplir tous les champs."); return;
+            err("Veuillez remplir tous les champs.");
+            return;
         }
         if (!email.matches("^[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}$")) {
-            err("Adresse e-mail invalide."); return;
+            err("Adresse e-mail invalide.");
+            return;
         }
         if (!pass.matches("^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,}$")) {
-            err("Mot de passe : 8 car. min., 1 majuscule, 1 caractère spécial."); return;
+            err("Mot de passe : 8 car. min., 1 majuscule, 1 caractère spécial.");
+            return;
         }
         if (!pass.equals(confirm)) {
             err("Les mots de passe ne correspondent pas.");
-            StyleFactory.animateShake(btnRegister, 7); // Animation shake via StyleFactory
+            StyleFactory.animateShake(btnRegister, 7);
             return;
         }
 
-        // Animation succès via StyleFactory
-        StyleFactory.animateSuccess(btnRegister, "✓  Compte créé !", 800,
-                () -> new LoginView(stage).show());
+        try {
+            UserDAO dao = new UserDAO();
+
+            if (dao.emailExists(email)) {
+                err("Cette adresse e-mail est déjà utilisée.");
+                return;
+            }
+
+            // ✔ Enregistrement en base (hash + salt)
+            boolean ok = dao.register(email, pass, false);
+
+            if (!ok) {
+                err("Impossible de créer le compte.");
+                return;
+            }
+
+            StyleFactory.animateSuccess(btnRegister, "✓  Compte créé !", 800,
+                    () -> new LoginView(stage).show());
+
+        } catch (Exception ex) {
+            err("Erreur interne : " + ex.getMessage());
+            ex.printStackTrace();
+        }
     }
 
     private void err(String msg) {
         lblError.setText("⚠  " + msg);
-        lblError.setVisible(true); lblError.setManaged(true);
+        lblError.setVisible(true);
+        lblError.setManaged(true);
     }
 
-    // ── Helpers 
     private VBox fieldBox(String label, String prompt, boolean password) {
         VBox box = new VBox(6);
         Text lbl = new Text(label);
@@ -310,7 +328,8 @@ public class RegisterView {
             tf.focusedProperty().addListener((o,old,f) -> tf.setStyle(StyleFactory.darkInputStyle(f)));
             field = tf;
         }
-        box.getChildren().addAll(lbl, field); return box;
+        box.getChildren().addAll(lbl, field);
+        return box;
     }
 
     private Pane buildDotGrid(double w, double h) {
@@ -322,4 +341,4 @@ public class RegisterView {
             }
         return p;
     }
-}
+}    
