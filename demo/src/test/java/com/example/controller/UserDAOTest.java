@@ -14,6 +14,7 @@ public class UserDAOTest {
     private static final UserDAO dao = new UserDAO();
     private static final String EMAIL = "test@example.com";
     private static final String PASSWORD = "securePassword!1";
+    private static final String USERNAME = "myUser";
 
     // Clean users before each test
     @BeforeEach
@@ -27,14 +28,14 @@ public class UserDAOTest {
     @Test
     @Order(1)
     void register_shouldReturnTrueOnSuccess() throws Exception {
-        boolean result = dao.register(EMAIL, PASSWORD, false);
+        boolean result = dao.register(EMAIL, PASSWORD, USERNAME, false);
         assertTrue(result, "Registration must return true");
     }
 
     @Test
     @Order(2)
     void emailExists_shouldReturnTrueAfterRegister() throws Exception {
-        dao.register(EMAIL, PASSWORD, false);
+        dao.register(EMAIL, PASSWORD, USERNAME, false);
         assertTrue(dao.emailExists(EMAIL), "Email must be found after registration");
     }
 
@@ -47,7 +48,7 @@ public class UserDAOTest {
     @Test
     @Order(4)
     void getUserByEmail_shouldReturnCorrectUser() throws Exception {
-        dao.register(EMAIL, PASSWORD, true);
+        dao.register(EMAIL, PASSWORD, USERNAME, false);
         UserModel user = dao.getUserByEmail(EMAIL);
 
         assertNotNull(user);
@@ -68,7 +69,7 @@ public class UserDAOTest {
     @Test
     @Order(6)
     void login_shouldReturnUserOnCorrectPassword() throws Exception {
-        dao.register(EMAIL, PASSWORD, false);
+        dao.register(EMAIL, PASSWORD, USERNAME, false);
         UserModel user = dao.login(EMAIL, PASSWORD);
 
         assertNotNull(user, "Login must succeed with correct credentials");
@@ -78,7 +79,7 @@ public class UserDAOTest {
     @Test
     @Order(7)
     void login_shouldReturnNullOnWrongPassword() throws Exception {
-        dao.register(EMAIL, PASSWORD, false);
+        dao.register(EMAIL, PASSWORD, USERNAME, false);
         UserModel user = dao.login(EMAIL, "wrongPassword");
         assertNull(user, "Login must fail with wrong password");
     }
@@ -93,7 +94,7 @@ public class UserDAOTest {
     @Test
     @Order(9)
     void updatePassword_shouldAllowLoginWithNewPassword() throws Exception {
-        dao.register(EMAIL, PASSWORD, false);
+        dao.register(EMAIL, PASSWORD, USERNAME, false);
         String newPassword = "newSecurePass!2";
         boolean updated = dao.updatePassword(EMAIL, newPassword);
 
@@ -114,7 +115,7 @@ public class UserDAOTest {
     @Test
     @Order(11)
     void deleteUser_shouldRemoveUser() throws Exception {
-        dao.register(EMAIL, PASSWORD, false);
+        dao.register(EMAIL, PASSWORD, USERNAME, false);
         boolean deleted = dao.deleteUser(EMAIL);
 
         assertTrue(deleted);
@@ -131,8 +132,8 @@ public class UserDAOTest {
     @Test
     @Order(13)
     void register_shouldStoreDifferentSaltsForSamePassword() throws Exception {
-        dao.register("user1@test.com", PASSWORD, false);
-        dao.register("user2@test.com", PASSWORD, false);
+        dao.register(EMAIL, PASSWORD, USERNAME, false);
+        dao.register(EMAIL, PASSWORD, USERNAME, false);
 
         UserModel u1 = dao.getUserByEmail("user1@test.com");
         UserModel u2 = dao.getUserByEmail("user2@test.com");

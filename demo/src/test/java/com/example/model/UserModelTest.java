@@ -12,6 +12,7 @@ public class UserModelTest {
 
         // Initialize a new User Model to test the constructor
         UserModel user = new UserModel(
+                "a user name",
                 "coucou@hihi.com",
                 "qdfgsdhdfhf123547342",
                 "a very salty salt",
@@ -35,6 +36,7 @@ public class UserModelTest {
 
         // Initialize a new UserModel to test the toString
         UserModel user = new UserModel(
+                "a user name",
                 "coucou@hihi.com",
                 "qdfgsdhdfhf123547342",
                 "a very salty salt",
