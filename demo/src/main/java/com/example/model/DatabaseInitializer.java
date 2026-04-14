@@ -22,7 +22,7 @@ public class DatabaseInitializer {
         String url = "jdbc:postgresql://" + DB_HOST + ":" + DB_PORT + "/postgres";
 
         try (Connection conn = DriverManager.getConnection(url, DB_USER, DB_PASSWORD);
-             Statement stmt = conn.createStatement()) {
+            Statement stmt = conn.createStatement()) {
 
             String checkDb = "SELECT 1 FROM pg_database WHERE datname = '" + DB_NAME + "';";
             var rs = stmt.executeQuery(checkDb);
