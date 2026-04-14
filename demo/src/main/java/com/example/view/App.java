@@ -4,21 +4,21 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 
 /**
- * App — version neutralisée.
+ * App — main application class for JavaFX.
  * 
- * Cette classe ne doit plus initialiser la base ni lancer l'application,
- * car Main.java est désormais le seul point d'entrée.
+ * This class should not initialize the database or launch the application,
+ * as Main.java is now the only entry point.
  */
 public class App extends Application {
 
     @Override
     public void start(Stage stage) {
-        // Classe neutralisée : ne rien faire ici.
-        // L'application démarre via Main.java.
+        // Class neutralized: do nothing here.
+        // The application starts via Main.java.
     }
 
     public static void main(String[] args) {
-        // Ne pas lancer l'application depuis ici.
-        // Main.java est le point d'entrée unique.
+        // Do not launch the application from here.
+        // Main.java is the only entry point.
     }
 }

@@ -14,8 +14,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * BulletinController — exporte le bulletin d'un étudiant en CSV.
- * Nettoyé de toute logique de hachage/pepper.
+ * BulletinController — exports a student's report card to CSV format.
+ * Cleaned of all hash/pepper logic.
  */
 
 public class BulletinController{

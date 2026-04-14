@@ -26,10 +26,10 @@ public class ChatbotView extends VBox {
                       "-fx-background-radius: 15 15 0 0; " +
                       "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 0);");
 
-        // Masquer par défaut (en bas de l'écran)
+        // Hide by default (at the bottom of the screen)
         this.setTranslateY(350);
 
-        // --- HEADER ---
+        // HEADER
         HBox header = new HBox();
         header.setAlignment(Pos.CENTER_LEFT);
         header.setStyle("-fx-background-color: #3498db; -fx-padding: 10; -fx-background-radius: 10 10 0 0;");
@@ -46,7 +46,7 @@ public class ChatbotView extends VBox {
 
         header.getChildren().addAll(title, spacer, btnToggle);
 
-        // --- ZONE DE MESSAGES ---
+        //MESSAGE AREA 
         chatContent = new VBox(10);
         chatContent.setPadding(new Insets(5));
         
@@ -55,7 +55,7 @@ public class ChatbotView extends VBox {
         scrollPane.setPrefHeight(300);
         scrollPane.setStyle("-fx-background: white; -fx-border-color: transparent;");
 
-        // --- ZONE DE SAISIE ---
+        //input area
         HBox inputArea = new HBox(5);
         inputField = new TextField();
         inputField.setPromptText("Posez une question...");
@@ -70,7 +70,7 @@ public class ChatbotView extends VBox {
 
         this.getChildren().addAll(header, scrollPane, inputArea);
         
-        // Message de bienvenue automatique
+        // automatic welcome message
         addMessage("Bonjour ! Je suis votre guide. Tapez 'aide' pour voir ce que je peux faire.", false);
     }
 
@@ -83,7 +83,7 @@ public class ChatbotView extends VBox {
         }
     }
 
-    // ---  GUIDAGE SIMPLE ---
+    // simple response logic based on keywords (can be expanded with more complex NLP or API calls)
     private void processResponse(String msg) {
         if (msg.contains("aide") || msg.contains("bonjour")) {
             addMessage("Je peux vous aider à :\n1. Gérer les étudiants\n2. Voir les statistiques\n3. Exporter des données", false);
@@ -114,7 +114,7 @@ public class ChatbotView extends VBox {
         wrapper.getChildren().add(lbl);
         chatContent.getChildren().add(wrapper);
         
-        // Auto-scroll vers le bas
+        // auto-scroll to the bottom when a new message is added
         scrollPane.setVvalue(1.0);
     }
 

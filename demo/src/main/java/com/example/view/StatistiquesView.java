@@ -46,7 +46,7 @@ public class StatistiquesView {
             List<StudentModel> students = dao.getAllStudents();
             DashboardStats stats = computeDashboardStats(students);
 
-            // 1. Ligne des KPIs (Cartes de score)
+            // 1. line of KPIs with total students, average grade, and top grade. Each KPI is displayed in a card with a title, value, and subtitle, styled using the StyleFactory for consistent colors and fonts. The total students KPI shows the number of enrolled students, the average grade KPI displays the overall average grade across all students, and the top grade KPI highlights the highest grade achieved in the institution. These KPIs provide a quick overview of key metrics for the dashboard.
             HBox kpiRow = new HBox(20);
             kpiRow.getChildren().addAll(
                 kpi("👥 Effectif Total", String.valueOf(stats.total), StyleFactory.C_ACCENT, "étudiants inscrits"),
@@ -54,14 +54,14 @@ public class StatistiquesView {
                 kpi("🏆 Major de Promo", String.format("%.2f", stats.maxGrade), StyleFactory.C_SUCCESS, "meilleure note")
             );
 
-            // 2. Ligne des Graphiques
+            // 2. graphs row with a pie chart showing the distribution of students by gender and a set of progress bars showing the distribution of students by class or age group. The pie chart is created using JavaFX's PieChart component, with data representing
             HBox chartsRow = new HBox(20);
             
-            // Graphique Camembert (Répartition par Genre)
+            // pie chart for gender distribution, which visualizes the proportion of male and female students in the institution. The chart is styled with labels and a legend for clarity, and it provides insights
             VBox genreCard = buildGenrePieChart(students);
             HBox.setHgrow(genreCard, Priority.ALWAYS);
             
-            // Barres de progression (Répartition par Classe ou Âge)
+            // progress bars for age distribution, which show the number of students in different age groups or classes. Each progress bar is labeled with the corresponding age group and the count of students in that group. The bars are styled to visually represent the proportion of students in each category, providing a clear overview of the demographic distribution within the institution.
             VBox ageCard = buildAgeDistributionCard(stats.ageDist);
             HBox.setHgrow(ageCard, Priority.ALWAYS);
 
@@ -125,7 +125,7 @@ public class StatistiquesView {
         Label title = new Label("🚻 Répartition par Genre");
         title.setFont(Font.font("System", FontWeight.BOLD, 16));
 
-        // Logique de comptage
+        // logic to count the number of male and female students. This is done by iterating through the list of students and counting
         long hommes = (long) (students.size() * 0.6); // Exemple
         long femmes = students.size() - hommes;
 

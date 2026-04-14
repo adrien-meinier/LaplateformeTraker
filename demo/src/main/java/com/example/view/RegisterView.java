@@ -54,9 +54,9 @@ public class RegisterView {
         StyleFactory.animateFadeSlideIn(right, 24, 480);
     }
 
-    // ───────────────────────────────────────────────────────────────
-    // Panneau gauche
-    // ───────────────────────────────────────────────────────────────
+
+    // left panel with a title, subtitle, perks list, and animated background orbs. The title and subtitle use custom fonts and colors defined in the StyleFactory. The perks list highlights the benefits of creating an account, and the animated orbs add a dynamic visual element to the design.
+
     private StackPane buildLeft() {
         StackPane pane = new StackPane();
         pane.setStyle(StyleFactory.darkLeftBg());
@@ -119,9 +119,8 @@ public class RegisterView {
         return pane;
     }
 
-    // ───────────────────────────────────────────────────────────────
-    // Panneau droit
-    // ───────────────────────────────────────────────────────────────
+    // rigth panel with the registration form, including fields for username, email, password, and password confirmation. The form includes a strength meter for the password field that provides real-time feedback on the strength of the entered password. The registration button triggers the registration logic, which includes validation of the input fields and interaction with the UserDAO to create a new user account in the database. There is also a link to switch to the login view for users who already have an account. The right panel is styled using the StyleFactory for consistent colors and typography across the application.
+   
     private StackPane buildRight() {
         StackPane pane = new StackPane();
         pane.setStyle(StyleFactory.darkBg());
@@ -203,9 +202,8 @@ public class RegisterView {
         return pane;
     }
 
-    // ───────────────────────────────────────────────────────────────
-    // Barre de force
-    // ───────────────────────────────────────────────────────────────
+    // bars and label for the password strength meter, which provides visual feedback on the strength of the entered password. The strength is calculated based on criteria such as length, presence of uppercase letters, numbers, and special characters. The bars change color based on the strength level, and the label displays a corresponding message to guide the user in creating a stronger password.
+  
     private VBox buildStrengthMeter() {
         VBox box = new VBox(4);
         HBox bars = new HBox(4);
@@ -251,9 +249,8 @@ public class RegisterView {
         }
     }
 
-    // ───────────────────────────────────────────────────────────────
-    // INSCRIPTION AVEC HASH + SALT + INSERTION EN BASE
-    // ───────────────────────────────────────────────────────────────
+    //hash salt and register the user in the database using the UserDAO. The method includes validation of the input fields, such as checking for empty fields, validating the email format, ensuring password strength, and confirming that the password and confirmation match. If any validation fails, an error message is displayed to the user. If the registration is successful, a success animation is shown, and the user is redirected to the login view.
+   
     private void doRegister() {
         String user    = tfUsername.getText().trim();
         String email   = tfEmail.getText().trim();
@@ -291,7 +288,7 @@ public class RegisterView {
                 return;
             }
 
-            // ✔ Enregistrement en base (username + hash + salt)
+            // save user (username + hash + salt)
             boolean ok = dao.register(user, email, pass, false);
 
             if (!ok) {

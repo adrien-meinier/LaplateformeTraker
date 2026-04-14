@@ -12,12 +12,12 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 /**
- * StudentController — Contrôleur FXML pour la gestion des étudiants.
- * Assurez-vous que les fx:id dans votre fichier FXML correspondent exactement aux noms des variables ci-dessous.
+ *StudentController — manages the display and actions on students (CRUD).  
+ *  Cleaned of all hash/pepper logic.
  */
 public class StudentController {
 
-    // ─── Composants FXML ──────────────────────────────────────────────────
+    //  UI components linked via FXML
     @FXML private TextField firstNameField;
     @FXML private TextField lastNameField;
     @FXML private DatePicker birthDatePicker;
@@ -32,21 +32,21 @@ public class StudentController {
     @FXML private TableColumn<StudentModel, LocalDate> colCreationDate;
     @FXML private TableColumn<StudentModel, LocalDate> colLastModifiedDate;
 
-    // DAO pour l'accès aux données
+    //DAO to access student data
     private final StudentDAO studentDAO = new StudentDAO();
 
     /**
-     * Méthode appelée automatiquement par JavaFX après le chargement du FXML.
+     * Method automatically called by JavaFX after the FXML is loaded.
      */
     @FXML
     public void initialize() {
-        // 1. Configuration des CellValueFactories (Liaison données <-> colonnes)
+        // 1. Column configuration: each column is linked to a property of the model
         colId.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getId()));
         colFirstName.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getFirstName()));
         colLastName.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getLastName()));
         colBirthDate.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getBirthDate()));
 
-        // Conversion sécurisée des LocalDateTime en LocalDate pour l'affichage
+        // Secure conversion of LocalDateTime to LocalDate for display
         colCreationDate.setCellValueFactory(data -> {
             var date = data.getValue().getCreationDate();
             return new SimpleObjectProperty<>(date != null ? date.toLocalDate() : null);
@@ -57,7 +57,7 @@ public class StudentController {
             return new SimpleObjectProperty<>(date != null ? date.toLocalDate() : null);
         });
 
-        // 2. Listener de sélection : remplit le formulaire quand on clique sur une ligne
+        // 2. Selection listener: fills in the form when a row is clicked
         studentTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 firstNameField.setText(newSelection.getFirstName());
@@ -66,7 +66,7 @@ public class StudentController {
             }
         });
 
-        // 3. Chargement initial des données
+        // 3. load files from database
         refreshTable();
     }
 
@@ -135,10 +135,10 @@ public class StudentController {
         }
     }
 
-    // ─── Méthodes Utilitaires ──────────────────────────────────────────────
+    //Utility methods for the controller (validation, alerts, refresh)
 
     /**
-     * Recharge les données depuis la base de données.
+     * load students from database and display them in the table
      */
     private void refreshTable() {
         try {

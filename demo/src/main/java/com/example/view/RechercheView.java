@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * RechercheView — recherche simple par ID et recherche avancée multi-critères.
+ * researchView -Student search view with two modes: search by ID and advanced search by keyword and age range.
  */
 public class RechercheView {
 
@@ -36,12 +36,12 @@ public class RechercheView {
         VBox root = new VBox(20);
         root.setPadding(new Insets(0));
 
-        // Titre
+        // title
         Label title = new Label("🔎 Recherche");
         title.setFont(Font.font("System", FontWeight.BOLD, 22));
         title.setStyle(StyleFactory.titleStyle());
 
-        // ── Bloc Recherche par ID 
+        // bloc id search with a text field and a search button, styled with StyleFactory for consistent colors and fonts. The search logic filters the list of students by their ID and updates the table with the results.
         VBox cardById = new VBox(12);
         cardById.setPadding(new Insets(18, 20, 18, 20));
         cardById.setStyle(StyleFactory.cardBg());
@@ -67,7 +67,7 @@ public class RechercheView {
         rowId.getChildren().addAll(tfId, btnSearchId);
         cardById.getChildren().addAll(lblById, rowId);
 
-        // ── Bloc Recherche avancée 
+        // bloc research advanced with fields for keyword, min age, and max age, along with search and reset buttons. The search logic filters the list of students based on the provided criteria and updates the table with the results. The reset button clears all fields and refreshes the table to show all students.
         VBox cardAdv = new VBox(14);
         cardAdv.setPadding(new Insets(18, 20, 18, 20));
         cardAdv.setStyle(StyleFactory.cardBg());
@@ -111,7 +111,7 @@ public class RechercheView {
         advButtons.getChildren().addAll(btnReset, btnSearch);
         cardAdv.getChildren().addAll(lblAdv, grid, advButtons);
 
-        // ── Résultats 
+        // results count label to show the number of results found, styled with StyleFactory for consistent typography. This label is updated dynamically based on the search results to provide feedback to the user about the number of students matching their search criteria.
         lblResultCount = new Label();
         lblResultCount.setStyle(StyleFactory.subtitleStyle());
 
@@ -124,7 +124,7 @@ public class RechercheView {
         return root;
     }
 
-    // ── Actions 
+    // action methods for search logic (by ID and advanced search by keyword and age range)
     private void searchById(String raw) {
         if (raw.isEmpty()) { refreshAll(); return; }
         try {
@@ -176,7 +176,7 @@ public class RechercheView {
         }
     }
 
-    // ── Tableau 
+    // table building method with columns for ID, first name, last name, age, and birth date. The age column is calculated dynamically based on the birth date and the current date. The table is styled using StyleFactory for consistent colors and fonts, and includes a placeholder message when there are no results to display.
     @SuppressWarnings("unchecked")
     private TableView<StudentModel> buildTable() {
         TableView<StudentModel> tv = new TableView<>();
@@ -206,7 +206,7 @@ public class RechercheView {
         return c;
     }
 
-    // ── Helpers 
+    // helper methods for creating styled text fields, field groups with labels, parsing integers with null handling, and showing alert messages. These methods are used to keep the code organized and maintain consistent styling across the view.
     private TextField advField(String prompt) {
         TextField tf = new TextField();
         tf.setPromptText(prompt);

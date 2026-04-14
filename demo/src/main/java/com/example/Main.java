@@ -10,7 +10,7 @@ public class Main extends Application {
 
     public static void main(String[] args) {
         try {
-            // Initialise la base + seed (déjà inclus dans initialize)
+            // initialization of the database (creation of tables and sample data)
             DatabaseInitializer.initialize();
 
         } catch (SQLException e) {
@@ -18,7 +18,7 @@ public class Main extends Application {
             e.printStackTrace();
         }
 
-        // Lancement de JavaFX
+        // launch the JavaFX application (calls start() method)
         launch(args);
     }
 

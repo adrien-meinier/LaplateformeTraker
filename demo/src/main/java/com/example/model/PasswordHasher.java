@@ -6,7 +6,7 @@ import java.util.Base64;
 
 public class PasswordHasher {
 
-    // PEPPER stocké côté serveur (ex: variable d'environnement)
+    //  Pepper is a secret value added to the password before hashing, stored in an environment variable for security
     private static final String PEPPER = System.getenv("APP_PEPPER");
 
     public static String hashPassword(String password, String salt) throws Exception {

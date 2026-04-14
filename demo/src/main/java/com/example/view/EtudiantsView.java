@@ -43,7 +43,7 @@ public class EtudiantsView {
         VBox root = new VBox(16);
         root.setPadding(new Insets(10));
 
-        // ── En-tête ──────────────────────────────────────────────────────
+        // header with title and action buttons
         HBox header = new HBox(10);
         header.setAlignment(Pos.CENTER_LEFT);
 
@@ -53,20 +53,20 @@ public class EtudiantsView {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // Bouton export global — style via StyleFactory.exportBtn()
+        // button to export all students, using StyleFactory.exportBtn and ExportController.exporterTousLesEtudiants
         Button btnExport = StyleFactory.exportBtn("📥 Exporter tout");
         btnExport.setOnAction(e -> exportCtrl.exporterTousLesEtudiants());
 
-        // Bouton ajout — style via StyleFactory.successBtn()
+        // button to add a new student, using StyleFactory.successBtn
         Button btnAdd = StyleFactory.successBtn("➕ Ajouter");
         btnAdd.setOnAction(e -> openForm(null));
 
         header.getChildren().addAll(title, spacer, btnExport, btnAdd);
 
-        // ── Tableau ───────────────────────────────────────────────────────
+        // table of students
         table = buildTable();
 
-        // ── Pagination ────────────────────────────────────────────────────
+        //  Pagination controls
         HBox pagination = new HBox(10);
         pagination.setAlignment(Pos.CENTER);
 
@@ -87,7 +87,7 @@ public class EtudiantsView {
         return root;
     }
 
-    // ── Tableau ───────────────────────────────────────────────────────────
+    //  Table construction with an additional "Actions" column for edit, bulletin, and delete, using StyleFactory for buttons
 
     private TableView<StudentModel> buildTable() {
         TableView<StudentModel> tv = new TableView<>();
@@ -102,13 +102,13 @@ public class EtudiantsView {
         TableColumn<StudentModel, LocalDateTime> colCreated  = col("Créé le",           "creationDate",    160);
         TableColumn<StudentModel, LocalDateTime> colModified = col("Modifié le",        "lastModifiedDate",160);
 
-        // ── Colonne Actions : ✏️ | 📄 Bulletin | 🗑️ ─────────────────────
+        //column for action buttons (edit, bulletin, delete) with custom cell factory
         TableColumn<StudentModel, Void> colActions = new TableColumn<>("Actions");
         colActions.setPrefWidth(240);
         colActions.setSortable(false);
         colActions.setCellFactory(col -> new TableCell<>() {
 
-            // Tous les boutons passent par StyleFactory
+            //  Buttons for edit, bulletin, and delete, using StyleFactory for consistent styling
             private final Button btnEdit     = StyleFactory.primaryBtn("✏️");
             private final Button btnBulletin = StyleFactory.bulletinBtn("📄 Bulletin");
             private final Button btnDelete   = StyleFactory.dangerBtn("🗑️");
@@ -124,7 +124,7 @@ public class EtudiantsView {
                     if (s != null) openForm(s);
                 });
 
-                // Bulletin individuel via StyleFactory.bulletinBtn
+                //  Bulletin button opens the bulletin view for the selected student, using BulletinController.telechargerBulletin
                 btnBulletin.setOnAction(e -> {
                     StudentModel s = getTableRow() == null ? null : getTableRow().getItem();
                     if (s != null) bulletinCtrl.telechargerBulletin(s);
@@ -154,7 +154,7 @@ public class EtudiantsView {
         return col;
     }
 
-    // ── Refresh ───────────────────────────────────────────────────────────
+    // Refresh table data with pagination logic, and update pagination controls accordingly
 
     private void refresh() {
         try {
@@ -184,7 +184,7 @@ public class EtudiantsView {
         }
     }
 
-    // ── Formulaire ────────────────────────────────────────────────────────
+    //  Form for adding/editing a student, with validation and error handling, using StyleFactory for consistent styling of buttons and error messages
 
     private void openForm(StudentModel student) {
         Dialog<StudentModel> dialog = new Dialog<>();
@@ -240,7 +240,7 @@ public class EtudiantsView {
         });
     }
 
-    // ── Suppression ───────────────────────────────────────────────────────
+    //      Confirmation dialog for deleting a student, with error handling
 
     private void confirmDelete(StudentModel s) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION,

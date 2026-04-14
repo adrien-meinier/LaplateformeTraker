@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * ExportController — exporte tous les étudiants avec leurs notes en CSV.
+ * ExportController — export all students with their grades in CSV format.
  */
 public class ExportController {
 
@@ -37,13 +37,13 @@ public class ExportController {
 
             try (FileWriter writer = new FileWriter(file)) {
 
-                // ── En-tête du fichier ────────────────────────────────────
+                // head files
                 writer.write("EXPORT COMPLET DES ÉTUDIANTS\n");
                 writer.write("Date d'export;%s\n".formatted(LocalDate.now().format(FMT)));
                 writer.write("Nombre d'étudiants;%d\n".formatted(etudiants.size()));
                 writer.write("\n");
 
-                // ── En-tête colonnes 
+                // head columns
                 writer.write("ID;Prénom;Nom;Date de naissance;Âge;Inscrit le;" +
                              "Matière;Note /20;Mention;Moyenne générale\n");
 
@@ -60,7 +60,7 @@ public class ExportController {
                             ? s.getCreationDate().toLocalDate().format(FMT) : "—";
 
                     if (notes.isEmpty()) {
-                        // Ligne sans note
+                        // Line without notes : only student info + placeholders
                         writer.write("%d;%s;%s;%s;%s;%s;Aucune note;-;-;-\n".formatted(
                                 s.getId(), prenom, nom, naissance, age, inscritLe));
                     } else {
@@ -69,14 +69,14 @@ public class ExportController {
                         double moyenne = total / notes.size();
                         String moyenneStr = "%.2f (%s)".formatted(moyenne, mention((int) Math.round(moyenne)));
 
-                        // Première note sur la ligne étudiant
+                        // First note on the student line
                         GradeModel first = notes.get(0);
                         writer.write("%d;%s;%s;%s;%s;%s;%s;%d;%s;%s\n".formatted(
                                 s.getId(), prenom, nom, naissance, age, inscritLe,
                                 first.getSubject(), first.getGrade(),
                                 mention(first.getGrade()), moyenneStr));
 
-                        // Notes suivantes : colonnes étudiant vides pour éviter la répétition
+                        //  Other notes on separate lines with placeholders for student info
                         for (int i = 1; i < notes.size(); i++) {
                             GradeModel note = notes.get(i);
                             writer.write(";;;;;;;%s;%d;%s;\n".formatted(
