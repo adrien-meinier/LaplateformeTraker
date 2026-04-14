@@ -1,11 +1,9 @@
 package com.example.view;
 
+import com.example.TestFXInitializer;
 import javafx.application.Platform;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.junit.jupiter.api.*;
@@ -15,27 +13,9 @@ import java.lang.reflect.Field;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class ChatbotViewTest {
+public class ChatbotViewTest extends TestFXInitializer {
 
     private ChatbotView chatbot;
-
-    // ---------------------------------------------------------
-    // Initialisation JavaFX compatible Java 21
-    // ---------------------------------------------------------
-    @BeforeAll
-    static void initJavaFX() throws Exception {
-        if (!Platform.isFxApplicationThread()) {
-            final Object lock = new Object();
-            synchronized (lock) {
-                Platform.startup(() -> {
-                    synchronized (lock) {
-                        lock.notify();
-                    }
-                });
-                lock.wait();
-            }
-        }
-    }
 
     @BeforeEach
     void setup() {
@@ -319,5 +299,3 @@ public class ChatbotViewTest {
         return lbl.getText();
     }
 }
-
-
