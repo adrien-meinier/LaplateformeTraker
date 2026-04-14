@@ -9,18 +9,18 @@ import javafx.scene.effect.GaussianBlur;
 import javafx.util.Duration;
 
 /**
- * StyleFactory — palette, boutons et animations centralisés.
+ * styleFactory — centralised factory for all colors, styles, buttons, and animations in the application.
  *
- * Toutes les vues utilisent uniquement cette classe pour :
- *  - Les couleurs (constantes C_*)
- *  - Les styles CSS (méthodes *Style() / *Bg())
- *  - Les boutons stylisés (méthodes *Btn())
- *  - Les animations (méthodes animate*())
+ * all styles, colors, and animations used across the application are defined in this class. This includes:
+ *  - colors for light and dark themes (public static final String constants)
+ *  - styles for backgrounds, text fields, labels, tables (public static methods returning style strings)
+ *  - button factory methods for different types of buttons (primary, success, danger, sidebar, etc.) that return pre-styled Button instances with hover effects
+ *  - animations such as fade-slide-in, shake, pulse, and animated orbs for decorative purposes. These methods encapsulate the animation logic and can be easily reused across different views to add visual feedback and interactivity.
  */
 public final class StyleFactory {
 
     // ════════════════════════════════════════════════════════════════════ //
-    //  PALETTE — mode clair (dashboard)
+    //  ligtht theme palette (dashboard)
     // ════════════════════════════════════════════════════════════════════ //
     public static final String C_PRIMARY    = "#2c3e50";
     public static final String C_ACCENT     = "#3498db";
@@ -34,7 +34,7 @@ public final class StyleFactory {
     public static final String C_BG         = "#f4f6f8";
 
     // ════════════════════════════════════════════════════════════════════ //
-    //  PALETTE — mode sombre (login / register)
+    //  dark theme palette (login / register)
     // ════════════════════════════════════════════════════════════════════ //
     public static final String D_BG        = "#0f1117";
     public static final String D_LEFT      = "#111420";
@@ -54,7 +54,7 @@ public final class StyleFactory {
     private StyleFactory() {}
 
     // ════════════════════════════════════════════════════════════════════ //
-    //  STYLES DE FOND
+    //  bACKGROUND & CONTAINERS
     // ════════════════════════════════════════════════════════════════════ //
 
     public static String rootBg() {
@@ -80,7 +80,7 @@ public final class StyleFactory {
     }
 
     // ════════════════════════════════════════════════════════════════════ //
-    //  STYLES CHAMPS DE SAISIE — mode clair
+    //  light mode styles (dashboard)
     // ════════════════════════════════════════════════════════════════════ //
 
     public static String textFieldStyle() {
@@ -98,7 +98,7 @@ public final class StyleFactory {
     }
 
     // ════════════════════════════════════════════════════════════════════ //
-    //  STYLES CHAMPS DE SAISIE — mode sombre
+    //  dark mode styles (login / register)
     // ════════════════════════════════════════════════════════════════════ //
 
     public static String darkInputStyle(boolean focused) {
@@ -110,7 +110,7 @@ public final class StyleFactory {
     }
 
     // ════════════════════════════════════════════════════════════════════ //
-    //  STYLES LABELS
+    //  labels, tables, and other common styles
     // ════════════════════════════════════════════════════════════════════ //
 
     public static String titleStyle() {
@@ -132,37 +132,37 @@ public final class StyleFactory {
     }
 
     // ════════════════════════════════════════════════════════════════════ //
-    //  BOUTONS — mode clair (dashboard)
+    //  buttons — light mode (dashboard)
     // ════════════════════════════════════════════════════════════════════ //
 
-    /** Bleu principal. */
+    /** main blue button. */
     public static Button primaryBtn(String text) {
         return lightBtn(text, C_ACCENT, C_WHITE);
     }
 
-    /** Vert succès / ajout. */
+    /** green success button. */
     public static Button successBtn(String text) {
         return lightBtn(text, C_SUCCESS, C_WHITE);
     }
 
-    /** Rouge danger / suppression. */
+    /** red suppression button. */
     public static Button dangerBtn(String text) {
         return lightBtn(text, C_DANGER, C_WHITE);
     }
 
-    /** Orange avertissement / export. */
+    /** orange warning button. */
     public static Button warningBtn(String text) {
         return lightBtn(text, C_WARNING, C_WHITE);
     }
 
-    /** Gris secondaire. */
+    /** grey secondary button. */
     public static Button secondaryBtn(String text) {
         return lightBtn(text, C_LIGHT, C_TEXT_DARK);
     }
 
     /**
-     * Bouton vert "📥 Exporter tout" — export global de tous les étudiants.
-     * Utilisé dans EtudiantsView (en-tête).
+     * green button with "Export" text and specific padding. This button is designed for exporting data, such as a student's report card, and is styled with a green background and white text to indicate a positive action. The button includes hover effects that slightly change the opacity to provide visual feedback when the user interacts with it.
+     * used in EtudiantsView.
      */
     public static Button exportBtn(String text) {
         Button btn = new Button(text);
@@ -176,8 +176,8 @@ public final class StyleFactory {
     }
 
     /**
-     * Bouton bleu ciel "📄 Bulletin" — bulletin individuel par ligne.
-     * Utilisé dans la colonne Actions de EtudiantsView.
+     * button for accessing the student's report card or bulletin. This button is styled with the application's accent color and includes hover effects to enhance interactivity. The button's design is consistent with the overall theme of the application, and it serves as a clear call-to-action for users to view detailed information about a student's academic performance.
+     * use in cells of the "Bulletin" column in EtudiantsView's table.
      */
     public static Button bulletinBtn(String text) {
         Button btn = new Button(text);
@@ -190,7 +190,7 @@ public final class StyleFactory {
         return btn;
     }
 
-    /** Bouton sidebar (fond transparent, texte blanc, hover semi-transparent). */
+    /** sidebar button. */
     public static Button sidebarBtn(String text) {
         Button btn = new Button(text);
         btn.setMaxWidth(Double.MAX_VALUE);
@@ -216,7 +216,7 @@ public final class StyleFactory {
     }
 
     // ════════════════════════════════════════════════════════════════════ //
-    //  BOUTONS — mode sombre (login / register)
+    //  buttons — gradient variants (login / register)
     // ════════════════════════════════════════════════════════════════════ //
 
     public static Button gradientBtn(String label, String c1, String c2) {
@@ -238,7 +238,7 @@ public final class StyleFactory {
     }
 
     // ════════════════════════════════════════════════════════════════════ //
-    //  ANIMATIONS
+    // animations
     // ════════════════════════════════════════════════════════════════════ //
 
     public static void animateFadeSlideIn(javafx.scene.Node node, double fromX, long durationMs) {
@@ -315,7 +315,7 @@ public final class StyleFactory {
     }
 
     // ════════════════════════════════════════════════════════════════════ //
-    //  HELPERS PRIVÉS
+    //  private helpers for button factories
     // ════════════════════════════════════════════════════════════════════ //
 
     private static Button lightBtn(String text, String bg, String fg) {

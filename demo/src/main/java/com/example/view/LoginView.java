@@ -17,10 +17,10 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 /**
- * LoginView — écran de connexion premium.
+ *  LoginView conexion view for the application, with a modern design and animations.
  *
- * Toutes les animations et boutons sont délégués à {@link StyleFactory}.
- * Identifiants démo : admin / admin123
+ * All animations and buttons are delegated to{@link StyleFactory}.
+ * ID demo : admin / admin123
  */
 public class LoginView {
 
@@ -52,11 +52,11 @@ public class LoginView {
         stage.centerOnScreen();
         stage.show();
 
-        // Animation d'entrée via StyleFactory
+        // animation slide in from right for the form, and fade in for the left panel
         StyleFactory.animateFadeSlideIn(right, 24, 480);
     }
 
-    // ── Panneau gauche ────────────────────────────────────────────────────
+    // left panel with gradient background, animated orbs, and a welcome message
     private StackPane buildLeft() {
         StackPane pane = new StackPane();
         pane.setStyle(StyleFactory.darkLeftBg());
@@ -68,7 +68,7 @@ public class LoginView {
 
         Pane dots = buildDotGrid(400, 580);
 
-        // Orbes via StyleFactory
+        // orbs with different sizes, colors, opacities, and animation parameters, using StyleFactory.animatedOrb
         Circle orb1 = StyleFactory.animatedOrb(150, StyleFactory.D_ACCENT2, 0.30,  8,  12, 4000);
         Circle orb2 = StyleFactory.animatedOrb(100, StyleFactory.D_ACCENT,  0.25, -6,  10, 5000);
         Circle orb3 = StyleFactory.animatedOrb( 60, "#22d3ee",              0.20,  5,  -8, 3500);
@@ -125,7 +125,7 @@ public class LoginView {
         b.getChildren().addAll(v, l); return b;
     }
 
-    // ── Panneau droit ─────────────────────────────────────────────────────
+    // right panel with the login form, including fields for username and password, a login button, error messages, and a link to the registration view. The form uses StyleFactory for consistent styling of inputs, buttons, and error messages.
     private StackPane buildRight() {
         StackPane pane = new StackPane();
         pane.setStyle(StyleFactory.darkBg());
@@ -139,7 +139,7 @@ public class LoginView {
         form.setPadding(new Insets(0, 52, 0, 52));
         form.setMaxWidth(360);
 
-        // Titre
+        // title section with a welcome message, using different font sizes and colors for the tag, heading, and subtext
         VBox welcome = new VBox(5); welcome.setAlignment(Pos.CENTER_LEFT);
         Text tag = new Text("BIENVENUE");
         tag.setFont(Font.font("System", FontWeight.BOLD, 10));
@@ -153,7 +153,7 @@ public class LoginView {
         welcome.getChildren().addAll(tag, heading, subTxt);
         VBox.setMargin(welcome, new Insets(0,0,28,0));
 
-        // Champs
+        //  Form fields for username and password, with labels and styled inputs using StyleFactory
         VBox fUser = fieldBox("Utilisateur", false);
         tfUser = (TextField) fUser.getChildren().get(1);
 
@@ -161,7 +161,7 @@ public class LoginView {
         pfPass = (PasswordField) fPass.getChildren().get(1);
         pfPass.setOnAction(e -> doLogin());
 
-        // Erreur
+        // Error label for displaying login errors, hidden by default and styled with StyleFactory
         lblError = new Label();
         lblError.setStyle("-fx-text-fill:" + StyleFactory.D_DANGER + ";-fx-font-size:12px;");
         lblError.setWrapText(true);
@@ -169,22 +169,11 @@ public class LoginView {
         lblError.setManaged(false);
         VBox.setMargin(lblError, new Insets(8,0,0,0));
 
-        // Bouton — via StyleFactory
+        // button for submitting the login form, with an action handler that calls the doLogin() method, and styled using StyleFactory
         btnLogin = StyleFactory.loginBtn("Se connecter  →");
         btnLogin.setOnAction(e -> doLogin());
 
-        // Hint démo
-        HBox hint = new HBox(6); hint.setAlignment(Pos.CENTER);
-        Rectangle dot = new Rectangle(6,6);
-        dot.setArcWidth(6); dot.setArcHeight(6);
-        dot.setFill(Color.web(StyleFactory.D_SUCCESS));
-        Text hintTxt = new Text("Démo : admin / admin123");
-        hintTxt.setFont(Font.font("System", 11));
-        hintTxt.setFill(Color.web(StyleFactory.D_SUBTEXT));
-        hint.getChildren().addAll(dot, hintTxt);
-        VBox.setMargin(hint, new Insets(14,0,0,0));
-
-        // Lien vers inscription
+        // Link to the registration view, with a prompt and a clickable "S'inscrire" text that opens the RegisterView when clicked, styled using StyleFactory
         HBox registerLink = new HBox(4); registerLink.setAlignment(Pos.CENTER);
         Text noAccount = new Text("Pas encore de compte ?");
         noAccount.setFont(Font.font("System", 12));
@@ -204,7 +193,7 @@ public class LoginView {
                 fUser, StyleFactory.spacer(12),
                 fPass,
                 lblError, StyleFactory.spacer(22),
-                btnLogin, hint, registerLink
+                btnLogin, registerLink
         );
 
         pane.getChildren().addAll(div, form);
@@ -212,24 +201,32 @@ public class LoginView {
         return pane;
     }
 
-    // ── Connexion ─────────────────────────────────────────────────────────
+    //  Login logic that validates the input fields, attempts to authenticate the user using the UserDAO, and handles success and error cases with appropriate messages and animations using StyleFactory.
     private void doLogin() {
         String user = tfUser.getText().trim();
         String pass = pfPass.getText();
         if (user.isEmpty() || pass.isEmpty()) { err("Remplissez tous les champs."); return; }
-        if (user.equals("admin") && pass.equals("admin123")) {
-            // Animation succès via StyleFactory
-            StyleFactory.animateSuccess(btnLogin, "✓  Connexion réussie", 650,
-                    () -> new MainMenuView(stage).show());
-        } else {
-            attempts++;
-            if (attempts >= 3) {
-                err("Trop de tentatives. Relancez l'application.");
-                btnLogin.setDisable(true);
+
+        try {
+            com.example.controller.UserDAO dao = new com.example.controller.UserDAO();
+            com.example.model.UserModel loggedIn = dao.login(user, pass);
+
+            if (loggedIn != null) {
+                StyleFactory.animateSuccess(btnLogin, "✓  Connexion réussie", 650,
+                        () -> new MainMenuView(stage).show());
             } else {
-                err("Identifiants incorrects. " + (3 - attempts) + " essai(s).");
-                StyleFactory.animateShake(btnLogin, 7); // Animation shake via StyleFactory
+                attempts++;
+                if (attempts >= 3) {
+                    err("Trop de tentatives. Relancez l'application.");
+                    btnLogin.setDisable(true);
+                } else {
+                    err("Identifiants incorrects. " + (3 - attempts) + " essai(s).");
+                    StyleFactory.animateShake(btnLogin, 7);
+                }
             }
+        } catch (Exception ex) {
+            err("Erreur de connexion : " + ex.getMessage());
+            ex.printStackTrace();
         }
     }
 
@@ -239,7 +236,7 @@ public class LoginView {
         lblError.setManaged(true);
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────
+    // helper method to create a labeled input field, with support for both text and password fields, using StyleFactory for consistent styling
     private VBox fieldBox(String label, boolean password) {
         VBox box = new VBox(6);
         Text lbl = new Text(label);

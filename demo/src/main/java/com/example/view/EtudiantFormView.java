@@ -36,19 +36,19 @@ public class EtudiantFormView {
     public Node build() {
         boolean isEdit = (existing != null);
 
-        // Conteneur principal (Carte)
+        // principal card
         VBox card = new VBox(20);
         card.setPadding(new Insets(30, 35, 30, 35));
         card.setStyle(StyleFactory.cardBg());
         card.setMaxWidth(480);
         card.setAlignment(Pos.TOP_LEFT);
 
-        // Titre dynamique
+        // title with dynamic text and color
         Label title = new Label(isEdit ? "✏️ Modifier l'étudiant" : "➕ Ajouter un étudiant");
         title.setFont(Font.font("System", FontWeight.BOLD, 22));
         title.setStyle("-fx-text-fill: " + StyleFactory.C_PRIMARY + ";");
 
-        // Formulaire en grille
+        // form grid
         GridPane grid = new GridPane();
         grid.setHgap(15);
         grid.setVgap(15);
@@ -57,7 +57,7 @@ public class EtudiantFormView {
         col.setPercentWidth(50);
         grid.getColumnConstraints().addAll(col, col);
 
-        // Champs de saisie
+        //  Form fields with pre-filled values in edit mode
         tfPrenom = createStyledTextField(isEdit ? existing.getFirstName() : "");
         tfPrenom.setPromptText("Ex: Jean");
         
@@ -71,18 +71,18 @@ public class EtudiantFormView {
         dpBirthDate.setMaxWidth(Double.MAX_VALUE);
         dpBirthDate.getEditor().setStyle("-fx-font-size: 14px;");
 
-        // Placement dans la grille
+        // grouping fields with labels
         grid.add(fieldGroup("Prénom *", tfPrenom), 0, 0);
         grid.add(fieldGroup("Nom *", tfNom), 1, 0);
         grid.add(fieldGroup("Date de naissance *", dpBirthDate), 0, 1, 2, 1);
 
-        // Zone d'erreur
+        //  Error label (hidden by default)
         lblError = new Label();
         lblError.setStyle("-fx-text-fill: " + StyleFactory.C_DANGER + "; -fx-font-size: 13px; -fx-font-weight: bold;");
         lblError.setWrapText(true);
         lblError.setVisible(false);
 
-        // Boutons d'action
+        //  Action buttons with dynamic text and styles
         Button btnSave = isEdit ? StyleFactory.primaryBtn("💾 Enregistrer")
                                 : StyleFactory.successBtn("➕ Ajouter l'étudiant");
         btnSave.setPrefHeight(45);
@@ -98,10 +98,10 @@ public class EtudiantFormView {
         actions.setAlignment(Pos.CENTER_RIGHT);
         actions.setPadding(new Insets(10, 0, 0, 0));
 
-        // Assemblage
+        //  Assembling the card
         card.getChildren().addAll(title, grid, lblError, actions);
 
-        // Wrapper pour centrer la carte sur l'écran
+        //  Wrapper with padding and background
         StackPane wrapper = new StackPane(card);
         wrapper.setPadding(new Insets(20));
         wrapper.setStyle(StyleFactory.rootBg());
@@ -115,7 +115,7 @@ public class EtudiantFormView {
         String nom = tfNom.getText().trim();
         LocalDate birth = dpBirthDate.getValue();
 
-        // Validation simple
+        //Simple validation of required fields
         if (prenom.isEmpty() || nom.isEmpty() || birth == null) {
             showError("Veuillez remplir tous les champs obligatoires (*).");
             return;
@@ -123,13 +123,13 @@ public class EtudiantFormView {
 
         try {
             if (existing == null) {
-                // Mode Création
+                // creation mode
                 dao.addStudent(prenom, nom, birth);
             } else {
-                // Mode Édition
+                // edit mode
                 dao.updateStudent(existing.getId(), prenom, nom, birth);
             }
-            // Retour à la liste ou action suivante
+            // refresh the list and close the form
             onSaved.run();
         } catch (SQLException ex) {
             showError("Erreur SQL : " + ex.getMessage());

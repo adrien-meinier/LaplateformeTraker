@@ -3,10 +3,10 @@ module com.example {
     requires javafx.fxml;
     requires java.sql;
 
-    // Autorise le FXML à trouver ton contrôleur
+    // allows reflection for JavaFX to access private members of the controller and model packages, which is necessary for features like FXML loading and TableView data binding.
     opens com.example.controller to javafx.fxml;
     
-    // Autorise la TableView à lire les données de ton modèle
+    // allows reflection for JavaFX to access private members of the view package, which is necessary for features like FXML loading and UI component manipulation.
     opens com.example.model to javafx.base;
 
     exports com.example;

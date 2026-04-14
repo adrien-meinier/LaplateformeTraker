@@ -35,7 +35,7 @@ public class MainMenuView {
 
     public void show() {
         stage.setWidth(1150);
-        stage.setHeight(800); // Augmenté pour laisser de la place au chatbot
+        stage.setHeight(800); // change from 700 to 800 for more vertical space
         stage.setResizable(true);
         stage.setScene(buildScene());
         stage.centerOnScreen();
@@ -59,10 +59,10 @@ public class MainMenuView {
         sidebar.setPrefWidth(250);
         sidebar.setStyle(StyleFactory.sidebarBg());
 
-        // 1. HEADER PROFIL
+        // 1. header section with a profile picture and application name, using a StackPane to create a circular profile image with a border, and styled with StyleFactory for consistent colors and fonts. The profile picture is clickable to allow the user to change it via a FileChooser.
         VBox profileHeader = buildProfileHeader();
 
-        // 2. NAVIGATION
+        // 2.navigation buttons with icons, using StyleFactory for consistent styling, and an active state that highlights the currently selected section
         VBox navButtons = new VBox(5);
         navButtons.setPadding(new Insets(15, 0, 15, 0));
         
@@ -74,14 +74,14 @@ public class MainMenuView {
         navButtons.getChildren().addAll(btnEtudiants, btnAjouter, btnRecherche, btnStatistiques);
         setActive(btnEtudiants);
 
-        // 3. ESPACE FLEXIBLE
+        // 3. flexible spacer to push the chatbot and quit button to the bottom
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        // 4. CHATBOT AVANCÉ (Écriture Noire, Réponses contextuelles)
+        // 4. chatbot area with a title, a display area for messages, and an input field for user queries. The chatbot provides contextual help based on keywords in the user's input, and is styled with a light background and clear typography for readability. The chatbot logic is simple but can be expanded in the future to provide more comprehensive assistance.
         VBox chatbotArea = buildChatbotInline();
 
-        // 5. FOOTER
+        // 5. footer section with a separator and a quit button, styled using StyleFactory to maintain visual consistency. The quit button is highlighted in red to indicate its importance and has an action handler that closes the application when clicked.
         Separator sep = new Separator();
         sep.setOpacity(0.2);
         
@@ -98,7 +98,7 @@ public class MainMenuView {
         chatBox.setPadding(new Insets(12));
         VBox.setMargin(chatBox, new Insets(10)); 
         
-        // Fond clair pour le texte noir
+        // light background with some transparency and rounded corners for a modern look, using StyleFactory for consistent colors
         chatBox.setStyle("-fx-background-color: rgba(255,255,255,0.25); -fx-background-radius: 12;");
 
         Label chatTitle = new Label("🤖 Assistant Scolaire");
@@ -109,7 +109,7 @@ public class MainMenuView {
         chatDisplay.setWrapText(true);
         chatDisplay.setPrefHeight(100);
         
-        // Style : Texte NOIR, gras moyen, fond transparent
+        // styling the chat display area with a light background, clear typography, and no borders for a clean look, using StyleFactory for consistent colors and fonts
         chatDisplay.setStyle("-fx-control-inner-background: transparent; " +
                            "-fx-text-fill: black; " + 
                            "-fx-background-color: transparent; " +
@@ -121,7 +121,7 @@ public class MainMenuView {
         chatInput.setPromptText("Écrivez ici...");
         chatInput.setStyle("-fx-background-color: rgba(255,255,255,0.5); -fx-text-fill: black; -fx-prompt-text-fill: #555; -fx-background-radius: 10;");
         
-        // --- ALGORITHME DE RÉPONSE CHATBOT ---
+        // simple keyword-based response logic for the chatbot, which can be expanded in the future with more complex natural language processing or integration with an AI API. The chatbot provides contextual help based on common user queries related to the application's features.
         chatInput.setOnAction(e -> {
             String input = chatInput.getText().toLowerCase().trim();
             String response;
