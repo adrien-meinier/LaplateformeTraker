@@ -10,7 +10,7 @@ import com.example.model.UserModel;
 
 public class UserDAO {
 
-    /** Inscription d'un nouvel utilisateur */
+    /** user registration */
     public boolean register(String username, String email, String password, boolean isAdmin)
             throws Exception {
 
@@ -35,7 +35,7 @@ public class UserDAO {
         }
     }
 
-    /** Connexion par username + mot de passe */
+    /** user login */
     public UserModel login(String username, String password) throws Exception {
 
         UserModel user = getUserByUsername(username);
@@ -46,7 +46,7 @@ public class UserDAO {
         return valid ? user : null;
     }
 
-    /** Récupère un utilisateur par son username */
+    /** get user by username */
     public UserModel getUserByUsername(String username) throws SQLException {
 
         String sql = """
@@ -69,7 +69,7 @@ public class UserDAO {
         return null;
     }
 
-    /** Récupère un utilisateur par son email */
+    /** get user by email */
     public UserModel getUserByEmail(String email) throws SQLException {
 
         String sql = """
@@ -92,7 +92,7 @@ public class UserDAO {
         return null;
     }
 
-    /** Vérifie si un email existe déjà */
+    /** check if email exists */
     public boolean emailExists(String email) throws SQLException {
         String sql = "SELECT 1 FROM app_user WHERE email = ?;";
 
@@ -107,7 +107,7 @@ public class UserDAO {
         }
     }
 
-    /** Vérifie si un username existe déjà */
+    /** check if username exists */
     public boolean usernameExists(String username) throws SQLException {
         String sql = "SELECT 1 FROM app_user WHERE username = ?;";
 
@@ -122,7 +122,7 @@ public class UserDAO {
         }
     }
 
-    /** Mise à jour du mot de passe */
+    /** update password */
     public boolean updatePassword(String email, String newPassword) throws Exception {
 
         String newSalt = SaltUtil.generateSalt();
@@ -145,7 +145,7 @@ public class UserDAO {
         }
     }
 
-    /** Suppression */
+    /** delete user */
     public boolean deleteUser(String email) throws SQLException {
 
         String sql = "DELETE FROM app_user WHERE email = ?;";
