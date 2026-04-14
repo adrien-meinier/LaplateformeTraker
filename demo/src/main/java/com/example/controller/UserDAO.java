@@ -10,7 +10,7 @@ import com.example.model.UserModel;
 
 public class UserDAO {
 
-    /** user registration */
+    // New user register
     public boolean register(String username, String email, String password, boolean isAdmin)
             throws Exception {
 
@@ -35,7 +35,7 @@ public class UserDAO {
         }
     }
 
-    /** user login */
+    // User login with username and password
     public UserModel login(String username, String password) throws Exception {
 
         UserModel user = getUserByUsername(username);
@@ -46,7 +46,7 @@ public class UserDAO {
         return valid ? user : null;
     }
 
-    /** get user by username */
+    // Get a user with their username
     public UserModel getUserByUsername(String username) throws SQLException {
 
         String sql = """
@@ -69,7 +69,7 @@ public class UserDAO {
         return null;
     }
 
-    /** get user by email */
+    // Get user with their email
     public UserModel getUserByEmail(String email) throws SQLException {
 
         String sql = """
@@ -92,7 +92,7 @@ public class UserDAO {
         return null;
     }
 
-    /** check if email exists */
+    // Verify is email is already in use
     public boolean emailExists(String email) throws SQLException {
         String sql = "SELECT 1 FROM app_user WHERE email = ?;";
 
@@ -107,7 +107,7 @@ public class UserDAO {
         }
     }
 
-    /** check if username exists */
+    // Verify is username is already in use
     public boolean usernameExists(String username) throws SQLException {
         String sql = "SELECT 1 FROM app_user WHERE username = ?;";
 
@@ -122,7 +122,7 @@ public class UserDAO {
         }
     }
 
-    /** update password */
+    // Update password
     public boolean updatePassword(String email, String newPassword) throws Exception {
 
         String newSalt = SaltUtil.generateSalt();
@@ -145,7 +145,7 @@ public class UserDAO {
         }
     }
 
-    /** delete user */
+    // Delete user
     public boolean deleteUser(String email) throws SQLException {
 
         String sql = "DELETE FROM app_user WHERE email = ?;";
@@ -158,7 +158,7 @@ public class UserDAO {
         }
     }
 
-    /** Mapping ResultSet → UserModel */
+    // Map result to a UserModel object
     private UserModel mapRow(ResultSet rs) throws SQLException {
         return new UserModel(
                 rs.getString("username"),

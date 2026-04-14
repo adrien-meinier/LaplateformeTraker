@@ -6,31 +6,43 @@ import com.example.view.LoginView;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import com.example.controller.DatabaseBackupUtils;
+
 public class Main extends Application {
 
-    public static void main(String[] args) {
-        try {
-            // initialization of the database (creation of tables and sample data)
-            DatabaseInitializer.initialize();
+    private static final ScheduledExecutorService scheduler =
+            Executors.newSingleThreadScheduledExecutor();
 
+    public static void main(String[] args) {
+
+        try {
+            DatabaseInitializer.initialize();
         } catch (SQLException e) {
-            System.err.println("Erreur lors de l'initialisation de la base : " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Erreur lors de l'initialisation : " + e.getMessage());
         }
 
-        // launch the JavaFX application (calls start() method)
+        scheduler.scheduleAtFixedRate(() -> {
+            try {
+                DatabaseBackupUtils.createBackup();
+                System.out.println("Backup effectué !");
+            } catch (Exception e) {
+                System.err.println("Erreur backup : " + e.getMessage());
+            }
+        }, 5, 120, TimeUnit.SECONDS);
+
         launch(args);
     }
 
     @Override
-    public void start(Stage primaryStage) {
-        try {
-            LoginView loginView = new LoginView(primaryStage);
-            loginView.show();
+    public void stop() {
+        scheduler.shutdown();
+    }
 
-        } catch (Exception e) {
-            System.err.println("Erreur au démarrage de l'interface : " + e.getMessage());
-            e.printStackTrace();
-        }
+    @Override
+    public void start(Stage primaryStage) {
+        new LoginView(primaryStage).show();
     }
 }
