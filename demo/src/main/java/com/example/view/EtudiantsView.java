@@ -92,7 +92,6 @@ public class EtudiantsView {
     private TableView<StudentModel> buildTable() {
         TableView<StudentModel> tv = new TableView<>();
         tv.setStyle(StyleFactory.tableStyle());
-        tv.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         tv.setPlaceholder(new Label("Aucun étudiant trouvé."));
 
         TableColumn<StudentModel, Integer>       colId       = col("ID",               "id",               60);

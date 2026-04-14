@@ -44,7 +44,7 @@ public class UserModelTest {
                 false
         );
 
-        String expected = "UserModel{email='coucou@hihi.com', isAdmin=false, creationDate=" + created + "}";
+        String expected = "UserModel{username='a user name', email='coucou@hihi.com', isAdmin=false, creationDate=" + created + "}";
         assertEquals(expected, user.toString());
 
     }
