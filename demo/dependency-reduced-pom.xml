@@ -44,15 +44,9 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.2.5</version>
         <configuration>
-          <argLine>${argLine}
-                        --add-opens javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
-                        --add-opens javafx.graphics/com.sun.javafx.stage=ALL-UNNAMED
-                        --add-opens javafx.controls/com.sun.javafx.scene.control=ALL-UNNAMED</argLine>
-          <systemPropertyVariables>
-            <java.awt.headless>true</java.awt.headless>
-            <testfx.robot>glass</testfx.robot>
-            <testfx.headless>true</testfx.headless>
-          </systemPropertyVariables>
+          <excludes>
+            <exclude>**/javafx/**</exclude>
+          </excludes>
         </configuration>
       </plugin>
       <plugin>
@@ -74,15 +68,33 @@
             </goals>
           </execution>
         </executions>
-        <configuration>
-          <excludes>
-            <exclude>com/sun/**</exclude>
-            <exclude>META-INF/**</exclude>
-          </excludes>
-        </configuration>
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>javafx-tests</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.2.5</version>
+            <configuration>
+              <includes>
+                <include>**/javafx/**</include>
+              </includes>
+              <argLine>--add-opens javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
+                                --add-opens javafx.graphics/com.sun.javafx.stage=ALL-UNNAMED
+                                --add-opens javafx.controls/javafx.scene.control=ALL-UNNAMED
+                                --add-opens javafx.graphics/javafx.scene=ALL-UNNAMED
+                                --add-opens javafx.base/com.sun.javafx=ALL-UNNAMED</argLine>
+              <useSystemClassLoader>false</useSystemClassLoader>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
   <dependencies>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
@@ -101,6 +113,26 @@
         <exclusion>
           <artifactId>junit-jupiter-engine</artifactId>
           <groupId>org.junit.jupiter</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>5.10.0</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>byte-buddy</artifactId>
+          <groupId>net.bytebuddy</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>byte-buddy-agent</artifactId>
+          <groupId>net.bytebuddy</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>objenesis</artifactId>
+          <groupId>org.objenesis</groupId>
         </exclusion>
       </exclusions>
     </dependency>

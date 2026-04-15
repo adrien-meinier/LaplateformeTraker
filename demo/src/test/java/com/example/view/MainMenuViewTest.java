@@ -266,4 +266,3 @@ public class MainMenuViewTest {
         void run() throws Exception;
     }
 }
-

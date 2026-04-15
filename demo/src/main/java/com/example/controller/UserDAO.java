@@ -159,7 +159,7 @@ public class UserDAO {
     }
 
     /** Mapping ResultSet → UserModel */
-    private UserModel mapRow(ResultSet rs) throws SQLException {
+    public UserModel mapRow(ResultSet rs) throws SQLException {
         return new UserModel(
                 rs.getString("username"),
                 rs.getString("email"),
