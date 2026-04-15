@@ -39,6 +39,15 @@ public class Main extends Application {
     @Override
     public void stop() {
         scheduler.shutdown();
+
+        try {
+        DatabaseBackupUtils.deleteAllBackups();
+        System.out.println("Backups supprimés à la fermeture.");
+        } 
+        catch (Exception e) {
+        System.err.println("Erreur suppression backups : " + e.getMessage());
+        }
+
     }
 
     @Override

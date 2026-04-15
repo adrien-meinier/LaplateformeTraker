@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -79,9 +78,6 @@ public class ExportControllerTest {
                 LocalDateTime.now(),
                 LocalDateTime.now()
         );
-
-        List<StudentModel> students = List.of(student);
-        List<GradeModel> grades = List.of(g1, g2);
 
         // Temp file
         File tempFile = File.createTempFile("export_test", ".csv");

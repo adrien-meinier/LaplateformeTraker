@@ -22,6 +22,7 @@ public final class DatabaseBackupUtils {
 
     // Directory where backups will be stored
     private static final Path BACKUP_DIR = Path.of("C:/Backups/Tracker");
+    private static final Path BACKUP_PARENT_DIR = Path.of("C:/Backups");
 
     // Creates a timestamped backup using pg_dump.
     public static void createBackup() throws IOException {
@@ -66,4 +67,31 @@ public final class DatabaseBackupUtils {
             throw new IOException("Backup interrupted", e);
         }
     }
+
+    public static void deleteAllBackups() throws IOException {
+
+    if (!Files.exists(BACKUP_DIR)) {
+        return; // Nothing to delete
+    }
+
+    // Deletes files in the directory
+    try (var files = Files.list(BACKUP_DIR)) {
+        files.forEach(path -> {
+            try {
+                Files.deleteIfExists(path);
+            } catch (IOException e) {
+                System.err.println("Impossible de supprimer : " + path + " -> " + e.getMessage());
+            }
+        });
+    }
+
+    // Delete the directory itself
+    try {
+        Files.deleteIfExists(BACKUP_DIR);
+        Files.deleteIfExists(BACKUP_PARENT_DIR);
+    } catch (IOException e) {
+        System.err.println("Impossible de supprimer le dossier : " + e.getMessage());
+    }
+}
+
 }
