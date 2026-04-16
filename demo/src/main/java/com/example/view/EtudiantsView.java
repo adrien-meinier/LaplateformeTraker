@@ -83,7 +83,7 @@ public class EtudiantsView {
         refresh();
         return root;
     }
-
+    
     private TableView<StudentModel> buildTable() {
         TableView<StudentModel> tv = new TableView<>();
         tv.setStyle(StyleFactory.tableStyle());
@@ -169,9 +169,6 @@ public class EtudiantsView {
         }
     }
 
-    // ---------------------------------------------------------
-    // 🔥🔥🔥 NOUVELLE VERSION DE openForm() — FIXE LE BUG 🔥🔥🔥
-    // ---------------------------------------------------------
     private void openForm(StudentModel student) {
         Stage stage = new Stage();
         stage.setTitle(student == null ? "Ajouter un étudiant" : "Modifier un étudiant");
