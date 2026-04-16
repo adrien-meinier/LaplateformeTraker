@@ -22,7 +22,7 @@ public class DatabaseInitializer {
         String url = "jdbc:postgresql://" + DB_HOST + ":" + DB_PORT + "/postgres";
 
         try (Connection conn = DriverManager.getConnection(url, DB_USER, DB_PASSWORD);
-             Statement stmt = conn.createStatement()) {
+            Statement stmt = conn.createStatement()) {
 
             String checkDb = "SELECT 1 FROM pg_database WHERE datname = '" + DB_NAME + "';";
             var rs = stmt.executeQuery(checkDb);
@@ -54,6 +54,11 @@ public class DatabaseInitializer {
     private static final String MIGRATE_ADD_SALT = """
         ALTER TABLE app_user
             ADD COLUMN IF NOT EXISTS salt VARCHAR(64) NOT NULL DEFAULT '';
+        """;
+
+    private static final String MIGRATE_ADD_AVERAGE_GRADE = """
+        ALTER TABLE student
+            ADD COLUMN IF NOT EXISTS average_grade NUMERIC(5,2) DEFAULT 0;
         """;
 
     private static final String MIGRATE_ADD_USERNAME = """
@@ -92,6 +97,32 @@ public class DatabaseInitializer {
     private static final String CREATE_INDEX_GRADES_STUDENT =
             "CREATE INDEX IF NOT EXISTS idx_grades_student_id ON grades(student_id);";
 
+    private static final String CREATE_FUNCTION_UPDATE_AVERAGE = """
+        CREATE OR REPLACE FUNCTION update_student_average()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            UPDATE student
+            SET average_grade = (
+                SELECT COALESCE(AVG(grade), 0)
+                FROM grades
+                WHERE student_id = NEW.student_id
+            )
+            WHERE id = NEW.student_id;
+
+            RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+        """;
+
+    private static final String CREATE_TRIGGER_UPDATE_AVERAGE = """
+        DROP TRIGGER IF EXISTS trg_update_student_average ON grades;
+
+        CREATE TRIGGER trg_update_student_average
+        AFTER INSERT OR UPDATE OR DELETE ON grades
+        FOR EACH ROW
+        EXECUTE FUNCTION update_student_average();
+        """;
+
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASSWORD);
     }
@@ -116,6 +147,9 @@ public class DatabaseInitializer {
             stmt.execute(CREATE_TABLE_STUDENT);
             stmt.execute(CREATE_TABLE_GRADES);
             stmt.execute(CREATE_INDEX_GRADES_STUDENT);
+            stmt.execute(MIGRATE_ADD_AVERAGE_GRADE);
+            stmt.execute(CREATE_FUNCTION_UPDATE_AVERAGE);
+            stmt.execute(CREATE_TRIGGER_UPDATE_AVERAGE);
 
             // ✔ Seed uniquement si la table est vide
             var rs = stmt.executeQuery("SELECT COUNT(*) FROM student");

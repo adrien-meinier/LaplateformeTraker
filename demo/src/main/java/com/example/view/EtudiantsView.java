@@ -97,6 +97,7 @@ public class EtudiantsView {
         TableColumn<StudentModel, Integer>       colId       = col("ID",               "id",               60);
         TableColumn<StudentModel, String>        colPrenom   = col("Prénom",            "firstName",       150);
         TableColumn<StudentModel, String>        colNom      = col("Nom",               "lastName",        150);
+        TableColumn<StudentModel, Double>        colAverage = col("Moyenne", "averageGrade", 100);
         TableColumn<StudentModel, LocalDate>     colBirth    = col("Date de naissance", "birthDate",       150);
         TableColumn<StudentModel, LocalDateTime> colCreated  = col("Créé le",           "creationDate",    160);
         TableColumn<StudentModel, LocalDateTime> colModified = col("Modifié le",        "lastModifiedDate",160);
@@ -142,7 +143,7 @@ public class EtudiantsView {
             }
         });
 
-        tv.getColumns().addAll(colId, colPrenom, colNom, colBirth, colCreated, colModified, colActions);
+        tv.getColumns().addAll(colId, colPrenom, colNom, colAverage, colBirth, colCreated, colModified, colActions);
         return tv;
     }
 
@@ -196,6 +197,7 @@ public class EtudiantsView {
         TextField  tfPrenom = new TextField();
         TextField  tfNom    = new TextField();
         DatePicker dpBirth  = new DatePicker();
+        Label lblAverage = new Label(student == null ? "0.00" : String.valueOf(student.getAverageGrade()));
 
         if (student != null) {
             tfPrenom.setText(student.getFirstName());
@@ -204,25 +206,29 @@ public class EtudiantsView {
         }
 
         GridPane grid = new GridPane();
-        grid.setHgap(10); grid.setVgap(10);
+        grid.setHgap(10);
+        grid.setVgap(10);
         grid.setPadding(new Insets(10));
+
         grid.addRow(0, new Label("Prénom :"),    tfPrenom);
         grid.addRow(1, new Label("Nom :"),       tfNom);
         grid.addRow(2, new Label("Naissance :"), dpBirth);
-        dialog.getDialogPane().setContent(grid);
+        grid.addRow(3, new Label("Moyenne :"),   lblAverage);
 
         dialog.setResultConverter(button -> {
             if (button == btnSave) {
                 if (tfPrenom.getText().isBlank() || tfNom.getText().isBlank()
                         || dpBirth.getValue() == null) return null;
                 return new StudentModel(
-                        student == null ? 0 : student.getId(),
-                        tfPrenom.getText().trim(),
-                        tfNom.getText().trim(),
-                        dpBirth.getValue(),
-                        student == null ? LocalDateTime.now() : student.getCreationDate(),
-                        LocalDateTime.now()
-                );
+                    student == null ? 0 : student.getId(),
+                    tfPrenom.getText().trim(),
+                    tfNom.getText().trim(),
+                    dpBirth.getValue(),
+                    student == null ? LocalDateTime.now() : student.getCreationDate(),
+                    LocalDateTime.now(),
+                    student == null ? 0.0 : student.getAverageGrade()
+            );
+
             }
             return null;
         });

@@ -70,7 +70,7 @@ public class StudentController {
         refreshTable();
     }
 
-    // ─── Actions Boutons ──────────────────────────────────────────────────
+    //  Actions Boutons 
 
     @FXML
     public void handleAdd() {

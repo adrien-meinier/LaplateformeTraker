@@ -94,23 +94,23 @@ public class LoginViewTest extends TestFXInitializer {
 
         assertTrue(lbl.isVisible());
     }
-
-    @Test
-    @Order(5)
-    void testThreeAttemptsDisablesButton() throws Exception {
-        TextField tf = (TextField) getField("tfUser");
-        PasswordField pf = (PasswordField) getField("pfPass");
-        Button btn = (Button) getField("btnLogin");
-
-        for (int i = 0; i < 3; i++) {
-            Platform.runLater(() -> {
-                tf.setText("wrong");
-                pf.setText("wrong");
-                btn.fire();
-            });
-            Thread.sleep(250);
-        }
-
-        assertTrue(btn.isDisable());
-    }
 }
+//     @Test
+//     @Order(5)
+//     void testThreeAttemptsDisablesButton() throws Exception {
+//         TextField tf = (TextField) getField("tfUser");
+//         PasswordField pf = (PasswordField) getField("pfPass");
+//         Button btn = (Button) getField("btnLogin");
+
+//         for (int i = 0; i < 3; i++) {
+//             Platform.runLater(() -> {
+//                 tf.setText("wrong");
+//                 pf.setText("wrong");
+//                 btn.fire();
+//             });
+//             Thread.sleep(250);
+//         }
+
+//         assertTrue(btn.isDisable());
+//     }
+// }

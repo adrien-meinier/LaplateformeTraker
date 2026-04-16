@@ -12,10 +12,11 @@ public class StudentModel {
     private final LocalDate birthDate;
     private final LocalDateTime creationDate;
     private final LocalDateTime lastModifiedDate;
+    private final double averageGrade;
 
     public StudentModel(int id, String firstName, String lastName,
                         LocalDate birthDate, LocalDateTime creationDate,
-                        LocalDateTime lastModifiedDate) {
+                        LocalDateTime lastModifiedDate, double averageGrade) {
 
         this.id = id;
         this.firstName = firstName;
@@ -23,27 +24,35 @@ public class StudentModel {
         this.birthDate = birthDate;
         this.creationDate = creationDate;
         this.lastModifiedDate = lastModifiedDate;
+        this.averageGrade = averageGrade;
     }
-
 
     // Getters
-    public int getId() { 
-        return id; 
+    public int getId() {
+        return id;
     }
 
-    public String getFirstName() { 
-        return firstName; 
+    public String getFirstName() {
+        return firstName;
     }
-    public String getLastName() { 
-        return lastName; 
+
+    public String getLastName() {
+        return lastName;
     }
-    public LocalDate getBirthDate() { 
-        return birthDate; 
+
+    public LocalDate getBirthDate() {
+        return birthDate;
     }
-    public LocalDateTime getCreationDate() { 
-        return creationDate; 
+
+    public LocalDateTime getCreationDate() {
+        return creationDate;
     }
-    public LocalDateTime getLastModifiedDate() { 
-        return lastModifiedDate; 
+
+    public LocalDateTime getLastModifiedDate() {
+        return lastModifiedDate;
+    }
+
+    public double getAverageGrade() {
+        return averageGrade;
     }
 }
