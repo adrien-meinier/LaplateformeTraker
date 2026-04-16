@@ -1,6 +1,7 @@
 package com.example.view;
 
 import com.example.controller.StudentDAO;
+import com.example.controller.GradeDAO;
 import com.example.model.StudentModel;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -13,13 +14,10 @@ import javafx.scene.text.FontWeight;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
-/**
- * EtudiantFormView — Vue de création et modification d'un étudiant.
- * Rectifiée pour une intégration propre avec le StyleFactory.
- */
 public class EtudiantFormView {
 
-    private final StudentDAO dao;
+    private final StudentDAO studentDao;
+    private final GradeDAO gradeDao = new GradeDAO();
     private final StudentModel existing;
     private final Runnable onSaved;
 
@@ -28,7 +26,7 @@ public class EtudiantFormView {
     private Label lblError;
 
     public EtudiantFormView(StudentDAO dao, StudentModel existing, Runnable onSaved) {
-        this.dao = dao;
+        this.studentDao = dao;
         this.existing = existing;
         this.onSaved = onSaved;
     }
@@ -36,19 +34,16 @@ public class EtudiantFormView {
     public Node build() {
         boolean isEdit = (existing != null);
 
-        // principal card
         VBox card = new VBox(20);
         card.setPadding(new Insets(30, 35, 30, 35));
         card.setStyle(StyleFactory.cardBg());
         card.setMaxWidth(480);
         card.setAlignment(Pos.TOP_LEFT);
 
-        // title with dynamic text and color
         Label title = new Label(isEdit ? "✏️ Modifier l'étudiant" : "➕ Ajouter un étudiant");
         title.setFont(Font.font("System", FontWeight.BOLD, 22));
         title.setStyle("-fx-text-fill: " + StyleFactory.C_PRIMARY + ";");
 
-        // form grid
         GridPane grid = new GridPane();
         grid.setHgap(15);
         grid.setVgap(15);
@@ -57,32 +52,40 @@ public class EtudiantFormView {
         col.setPercentWidth(50);
         grid.getColumnConstraints().addAll(col, col);
 
-        //  Form fields with pre-filled values in edit mode
-        tfPrenom = createStyledTextField(isEdit ? existing.getFirstName() : "");
-        tfPrenom.setPromptText("Ex: Jean");
-        
-        tfNom = createStyledTextField(isEdit ? existing.getLastName() : "");
-        tfNom.setPromptText("Ex: Dupont");
+        // Champs sécurisés
+        tfPrenom = createStyledTextField(isEdit && existing.getFirstName() != null ? existing.getFirstName() : "");
+        tfNom    = createStyledTextField(isEdit && existing.getLastName()  != null ? existing.getLastName()  : "");
 
-        dpBirthDate = new DatePicker(isEdit && existing.getBirthDate() != null
-                ? existing.getBirthDate()
-                : LocalDate.of(2000, 1, 1));
+        LocalDate birthInit = LocalDate.of(2000, 1, 1);
+        if (isEdit && existing.getBirthDate() != null) {
+            birthInit = existing.getBirthDate();
+        }
+        dpBirthDate = new DatePicker(birthInit);
         dpBirthDate.setPrefHeight(42);
-        dpBirthDate.setMaxWidth(Double.MAX_VALUE);
-        dpBirthDate.getEditor().setStyle("-fx-font-size: 14px;");
 
-        // grouping fields with labels
+        // Moyenne sécurisée
+        double avg = (isEdit ? existing.getAverageGrade() : 0.0);
+        Label lblAverage = new Label(String.format("%.2f", avg));
+        lblAverage.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+
         grid.add(fieldGroup("Prénom *", tfPrenom), 0, 0);
         grid.add(fieldGroup("Nom *", tfNom), 1, 0);
         grid.add(fieldGroup("Date de naissance *", dpBirthDate), 0, 1, 2, 1);
+        grid.add(fieldGroup("Moyenne", lblAverage), 0, 2, 2, 1);
 
-        //  Error label (hidden by default)
         lblError = new Label();
         lblError.setStyle("-fx-text-fill: " + StyleFactory.C_DANGER + "; -fx-font-size: 13px; -fx-font-weight: bold;");
         lblError.setWrapText(true);
         lblError.setVisible(false);
 
-        //  Action buttons with dynamic text and styles
+        // Bouton Ajouter une note
+        Button btnAddGrade = null;
+        if (isEdit) {
+            btnAddGrade = StyleFactory.primaryBtn("➕ Ajouter une note");
+            btnAddGrade.setPrefHeight(40);
+            btnAddGrade.setOnAction(e -> openAddGradeDialog(existing));
+        }
+
         Button btnSave = isEdit ? StyleFactory.primaryBtn("💾 Enregistrer")
                                 : StyleFactory.successBtn("➕ Ajouter l'étudiant");
         btnSave.setPrefHeight(45);
@@ -96,12 +99,12 @@ public class EtudiantFormView {
 
         HBox actions = new HBox(12, btnCancel, btnSave);
         actions.setAlignment(Pos.CENTER_RIGHT);
-        actions.setPadding(new Insets(10, 0, 0, 0));
 
-        //  Assembling the card
-        card.getChildren().addAll(title, grid, lblError, actions);
+        if (btnAddGrade != null)
+            card.getChildren().addAll(title, grid, btnAddGrade, lblError, actions);
+        else
+            card.getChildren().addAll(title, grid, lblError, actions);
 
-        //  Wrapper with padding and background
         StackPane wrapper = new StackPane(card);
         wrapper.setPadding(new Insets(20));
         wrapper.setStyle(StyleFactory.rootBg());
@@ -115,7 +118,6 @@ public class EtudiantFormView {
         String nom = tfNom.getText().trim();
         LocalDate birth = dpBirthDate.getValue();
 
-        //Simple validation of required fields
         if (prenom.isEmpty() || nom.isEmpty() || birth == null) {
             showError("Veuillez remplir tous les champs obligatoires (*).");
             return;
@@ -123,27 +125,70 @@ public class EtudiantFormView {
 
         try {
             if (existing == null) {
-                // creation mode
-                dao.addStudent(prenom, nom, birth);
+                studentDao.addStudent(prenom, nom, birth);
             } else {
-                // edit mode
-                dao.updateStudent(existing.getId(), prenom, nom, birth);
+                studentDao.updateStudent(existing.getId(), prenom, nom, birth);
             }
-            // refresh the list and close the form
             onSaved.run();
         } catch (SQLException ex) {
             showError("Erreur SQL : " + ex.getMessage());
         }
     }
 
+    private void openAddGradeDialog(StudentModel student) {
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Ajouter une note");
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        TextField tfGrade = new TextField();
+        tfGrade.setPromptText("Note (0 à 20)");
+
+        TextField tfSubject = new TextField();
+        tfSubject.setPromptText("Matière");
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(10));
+
+        grid.addRow(0, new Label("Note :"), tfGrade);
+        grid.addRow(1, new Label("Matière :"), tfSubject);
+
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(btn -> {
+            if (btn == ButtonType.OK) {
+                try {
+                    int grade = Integer.parseInt(tfGrade.getText().trim());
+                    String subject = tfSubject.getText().trim();
+
+                    if (subject.isEmpty()) {
+                        showError("La matière ne peut pas être vide.");
+                        return null;
+                    }
+                    if (grade < 0 || grade > 20) {
+                        showError("La note doit être comprise entre 0 et 20.");
+                        return null;
+                    }
+
+                    gradeDao.addGrade(student.getId(), grade, subject);
+                    onSaved.run();
+                } catch (Exception ex) {
+                    showError("Erreur : " + ex.getMessage());
+                }
+            }
+            return null;
+        });
+
+        dialog.showAndWait();
+    }
+
     private TextField createStyledTextField(String value) {
         TextField tf = new TextField(value);
         tf.setStyle(StyleFactory.textFieldStyle());
         tf.setPrefHeight(42);
-        
-        // Effet de focus dynamique
-        tf.focusedProperty().addListener((obs, old, focused) -> 
-            tf.setStyle(focused ? StyleFactory.textFieldFocusStyle() : StyleFactory.textFieldStyle())
+        tf.focusedProperty().addListener((obs, old, focused) ->
+                tf.setStyle(focused ? StyleFactory.textFieldFocusStyle() : StyleFactory.textFieldStyle())
         );
         return tf;
     }
@@ -151,9 +196,7 @@ public class EtudiantFormView {
     private VBox fieldGroup(String labelText, Node control) {
         Label lbl = new Label(labelText);
         lbl.setStyle(StyleFactory.labelStyle());
-        VBox group = new VBox(6, lbl, control);
-        group.setFillWidth(true);
-        return group;
+        return new VBox(6, lbl, control);
     }
 
     private void showError(String msg) {
