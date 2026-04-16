@@ -200,7 +200,7 @@ public class EtudiantFormView {
     }
 
     private void showError(String msg) {
-        lblError.setText("⚠️ " + msg);
+        lblError.setText("Error : " + msg);
         lblError.setVisible(true);
     }
 }

@@ -2,7 +2,7 @@ package com.example.controller;
 
 import java.sql.*;
 
-import com.example.model.DatabaseInitializer;
+import com.example.model.DatabaseConnection;
 import com.example.model.PasswordHasher;
 import com.example.model.PasswordVerifier;
 import com.example.model.SaltUtil;
@@ -22,8 +22,9 @@ public class UserDAO {
                 VALUES (?, ?, ?, ?, ?);
                 """;
 
-        try (Connection conn = DatabaseInitializer.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (DatabaseConnection db = new DatabaseConnection()) {
+            db.openConnection();
+            PreparedStatement stmt = db.prepareStatement(sql);
 
             stmt.setString(1, username);
             stmt.setString(2, email);
@@ -55,8 +56,9 @@ public class UserDAO {
                 WHERE username = ?;
                 """;
 
-        try (Connection conn = DatabaseInitializer.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (DatabaseConnection db = new DatabaseConnection()) {
+            db.openConnection();
+            PreparedStatement stmt = db.prepareStatement(sql);
 
             stmt.setString(1, username);
 
@@ -78,8 +80,9 @@ public class UserDAO {
                 WHERE email = ?;
                 """;
 
-        try (Connection conn = DatabaseInitializer.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (DatabaseConnection db = new DatabaseConnection()) {
+            db.openConnection();
+            PreparedStatement stmt = db.prepareStatement(sql);
 
             stmt.setString(1, email);
 
@@ -96,8 +99,9 @@ public class UserDAO {
     public boolean emailExists(String email) throws SQLException {
         String sql = "SELECT 1 FROM app_user WHERE email = ?;";
 
-        try (Connection conn = DatabaseInitializer.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (DatabaseConnection db = new DatabaseConnection()) {
+            db.openConnection();
+            PreparedStatement stmt = db.prepareStatement(sql);
 
             stmt.setString(1, email);
 
@@ -111,8 +115,9 @@ public class UserDAO {
     public boolean usernameExists(String username) throws SQLException {
         String sql = "SELECT 1 FROM app_user WHERE username = ?;";
 
-        try (Connection conn = DatabaseInitializer.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (DatabaseConnection db = new DatabaseConnection()) {
+            db.openConnection();
+            PreparedStatement stmt = db.prepareStatement(sql);
 
             stmt.setString(1, username);
 
@@ -134,8 +139,9 @@ public class UserDAO {
                 WHERE email = ?;
                 """;
 
-        try (Connection conn = DatabaseInitializer.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (DatabaseConnection db = new DatabaseConnection()) {
+            db.openConnection();
+            PreparedStatement stmt = db.prepareStatement(sql);
 
             stmt.setString(1, newHash);
             stmt.setString(2, newSalt);
@@ -150,8 +156,9 @@ public class UserDAO {
 
         String sql = "DELETE FROM app_user WHERE email = ?;";
 
-        try (Connection conn = DatabaseInitializer.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (DatabaseConnection db = new DatabaseConnection()) {
+            db.openConnection();
+            PreparedStatement stmt = db.prepareStatement(sql);
 
             stmt.setString(1, email);
             return stmt.executeUpdate() > 0;

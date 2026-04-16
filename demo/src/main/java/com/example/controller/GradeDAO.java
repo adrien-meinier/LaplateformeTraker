@@ -4,12 +4,13 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.example.model.DatabaseInitializer;
+import com.example.model.DatabaseConnection;
 import com.example.model.GradeModel;
 
 /*
  Data Access Object for the grades table.
  Provides CRUD operations using prepared statements.
+ Uses DatabaseConnection to manage the connection lifecycle.
 */
 public class GradeDAO {
 
@@ -21,8 +22,9 @@ public class GradeDAO {
                 RETURNING id;
                 """;
 
-        try (Connection conn = DatabaseInitializer.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (DatabaseConnection db = new DatabaseConnection()) {
+            db.openConnection();
+            PreparedStatement stmt = db.prepareStatement(sql);
 
             stmt.setInt(1, studentId);
             stmt.setInt(2, grade);
@@ -45,8 +47,9 @@ public class GradeDAO {
                 WHERE id = ?;
                 """;
 
-        try (Connection conn = DatabaseInitializer.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (DatabaseConnection db = new DatabaseConnection()) {
+            db.openConnection();
+            PreparedStatement stmt = db.prepareStatement(sql);
 
             stmt.setInt(1, grade);
             stmt.setString(2, subject);
@@ -60,8 +63,9 @@ public class GradeDAO {
     public boolean deleteGrade(int id) throws SQLException {
         String sql = "DELETE FROM grades WHERE id = ?;";
 
-        try (Connection conn = DatabaseInitializer.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (DatabaseConnection db = new DatabaseConnection()) {
+            db.openConnection();
+            PreparedStatement stmt = db.prepareStatement(sql);
 
             stmt.setInt(1, id);
             return stmt.executeUpdate() > 0;
@@ -76,8 +80,9 @@ public class GradeDAO {
                 WHERE id = ?;
                 """;
 
-        try (Connection conn = DatabaseInitializer.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (DatabaseConnection db = new DatabaseConnection()) {
+            db.openConnection();
+            PreparedStatement stmt = db.prepareStatement(sql);
 
             stmt.setInt(1, id);
 
@@ -108,8 +113,9 @@ public class GradeDAO {
 
         List<GradeModel> grades = new ArrayList<>();
 
-        try (Connection conn = DatabaseInitializer.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (DatabaseConnection db = new DatabaseConnection()) {
+            db.openConnection();
+            PreparedStatement stmt = db.prepareStatement(sql);
 
             stmt.setInt(1, studentId);
 
@@ -140,19 +146,21 @@ public class GradeDAO {
 
         List<GradeModel> grades = new ArrayList<>();
 
-        try (Connection conn = DatabaseInitializer.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+        try (DatabaseConnection db = new DatabaseConnection()) {
+            db.openConnection();
+            PreparedStatement stmt = db.prepareStatement(sql);
 
-            while (rs.next()) {
-                grades.add(new GradeModel(
-                        rs.getInt("id"),
-                        rs.getInt("student_id"),
-                        rs.getInt("grade"),
-                        rs.getString("subject"),
-                        rs.getTimestamp("creation_date").toLocalDateTime(),
-                        rs.getTimestamp("last_modified_date").toLocalDateTime()
-                ));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    grades.add(new GradeModel(
+                            rs.getInt("id"),
+                            rs.getInt("student_id"),
+                            rs.getInt("grade"),
+                            rs.getString("subject"),
+                            rs.getTimestamp("creation_date").toLocalDateTime(),
+                            rs.getTimestamp("last_modified_date").toLocalDateTime()
+                    ));
+                }
             }
         }
 
