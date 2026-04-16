@@ -32,11 +32,11 @@ public class StatistiquesViewTest extends TestFXInitializer {
         public List<StudentModel> getAllStudents() {
             return List.of(
                     new StudentModel(1, "Alice", "Martin", LocalDate.of(2005, 3, 12),
-                            LocalDateTime.now(), LocalDateTime.now()),
+                            LocalDateTime.now(), LocalDateTime.now(), 0),
                     new StudentModel(2, "Bob", "Durand", LocalDate.of(2004, 5, 22),
-                            LocalDateTime.now(), LocalDateTime.now()),
+                            LocalDateTime.now(), LocalDateTime.now(), 15),
                     new StudentModel(3, "Charlie", "Dupont", LocalDate.of(2003, 1, 10),
-                            LocalDateTime.now(), LocalDateTime.now())
+                            LocalDateTime.now(), LocalDateTime.now(), 13)
             );
         }
     }

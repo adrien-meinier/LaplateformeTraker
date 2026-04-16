@@ -73,7 +73,7 @@ public class StudentDAO {
     // Retrieves a single student by ID
     public StudentModel getStudentById(int id) throws SQLException {
         String sql = """
-                SELECT id, first_name, last_name, birth_date, creation_date, last_modified_date
+                SELECT id, first_name, last_name, birth_date, creation_date, last_modified_date, average_grade
                 FROM student
                 WHERE id = ?;
                 """;
@@ -91,7 +91,8 @@ public class StudentDAO {
                             rs.getString("last_name"),
                             rs.getDate("birth_date").toLocalDate(),
                             rs.getTimestamp("creation_date").toLocalDateTime(),
-                            rs.getTimestamp("last_modified_date").toLocalDateTime()
+                            rs.getTimestamp("last_modified_date").toLocalDateTime(),
+                            rs.getDouble("average_grade")
                     );
                 }
             }
@@ -102,7 +103,7 @@ public class StudentDAO {
     // Retrieves all students
     public List<StudentModel> getAllStudents() throws SQLException {
         String sql = """
-                SELECT id, first_name, last_name, birth_date, creation_date, last_modified_date
+                SELECT id, first_name, last_name, birth_date, creation_date, last_modified_date, average_grade
                 FROM student
                 ORDER BY id;
                 """;
@@ -120,11 +121,53 @@ public class StudentDAO {
                         rs.getString("last_name"),
                         rs.getDate("birth_date").toLocalDate(),
                         rs.getTimestamp("creation_date").toLocalDateTime(),
-                        rs.getTimestamp("last_modified_date").toLocalDateTime()
+                        rs.getTimestamp("last_modified_date").toLocalDateTime(),
+                        rs.getDouble("average_grade")
                 ));
             }
         }
 
         return students;
+    }
+
+    // AVERAGES
+    // Returns the average grade of a specific student
+    public double getStudentAverage(int studentId) throws SQLException {
+        String sql = """
+                SELECT COALESCE(AVG(grade), 0)
+                FROM grades
+                WHERE student_id = ?;
+                """;
+
+        try (Connection conn = DatabaseInitializer.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, studentId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getDouble(1);
+                }
+            }
+        }
+        return 0.0;
+    }
+
+    // Returns the global class average (all grades)
+    public double getClassAverage() throws SQLException {
+        String sql = """
+                SELECT COALESCE(AVG(grade), 0)
+                FROM grades;
+                """;
+
+        try (Connection conn = DatabaseInitializer.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            if (rs.next()) {
+                return rs.getDouble(1);
+            }
+        }
+        return 0.0;
     }
 }

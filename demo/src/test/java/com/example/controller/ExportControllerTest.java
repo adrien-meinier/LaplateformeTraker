@@ -57,7 +57,8 @@ public class ExportControllerTest {
                 "Martin",
                 LocalDate.of(2001, 5, 10),
                 LocalDateTime.now(),
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                15
         );
 
         // Create grades

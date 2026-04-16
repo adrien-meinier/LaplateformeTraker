@@ -58,7 +58,8 @@ public class BulletinControllerTest {
                 "Doe",
                 LocalDate.of(2000, 1, 1),
                 LocalDateTime.now(),
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                15
         );
 
         // Create valid grades using LocalDateTime

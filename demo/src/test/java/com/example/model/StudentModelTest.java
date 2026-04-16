@@ -22,7 +22,8 @@ class StudentModelTests {
                 "Doe",
                 birth,
                 created,
-                modified
+                modified,
+                15
         );
 
         // Test all the getters
