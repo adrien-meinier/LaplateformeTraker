@@ -3,6 +3,7 @@ package com.example.controller;
 import java.sql.SQLException;
 import java.util.List;
 
+import com.example.DAO.GradeDAO;
 import com.example.model.GradeModel;
 
 import javafx.fxml.FXML;

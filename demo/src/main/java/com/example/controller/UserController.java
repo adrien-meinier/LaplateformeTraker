@@ -1,9 +1,13 @@
 package com.example.controller;
 
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-
+import com.example.DAO.UserDAO;
 import com.example.model.UserModel;
+
+import javafx.fxml.FXML;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 
 /**
  * JavaFX Controller responsible for handling user actions

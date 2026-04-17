@@ -5,7 +5,7 @@ import java.time.Period;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.example.controller.StudentDAO;
+import com.example.DAO.StudentDAO;
 import com.example.model.StudentModel;
 
 import javafx.collections.FXCollections;

@@ -7,7 +7,7 @@ import java.util.List;
 
 import com.example.controller.BulletinController;
 import com.example.controller.ExportController;
-import com.example.controller.StudentDAO;
+import com.example.DAO.StudentDAO;
 import com.example.model.StudentModel;
 
 import javafx.collections.FXCollections;

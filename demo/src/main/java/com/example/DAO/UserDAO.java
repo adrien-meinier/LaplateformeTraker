@@ -1,4 +1,4 @@
-package com.example.controller;
+package com.example.DAO;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
