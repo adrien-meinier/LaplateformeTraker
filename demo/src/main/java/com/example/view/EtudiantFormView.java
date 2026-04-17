@@ -3,8 +3,8 @@ package com.example.view;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
-import com.example.controller.GradeDAO;
-import com.example.controller.StudentDAO;
+import com.example.DAO.GradeDAO;
+import com.example.DAO.StudentDAO;
 import com.example.model.StudentModel;
 
 import javafx.geometry.Insets;

@@ -2,7 +2,7 @@ package com.example.view;
 
 import java.io.File;
 
-import com.example.controller.StudentDAO;
+import com.example.DAO.StudentDAO;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

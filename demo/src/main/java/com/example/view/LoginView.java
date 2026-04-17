@@ -216,7 +216,7 @@ public class LoginView {
         if (user.isEmpty() || pass.isEmpty()) { err("Remplissez tous les champs."); return; }
 
         try {
-            com.example.controller.UserDAO dao = new com.example.controller.UserDAO();
+            com.example.DAO.UserDAO dao = new com.example.DAO.UserDAO();
             com.example.model.UserModel loggedIn = dao.login(user, pass);
 
             if (loggedIn != null) {

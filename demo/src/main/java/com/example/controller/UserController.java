@@ -1,9 +1,13 @@
 package com.example.controller;
 
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-
+import com.example.DAO.UserDAO;
 import com.example.model.UserModel;
+
+import javafx.fxml.FXML;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 
 /**
  * JavaFX Controller responsible for handling user actions
@@ -12,25 +16,24 @@ import com.example.model.UserModel;
 public class UserController {
 
     @FXML
-    private TextField emailField;
+    public TextField emailField;
 
     @FXML
-    private PasswordField passwordField;
+    public PasswordField passwordField;
 
     @FXML
-    private CheckBox adminCheckBox;
+    public CheckBox adminCheckBox;
 
     @FXML
-    private Label messageLabel;
+    public Label messageLabel;
 
-    // DAO used to interact with the database
-    private UserDAO userDAO = new UserDAO();
+    // DAO rendu public pour permettre l'injection dans les tests
+    public UserDAO userDAO = new UserDAO();
 
     @FXML
-    private void handleLogin() {
+    public void handleLogin() {
         String email = emailField.getText();
         String password = passwordField.getText();
-        // The login now authenticates by username; we derive it from the email prefix
         String username = email.contains("@") ? email.split("@")[0] : email;
 
         try {
@@ -38,31 +41,20 @@ public class UserController {
 
             if (user != null) {
                 messageLabel.setText("Login successful");
-
-                if (user.isAdmin()) {
-                    System.out.println("Admin logged in: " + user.getUsername());
-                } else {
-                    System.out.println("User logged in: " + user.getUsername());
-                }
-
             } else {
                 messageLabel.setText("Invalid username or password");
             }
 
         } catch (Exception e) {
             messageLabel.setText("Error: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
-     // Handles user registration.
-     //Checks if email already exists before creating a new user.
     @FXML
-    private void handleRegister() {
+    public void handleRegister() {
         String email = emailField.getText();
         String password = passwordField.getText();
         boolean isAdmin = adminCheckBox.isSelected();
-        // Username derived from email prefix as fallback (FXML view has no username field)
         String username = email.contains("@") ? email.split("@")[0] : email;
 
         try {
@@ -85,14 +77,11 @@ public class UserController {
 
         } catch (Exception e) {
             messageLabel.setText("Error: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
-
-     // Handles user deletion based on email.
     @FXML
-    private void handleDelete() {
+    public void handleDelete() {
         String email = emailField.getText();
 
         try {
@@ -106,13 +95,11 @@ public class UserController {
 
         } catch (Exception e) {
             messageLabel.setText("Error: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
-    //Handles password update for a given user.
     @FXML
-    private void handleUpdatePassword() {
+    public void handleUpdatePassword() {
         String email = emailField.getText();
         String newPassword = passwordField.getText();
 
@@ -127,7 +114,6 @@ public class UserController {
 
         } catch (Exception e) {
             messageLabel.setText("Error: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 }

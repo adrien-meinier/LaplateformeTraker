@@ -1,15 +1,22 @@
 package com.example.view;
 
-import javafx.application.Platform;
-import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import org.junit.jupiter.api.*;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import javafx.application.Platform;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
 public class RechercheViewTest {
 
@@ -17,7 +24,7 @@ public class RechercheViewTest {
     private Node root;
 
     // Fake DAO vide pour éviter la base
-    private static class EmptyDAO extends com.example.controller.StudentDAO {
+    private static class EmptyDAO extends com.example.DAO.StudentDAO {
         @Override
         public java.util.List<com.example.model.StudentModel> getAllStudents() {
             return java.util.List.of();
