@@ -1,12 +1,14 @@
 package com.example.controller;
 
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-
 import java.sql.SQLException;
 import java.util.List;
 
 import com.example.model.GradeModel;
+
+import javafx.fxml.FXML;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 
 /**
  * JavaFX Controller responsible for handling grade-related actions.
@@ -110,6 +112,7 @@ public class GradeController {
             int id = Integer.parseInt(gradeIdField.getText());
 
             GradeModel grade = gradeDAO.getGradeById(id);
+            // Display the grade details or a not found message
 
             if (grade != null) {
                 resultArea.setText(formatGrade(grade));
@@ -135,7 +138,7 @@ public class GradeController {
             int studentId = Integer.parseInt(studentIdField.getText());
 
             List<GradeModel> grades = gradeDAO.getGradesByStudentId(studentId);
-
+// Display the grades or a not found message
             if (grades.isEmpty()) {
                 resultArea.setText("");
                 messageLabel.setText("No grades found");

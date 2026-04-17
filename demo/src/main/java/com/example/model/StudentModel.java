@@ -13,7 +13,7 @@ public class StudentModel {
     private final LocalDateTime creationDate;
     private final LocalDateTime lastModifiedDate;
     private final double averageGrade;
-
+// Constructor to initialize all fields of the student model
     public StudentModel(int id, String firstName, String lastName,
                         LocalDate birthDate, LocalDateTime creationDate,
                         LocalDateTime lastModifiedDate, double averageGrade) {

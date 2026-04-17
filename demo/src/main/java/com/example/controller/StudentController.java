@@ -1,15 +1,21 @@
 package com.example.controller;
 
+import java.time.LocalDate;
+import java.util.Optional;
+
 import com.example.model.StudentModel;
+
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-
-import java.time.LocalDate;
-import java.util.Optional;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 
 /**
  *StudentController — manages the display and actions on students (CRUD).  
@@ -148,14 +154,14 @@ public class StudentController {
             showError("Erreur de chargement des données", e);
         }
     }
-
+//  Clears the form fields and deselects any selected student in the table.
     private void clearFields() {
         firstNameField.clear();
         lastNameField.clear();
         birthDatePicker.setValue(null);
         studentTable.getSelectionModel().clearSelection();
     }
-
+// Validates that all required fields are filled in before adding or updating a student.
     private boolean validateFields() {
         if (firstNameField.getText().trim().isEmpty() || 
             lastNameField.getText().trim().isEmpty() || 

@@ -1,21 +1,32 @@
 package com.example.view;
 
-import com.example.controller.StudentDAO;
-import com.example.model.StudentModel;
-import javafx.collections.FXCollections;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.*;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.example.controller.StudentDAO;
+import com.example.model.StudentModel;
+
+import javafx.collections.FXCollections;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 
 /**
  * researchView -Student search view with two modes: search by ID and advanced search by keyword and age range.
@@ -31,7 +42,7 @@ public class RechercheView {
     public RechercheView(StudentDAO dao) {
         this.dao = dao;
     }
-
+    // Builds the main view for student search, including the title, search forms, result count label, and results table. The search forms allow users to search by ID or perform an advanced search using keywords and age range. The results are displayed in a TableView with dynamic updates based on the search criteria.
     public Node build() {
         VBox root = new VBox(20);
         root.setPadding(new Insets(0));

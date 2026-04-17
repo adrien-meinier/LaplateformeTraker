@@ -1,16 +1,17 @@
 package com.example.controller;
 
-import com.example.model.GradeModel;
-import com.example.model.StudentModel;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.stage.FileChooser;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+
+import com.example.model.GradeModel;
+import com.example.model.StudentModel;
+
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.stage.FileChooser;
 
 /**
  * ExportController — export all students with their grades in CSV format.
@@ -20,7 +21,7 @@ public class ExportController {
     private final StudentDAO studentDAO = new StudentDAO();
     private final GradeDAO   gradeDAO   = new GradeDAO();
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
+// Opens a file chooser to export all students and their grades to a CSV file.
     public void exporterTousLesEtudiants() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Exporter les données étudiants");

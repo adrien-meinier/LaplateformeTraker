@@ -18,6 +18,7 @@ public class DatabaseInitializer {
     private static final String DB_USER     = "postgres";
     private static final String DB_PASSWORD = "root";
 
+    // Creates the database if it does not exist (requires connecting to the default 'postgres' database first)
     public static void createDatabaseIfNotExists() throws SQLException {
         String url = "jdbc:postgresql://" + DB_HOST + ":" + DB_PORT + "/postgres";
 

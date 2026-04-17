@@ -3,10 +3,17 @@ package com.example.view;
 import javafx.animation.TranslateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
+// A simple chatbot view that can be toggled open/closed. It provides basic responses based on user input.
 public class ChatbotView extends VBox {
 
     private VBox chatContent;
@@ -15,7 +22,7 @@ public class ChatbotView extends VBox {
     private boolean isOpen = false;
 
     public ChatbotView() {
-        // Style du conteneur principal du chat
+        // Basic styling for the chatbot container
         this.setPrefWidth(300);
         this.setMaxHeight(400);
         this.setSpacing(10);

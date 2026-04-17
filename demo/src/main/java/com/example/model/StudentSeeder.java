@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Random;
-
+// Utility class responsible for seeding the database with initial student and grade data.
 public class StudentSeeder {
 
     private static final List<String[]> STUDENTS = List.of(
@@ -29,7 +29,7 @@ public class StudentSeeder {
     private static final List<String> SUBJECTS = List.of(
             "Math", "Physics", "Chemistry", "History", "English"
     );
-
+// Seeds the database with predefined students and random grades for each subject.
     public static void seed(Connection conn) throws SQLException {
 
         try (Statement stmt = conn.createStatement();

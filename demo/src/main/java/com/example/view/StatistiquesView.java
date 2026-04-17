@@ -1,21 +1,27 @@
 package com.example.view;
 
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.example.controller.StudentDAO;
 import com.example.model.StudentModel;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.chart.PieChart;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class StatistiquesView {
 
@@ -41,7 +47,8 @@ public class StatistiquesView {
         Label subtitle = new Label("Aperçu global de l'établissement");
         subtitle.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 14px;");
         header.getChildren().addAll(title, subtitle);
-
+        
+        // On récupère les données nécessaires pour les statistiques du dashboard, telles que le nombre total d'étudiants, la moyenne générale, la meilleure note, et la répartition par âge ou classe. Ces données sont utilisées pour construire les différentes sections du dashboard, notamment les KPIs et les graphiques de répartition.
         try {
             List<StudentModel> students = dao.getAllStudents();
             DashboardStats stats = computeDashboardStats(students);

@@ -3,8 +3,16 @@ package com.example.view;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Control;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
@@ -32,7 +40,7 @@ public class LoginView {
     private int           attempts = 0;
 
     public LoginView(Stage stage) { this.stage = stage; }
-
+//  Displays the login view, setting up the stage and scene with the designed layout and animations.
     public void show() {
         stage.setWidth(900);
         stage.setHeight(580);

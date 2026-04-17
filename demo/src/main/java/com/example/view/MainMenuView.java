@@ -1,20 +1,29 @@
 package com.example.view;
 
+import java.io.File;
+
 import com.example.controller.StudentDAO;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-
-import java.io.File;
 
 public class MainMenuView {
 
@@ -147,6 +156,7 @@ public class MainMenuView {
         chatBox.getChildren().addAll(chatTitle, chatDisplay, chatInput);
         return chatBox;
     }
+    // Method to export all students and their grades to a CSV file, handling file writing and formatting, and showing success or error alerts based on the outcome of the export operation.
 
     private VBox buildProfileHeader() {
         VBox header = new VBox(10);
@@ -175,7 +185,7 @@ public class MainMenuView {
         header.getChildren().addAll(photoContainer, appName);
         return header;
     }
-
+    // Method to handle the profile photo change, opening a FileChooser to select a new image and updating the profile picture accordingly.
     private void handleChoosePhoto() {
         FileChooser fc = new FileChooser();
         fc.setTitle("Changer photo");
