@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.time.format.DateTimeFormatter;
 
 import com.example.controller.BulletinController;
 import com.example.controller.ExportController;
@@ -39,6 +40,7 @@ public class EtudiantsView {
     private final StudentDAO dao;
     private final BulletinController bulletinCtrl = new BulletinController();
     private final ExportController exportCtrl = new ExportController();
+    private final ImportController importCtrl = new ImportController();
 
     private int currentPage = 1;
     private final int pageSize = 10;
@@ -47,10 +49,14 @@ public class EtudiantsView {
     private Label lblPagination;
     private Button btnPrev, btnNext;
 
+    // Datetime formatter for the timestamps
+    private static final DateTimeFormatter DATE_TIME_FORMATTER =
+        DateTimeFormatter.ofPattern("dd-MM-yyyy 'à' HH:mm");
+
     public EtudiantsView(StudentDAO dao) {
         this.dao = dao;
     }
-// Builds the main view for displaying students, including the header, table, and pagination controls.
+    // Builds the main view for displaying students, including the header, table, and pagination controls.
     public Node build() {
         VBox root = new VBox(16);
         root.setPadding(new Insets(10));
@@ -64,13 +70,20 @@ public class EtudiantsView {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
+        // 📂 Importer CSV
+        Button btnImport = StyleFactory.warningBtn("📂 Importer CSV");
+        btnImport.setOnAction(e -> {
+            importCtrl.importerEtudiants();
+            refresh();
+        });
+
         Button btnExport = StyleFactory.exportBtn("📥 Exporter tout");
         btnExport.setOnAction(e -> exportCtrl.exporterTousLesEtudiants());
 
         Button btnAdd = StyleFactory.successBtn("➕ Ajouter");
         btnAdd.setOnAction(e -> openForm(null));
 
-        header.getChildren().addAll(title, spacer, btnExport, btnAdd);
+        header.getChildren().addAll(title, spacer, btnImport, btnExport, btnAdd);
 
         table = buildTable();
 
@@ -106,6 +119,24 @@ public class EtudiantsView {
         TableColumn<StudentModel, LocalDate> colBirth = col("Date de naissance", "birthDate", 150);
         TableColumn<StudentModel, LocalDateTime> colCreated = col("Créé le", "creationDate", 160);
         TableColumn<StudentModel, LocalDateTime> colModified = col("Modifié le", "lastModifiedDate", 160);
+
+        // Format the created/modified timestamp format
+        colCreated.setCellFactory(column -> new TableCell<>() {
+        @Override
+        protected void updateItem(LocalDateTime item, boolean empty) {
+            super.updateItem(item, empty);
+            setText(empty || item == null ? "" : item.format(DATE_TIME_FORMATTER));
+        }
+    });
+
+        colModified.setCellFactory(column -> new TableCell<>() {
+        @Override
+        protected void updateItem(LocalDateTime item, boolean empty) {
+            super.updateItem(item, empty);
+            setText(empty || item == null ? "" : item.format(DATE_TIME_FORMATTER));
+        }
+    });
+
 
         TableColumn<StudentModel, Void> colActions = new TableColumn<>("Actions");
         colActions.setPrefWidth(240);
@@ -178,7 +209,9 @@ public class EtudiantsView {
             showAlert("Erreur SQL", e.getMessage());
         }
     }
+    
 // Opens a form to add a new student or edit an existing student, depending on whether the provided StudentModel is null.
+
     private void openForm(StudentModel student) {
         Stage stage = new Stage();
         stage.setTitle(student == null ? "Ajouter un étudiant" : "Modifier un étudiant");

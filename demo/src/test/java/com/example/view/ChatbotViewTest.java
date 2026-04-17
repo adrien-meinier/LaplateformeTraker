@@ -235,7 +235,7 @@ public class ChatbotViewTest extends TestFXInitializer {
             input.setText("aide");
             input.getOnAction().handle(null);
         });
-        Thread.sleep(150);
+        Thread.sleep(300);
 
         // Dernier = message bot
         HBox wrapper = (HBox) chatContent.getChildren()

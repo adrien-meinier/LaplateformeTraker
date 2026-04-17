@@ -80,6 +80,14 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Mockito -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.10.0</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -125,61 +133,71 @@
                 </executions>
             </plugin>
 
-            <!-- Surefire (JavaFX headless compatible + JaCoCo compatible) -->
+            <!-- Surefire : ignore tests JavaFX -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
                 <configuration>
-                    <!-- IMPORTANT : ${argLine} pour NE PAS écraser JaCoCo -->
-                    <argLine>
-                        ${argLine}
-                        --add-opens javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
-                        --add-opens javafx.graphics/com.sun.javafx.stage=ALL-UNNAMED
-                        --add-opens javafx.controls/com.sun.javafx.scene.control=ALL-UNNAMED
-                    </argLine>
-                    <systemPropertyVariables>
-                        <java.awt.headless>true</java.awt.headless>
-                        <testfx.robot>glass</testfx.robot>
-                        <testfx.headless>true</testfx.headless>
-                    </systemPropertyVariables>
+                    <excludes>
+                        <exclude>**/javafx/**</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
 
-            <!-- Jacoco (corrigé, fonctionne enfin) -->
+            <!-- Jacoco -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.11</version>
 
                 <executions>
-                    <!-- Active l’agent JaCoCo pendant les tests -->
                     <execution>
                         <id>prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
+                        <goals><goal>prepare-agent</goal></goals>
                     </execution>
 
-                    <!-- Génère le rapport -->
                     <execution>
                         <id>report</id>
                         <phase>verify</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
+                        <goals><goal>report</goal></goals>
                     </execution>
                 </executions>
-
-                <configuration>
-                    <excludes>
-                        <!-- On exclut uniquement ce qui est inutile -->
-                        <exclude>com/sun/**</exclude>
-                        <exclude>META-INF/**</exclude>
-                    </excludes>
-                </configuration>
             </plugin>
 
         </plugins>
     </build>
+
+    <!-- PROFIL POUR TESTS JAVAFX -->
+    <profiles>
+        <profile>
+            <id>javafx-tests</id>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>3.2.5</version>
+                        <configuration>
+                            <includes>
+                                <include>**/javafx/**</include>
+                            </includes>
+
+                            <argLine>
+                                --add-opens javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
+                                --add-opens javafx.graphics/com.sun.javafx.stage=ALL-UNNAMED
+                                --add-opens javafx.controls/javafx.scene.control=ALL-UNNAMED
+                                --add-opens javafx.graphics/javafx.scene=ALL-UNNAMED
+                                --add-opens javafx.base/com.sun.javafx=ALL-UNNAMED
+                            </argLine>
+
+                            <useSystemClassLoader>false</useSystemClassLoader>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>
