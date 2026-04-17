@@ -5,21 +5,21 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
- * Classe utilitaire de gestion des connexions SQL.
- * Centralise le cycle de vie d'une connexion : ouverture, exécution, fermeture.
- * Destinée à être utilisée par les DAO pour effectuer leurs requêtes.
+ * Class util for managing database connections.
+ * Centralise the lifecycle of a connection: opening, execution, closing.
+ * Intended to be used by DAOs to perform their queries.
  */
 public class DatabaseConnection implements AutoCloseable {
 
     private Connection connection;
 
-    // Ouvre une connexion à la base de données et la conserve en mémoire.
+    // opens a connection to the database using the DatabaseInitializer utility.
 
     public void openConnection() throws SQLException {
         this.connection = DatabaseInitializer.getConnection();
     }
 
-    // Prépare et retourne un {@link PreparedStatement} sur la connexion ouverte.
+    // prepares and returns a {@link PreparedStatement} on the open connection.
 
     public PreparedStatement prepareStatement(String sql) throws SQLException {
         if (connection == null || connection.isClosed()) {
@@ -29,7 +29,7 @@ public class DatabaseConnection implements AutoCloseable {
     }
 
 
-    // Ferme la connexion à la base de données si elle est ouverte.
+    // closes the connection if it is open. Should be called after all operations are done to free resources.
 
     public void closeConnection() throws SQLException {
         if (connection != null && !connection.isClosed()) {
