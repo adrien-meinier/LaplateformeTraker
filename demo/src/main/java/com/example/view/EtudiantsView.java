@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.time.format.DateTimeFormatter;
 
 import com.example.controller.BulletinController;
 import com.example.controller.ExportController;
@@ -47,10 +48,14 @@ public class EtudiantsView {
     private Label lblPagination;
     private Button btnPrev, btnNext;
 
+    // Datetime formatter for the timestamps
+    private static final DateTimeFormatter DATE_TIME_FORMATTER =
+        DateTimeFormatter.ofPattern("dd-MM-yyyy 'à' HH:mm");
+
     public EtudiantsView(StudentDAO dao) {
         this.dao = dao;
     }
-// Builds the main view for displaying students, including the header, table, and pagination controls.
+    // Builds the main view for displaying students, including the header, table, and pagination controls.
     public Node build() {
         VBox root = new VBox(16);
         root.setPadding(new Insets(10));
@@ -106,6 +111,24 @@ public class EtudiantsView {
         TableColumn<StudentModel, LocalDate> colBirth = col("Date de naissance", "birthDate", 150);
         TableColumn<StudentModel, LocalDateTime> colCreated = col("Créé le", "creationDate", 160);
         TableColumn<StudentModel, LocalDateTime> colModified = col("Modifié le", "lastModifiedDate", 160);
+
+        // Format the created/modified timestamp format
+        colCreated.setCellFactory(column -> new TableCell<>() {
+        @Override
+        protected void updateItem(LocalDateTime item, boolean empty) {
+            super.updateItem(item, empty);
+            setText(empty || item == null ? "" : item.format(DATE_TIME_FORMATTER));
+        }
+    });
+
+        colModified.setCellFactory(column -> new TableCell<>() {
+        @Override
+        protected void updateItem(LocalDateTime item, boolean empty) {
+            super.updateItem(item, empty);
+            setText(empty || item == null ? "" : item.format(DATE_TIME_FORMATTER));
+        }
+    });
+
 
         TableColumn<StudentModel, Void> colActions = new TableColumn<>("Actions");
         colActions.setPrefWidth(240);
@@ -216,4 +239,6 @@ public class EtudiantsView {
         alert.setHeaderText(null);
         alert.showAndWait();
     }
+
+
 }
