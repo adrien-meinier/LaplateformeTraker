@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter;
 
 import com.example.controller.BulletinController;
 import com.example.controller.ExportController;
+import com.example.controller.ImportController;
 import com.example.controller.StudentDAO;
 import com.example.model.StudentModel;
 
@@ -40,6 +41,7 @@ public class EtudiantsView {
     private final StudentDAO dao;
     private final BulletinController bulletinCtrl = new BulletinController();
     private final ExportController exportCtrl = new ExportController();
+    private final ImportController importCtrl = new ImportController();
 
     private int currentPage = 1;
     private final int pageSize = 10;
@@ -69,13 +71,20 @@ public class EtudiantsView {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
+        // 📂 Importer CSV
+        Button btnImport = StyleFactory.warningBtn("📂 Importer CSV");
+        btnImport.setOnAction(e -> {
+            importCtrl.importerEtudiants();
+            refresh();
+        });
+
         Button btnExport = StyleFactory.exportBtn("📥 Exporter tout");
         btnExport.setOnAction(e -> exportCtrl.exporterTousLesEtudiants());
 
         Button btnAdd = StyleFactory.successBtn("➕ Ajouter");
         btnAdd.setOnAction(e -> openForm(null));
 
-        header.getChildren().addAll(title, spacer, btnExport, btnAdd);
+        header.getChildren().addAll(title, spacer, btnImport, btnExport, btnAdd);
 
         table = buildTable();
 
@@ -201,7 +210,11 @@ public class EtudiantsView {
             showAlert("Erreur SQL", e.getMessage());
         }
     }
+<<<<<<< HEAD
+
+=======
 // Opens a form to add a new student or edit an existing student, depending on whether the provided StudentModel is null.
+>>>>>>> 60fd09049df8d7890036c389133c3415eecf726d
     private void openForm(StudentModel student) {
         Stage stage = new Stage();
         stage.setTitle(student == null ? "Ajouter un étudiant" : "Modifier un étudiant");
@@ -239,6 +252,10 @@ public class EtudiantsView {
         alert.setHeaderText(null);
         alert.showAndWait();
     }
+<<<<<<< HEAD
+}
+=======
 
 
 }
+>>>>>>> 60fd09049df8d7890036c389133c3415eecf726d
