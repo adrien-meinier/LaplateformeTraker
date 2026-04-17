@@ -9,6 +9,7 @@ import javafx.stage.FileChooser;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -16,43 +17,52 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * ImportController — importe des étudiants depuis un fichier CSV.
+ * ImportController — imports students from a CSV file.
  *
- * Format CSV attendu (avec en-tête obligatoire) :
- *   prenom;nom;date_naissance
+ * Expected CSV format (header required):
+ *   firstName;lastName;birthDate
  *   Alice;Martin;2004-03-12
  *   Bob;Dupont;12/03/2003
  *
- * Règles :
- *  - Si un étudiant (même prénom + même nom) existe déjà → mise à jour de la date de naissance
- *  - Sinon → insertion
- *  - Séparateur : ; (point-virgule)
- *  - Dates acceptées : yyyy-MM-dd  ou  dd/MM/yyyy
+ * Rules:
+ *  - If a student (same firstName + lastName) already exists → update birth date
+ *  - Otherwise → insert
+ *  - Separator: ; (semicolon)
+ *  - Accepted date formats: yyyy-MM-dd  or  dd/MM/yyyy
  */
 public class ImportController {
 
     private final StudentDAO studentDAO = new StudentDAO();
 
-    private static final DateTimeFormatter FMT_ISO   = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private static final DateTimeFormatter FMT_FR    = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter FMT_ISO = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter FMT_FR  = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public void importerEtudiants() {
 
-        // ── Sélection du fichier ──────────────────────────────────────────
+        // ── File selection ────────────────────────────────────────────────
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Importer des étudiants (CSV)");
+        fileChooser.setTitle("Import students (CSV)");
         fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Fichier CSV (*.csv)", "*.csv"));
+                new FileChooser.ExtensionFilter("CSV file (*.csv)", "*.csv"));
 
         File file = fileChooser.showOpenDialog(null);
         if (file == null) return;
 
-        // ── Lecture + traitement ──────────────────────────────────────────
-        List<String> errors   = new ArrayList<>();
-        int inserted  = 0;
-        int updated   = 0;
-        int skipped   = 0;
-        int lineNum   = 0;
+        // ── Load all existing students into memory ────────────────────────
+        List<StudentModel> existants;
+        try {
+            existants = studentDAO.getAllStudents();
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Database error", e.getMessage());
+            return;
+        }
+
+        // ── Read and process lines ────────────────────────────────────────
+        List<String> errors = new ArrayList<>();
+        int inserted = 0;
+        int updated  = 0;
+        int skipped  = 0;
+        int lineNum  = 0;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
 
@@ -61,14 +71,13 @@ public class ImportController {
                 lineNum++;
                 line = line.trim();
 
-                // Ignore ligne vide ou en-tête
+                // Skip empty lines and header
                 if (line.isEmpty()) continue;
                 if (lineNum == 1 && looksLikeHeader(line)) continue;
 
                 String[] cols = line.split(";", -1);
                 if (cols.length < 3) {
-                    errors.add("Ligne %d ignorée : pas assez de colonnes (%s)"
-                            .formatted(lineNum, line));
+                    errors.add("Line %d skipped: not enough columns (%s)".formatted(lineNum, line));
                     skipped++;
                     continue;
                 }
@@ -78,62 +87,67 @@ public class ImportController {
                 String datStr = cols[2].trim();
 
                 if (prenom.isEmpty() || nom.isEmpty()) {
-                    errors.add("Ligne %d ignorée : prénom ou nom vide.".formatted(lineNum));
+                    errors.add("Line %d skipped: first name or last name is empty.".formatted(lineNum));
                     skipped++;
                     continue;
                 }
 
                 LocalDate birthDate = parseDate(datStr);
                 if (birthDate == null) {
-                    errors.add("Ligne %d ignorée : date invalide '%s' (attendu : yyyy-MM-dd ou dd/MM/yyyy)."
+                    errors.add("Line %d skipped: invalid date '%s' (expected: yyyy-MM-dd or dd/MM/yyyy)."
                             .formatted(lineNum, datStr));
                     skipped++;
                     continue;
                 }
 
-                // ── Recherche d'un doublon par prénom + nom ───────────────
-                StudentModel existing = studentDAO.findByName(prenom, nom);
+                // ── Look for a duplicate in the in-memory list ────────────
+                StudentModel existing = existants.stream()
+                        .filter(s -> s.getFirstName().equalsIgnoreCase(prenom)
+                                  && s.getLastName().equalsIgnoreCase(nom))
+                        .findFirst()
+                        .orElse(null);
 
-                if (existing != null) {
-                    // Mise à jour de la date de naissance si différente
-                    if (!birthDate.equals(existing.getBirthDate())) {
-                        studentDAO.updateStudent(
-                                existing.getId(), prenom, nom, birthDate);
+                try {
+                    if (existing != null) {
+                        // Student exists → update
+                        studentDAO.updateStudent(existing.getId(), prenom, nom, birthDate);
                         updated++;
                     } else {
-                        skipped++; // rien à changer
+                        // New student → insert
+                        studentDAO.addStudent(prenom, nom, birthDate);
+                        inserted++;
                     }
-                } else {
-                    studentDAO.addStudent(prenom, nom, birthDate);
-                    inserted++;
+                } catch (Exception e) {
+                    errors.add("Line %d database error: %s".formatted(lineNum, e.getMessage()));
+                    skipped++;
                 }
             }
 
         } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur lecture fichier", e.getMessage());
+            showAlert(Alert.AlertType.ERROR, "File read error", e.getMessage());
             return;
         }
 
-        // ── Rapport ───────────────────────────────────────────────────────
+        // ── Summary report ────────────────────────────────────────────────
         StringBuilder report = new StringBuilder();
-        report.append("Import terminé !\n\n");
-        report.append("✅ Ajoutés   : %d\n".formatted(inserted));
-        report.append("🔄 Mis à jour : %d\n".formatted(updated));
-        report.append("⏭ Ignorés   : %d\n".formatted(skipped));
+        report.append("Import complete!\n\n");
+        report.append("✅ Inserted  : %d\n".formatted(inserted));
+        report.append("🔄 Updated   : %d\n".formatted(updated));
+        report.append("⏭ Skipped   : %d\n".formatted(skipped));
 
         if (!errors.isEmpty()) {
-            report.append("\nDétail des lignes ignorées :\n");
+            report.append("\nSkipped lines detail:\n");
             errors.stream().limit(10).forEach(e -> report.append("  • ").append(e).append("\n"));
             if (errors.size() > 10)
-                report.append("  … et %d autre(s).\n".formatted(errors.size() - 10));
+                report.append("  … and %d more.\n".formatted(errors.size() - 10));
         }
 
-        showAlert(Alert.AlertType.INFORMATION, "Import CSV", report.toString());
+        showAlert(Alert.AlertType.INFORMATION, "CSV Import", report.toString());
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────
 
-    /** Tente de parser la date dans les deux formats supportés. */
+    /** Tries to parse the date using both supported formats. */
     private LocalDate parseDate(String s) {
         for (DateTimeFormatter fmt : new DateTimeFormatter[]{ FMT_ISO, FMT_FR }) {
             try { return LocalDate.parse(s, fmt); }
@@ -142,7 +156,7 @@ public class ImportController {
         return null;
     }
 
-    /** Détecte si la ligne ressemble à un en-tête (contient des lettres non-date). */
+    /** Detects whether the line looks like a header row. */
     private boolean looksLikeHeader(String line) {
         String low = line.toLowerCase();
         return low.contains("prenom") || low.contains("nom") || low.contains("date")
