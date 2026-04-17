@@ -1,6 +1,8 @@
 package com.example.controller;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import com.example.model.DatabaseConnection;
 import com.example.model.PasswordHasher;
@@ -55,7 +57,7 @@ public class UserDAO {
                 FROM app_user
                 WHERE username = ?;
                 """;
-
+// Use try-with-resources to ensure proper resource management
         try (DatabaseConnection db = new DatabaseConnection()) {
             db.openConnection();
             PreparedStatement stmt = db.prepareStatement(sql);

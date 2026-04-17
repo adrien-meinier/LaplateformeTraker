@@ -1,6 +1,9 @@
 package com.example.controller;
 
-import java.sql.*;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -118,6 +121,7 @@ public class StudentDAO {
         try (DatabaseConnection db = new DatabaseConnection()) {
             db.openConnection();
             PreparedStatement stmt = db.prepareStatement(sql);
+            // Use try-with-resources to ensure proper resource management
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {

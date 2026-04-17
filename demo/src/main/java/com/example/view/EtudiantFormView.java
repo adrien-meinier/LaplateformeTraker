@@ -1,18 +1,28 @@
 package com.example.view;
 
-import com.example.controller.StudentDAO;
+import java.sql.SQLException;
+import java.time.LocalDate;
+
 import com.example.controller.GradeDAO;
+import com.example.controller.StudentDAO;
 import com.example.model.StudentModel;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-
-import java.sql.SQLException;
-import java.time.LocalDate;
 
 public class EtudiantFormView {
 
@@ -78,7 +88,7 @@ public class EtudiantFormView {
         lblError.setWrapText(true);
         lblError.setVisible(false);
 
-        // Bouton Ajouter une note
+        // button to add grade only visible in edit mode (student must exist to add grades)
         Button btnAddGrade = null;
         if (isEdit) {
             btnAddGrade = StyleFactory.primaryBtn("➕ Ajouter une note");
@@ -112,7 +122,7 @@ public class EtudiantFormView {
 
         return wrapper;
     }
-
+// Method to save the student data, either by adding a new student or updating an existing one.
     private void doSave() {
         String prenom = tfPrenom.getText().trim();
         String nom = tfNom.getText().trim();
@@ -134,7 +144,7 @@ public class EtudiantFormView {
             showError("Erreur SQL : " + ex.getMessage());
         }
     }
-
+// Opens a dialog to add a grade for the specified student. Validates the input and saves the grade to the database.
     private void openAddGradeDialog(StudentModel student) {
         Dialog<Void> dialog = new Dialog<>();
         dialog.setTitle("Ajouter une note");
@@ -182,7 +192,7 @@ public class EtudiantFormView {
 
         dialog.showAndWait();
     }
-
+// Utility method to create a styled TextField with focus effects.
     private TextField createStyledTextField(String value) {
         TextField tf = new TextField(value);
         tf.setStyle(StyleFactory.textFieldStyle());

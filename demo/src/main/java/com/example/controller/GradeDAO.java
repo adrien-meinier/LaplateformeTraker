@@ -1,6 +1,8 @@
 package com.example.controller;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +23,7 @@ public class GradeDAO {
                 VALUES (?, ?, ?)
                 RETURNING id;
                 """;
-
+//  Use try-with-resources to ensure proper resource management
         try (DatabaseConnection db = new DatabaseConnection()) {
             db.openConnection();
             PreparedStatement stmt = db.prepareStatement(sql);
@@ -79,7 +81,7 @@ public class GradeDAO {
                 FROM grades
                 WHERE id = ?;
                 """;
-
+// Use try-with-resources to ensure proper resource management
         try (DatabaseConnection db = new DatabaseConnection()) {
             db.openConnection();
             PreparedStatement stmt = db.prepareStatement(sql);
@@ -145,7 +147,7 @@ public class GradeDAO {
                 """;
 
         List<GradeModel> grades = new ArrayList<>();
-
+// Use try-with-resources to ensure proper resource management
         try (DatabaseConnection db = new DatabaseConnection()) {
             db.openConnection();
             PreparedStatement stmt = db.prepareStatement(sql);

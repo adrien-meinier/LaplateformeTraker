@@ -1,17 +1,18 @@
 package com.example.controller;
 
-import com.example.model.GradeModel;
-import com.example.model.StudentModel;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.stage.FileChooser;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+
+import com.example.model.GradeModel;
+import com.example.model.StudentModel;
+
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.stage.FileChooser;
 
 /**
  * BulletinController — exports a student's report card to CSV format.
@@ -22,7 +23,7 @@ public class BulletinController{
 
     private final GradeDAO gradeDAO = new GradeDAO();
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
+// Exports the student's grades to a CSV file chosen by the user.
     public void telechargerBulletin(StudentModel etudiant) {
 
         FileChooser fileChooser = new FileChooser();
@@ -35,7 +36,7 @@ public class BulletinController{
 
         File file = fileChooser.showSaveDialog(null);
         if (file == null) return;
-
+// Fetch the student's grades and write them to the chosen file
         try {
             List<GradeModel> notes = gradeDAO.getGradesByStudentId(etudiant.getId());
 
@@ -53,17 +54,19 @@ public class BulletinController{
                 writer.write("Date edition;" + LocalDate.now().format(FMT) + "\n");
                 writer.write("\n");
                 writer.write("Matiere;Note /20;Mention\n");
-
+// If no grades, write a placeholder line; otherwise, write each grade and calculate the average
                 if (notes.isEmpty()) {
                     writer.write("Aucune note enregistree;;\n");
                 } else {
                     double total = 0;
+                    // Loop through each grade and write it to the file
                     for (GradeModel note : notes) {
                         writer.write(note.getSubject() + ";"
                                 + note.getGrade() + ";"
                                 + mention(note.getGrade()) + "\n");
                         total += note.getGrade();
                     }
+                     // Calculate average grade
                     double moyenne = total / notes.size();
                     writer.write("\n");
                     writer.write("MOYENNE GENERALE;"
@@ -71,7 +74,7 @@ public class BulletinController{
                             + mention((int) Math.round(moyenne)) + "\n");
                 }
             }
-
+ // Show success alert with file path
             Alert ok = new Alert(Alert.AlertType.INFORMATION,
                     "Bulletin enregistre :\n" + file.getAbsolutePath(), ButtonType.OK);
             ok.setTitle("Telechargement reussi");
@@ -86,7 +89,7 @@ public class BulletinController{
             err.showAndWait();
         }
     }
-
+// Returns a mention (grade classification) based on the numeric score
     private String mention(int note) {
         if (note >= 18) return "Tres Bien";
         if (note >= 16) return "Bien";
