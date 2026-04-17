@@ -1,6 +1,6 @@
 package com.example.controller;
 
-import com.example.controller.StudentDAO;
+import com.example.DAO.StudentDAO;
 import com.example.model.StudentModel;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
