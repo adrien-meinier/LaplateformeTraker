@@ -73,7 +73,7 @@ public class EtudiantsView {
         // 📂 Importer CSV
         Button btnImport = StyleFactory.warningBtn("📂 Importer CSV");
         btnImport.setOnAction(e -> {
-            importCtrl.importerEtudiants();
+            importCtrl.importerEtudiantsDepuisBulletin();
             refresh();
         });
 

@@ -14,23 +14,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 import java.util.List;
 
-/**
- * ImportController — imports students from a CSV file.
- *
- * Expected CSV format (header required):
- *   firstName;lastName;birthDate
- *   Alice;Martin;2004-03-12
- *   Bob;Dupont;12/03/2003
- *
- * Rules:
- *  - If a student (same firstName + lastName) already exists → update birth date
- *  - Otherwise → insert
- *  - Separator: ; (semicolon)
- *  - Accepted date formats: yyyy-MM-dd  or  dd/MM/yyyy
- */
 public class ImportController {
 
     private final StudentDAO studentDAO = new StudentDAO();
@@ -38,143 +23,99 @@ public class ImportController {
     private static final DateTimeFormatter FMT_ISO = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter FMT_FR  = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    public void importerEtudiants() {
+    public void importerEtudiantsDepuisBulletin() {
 
-        // ── File selection ────────────────────────────────────────────────
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Import students (CSV)");
+        fileChooser.setTitle("Importer un bulletin étudiant");
         fileChooser.getExtensionFilters().add(
                 new FileChooser.ExtensionFilter("CSV file (*.csv)", "*.csv"));
 
         File file = fileChooser.showOpenDialog(null);
         if (file == null) return;
 
-        // ── Load all existing students into memory ────────────────────────
-        List<StudentModel> existants;
-        try {
-            existants = studentDAO.getAllStudents();
-        } catch (SQLException e) {
-            showAlert(Alert.AlertType.ERROR, "Database error", e.getMessage());
-            return;
-        }
-
-        // ── Read and process lines ────────────────────────────────────────
-        List<String> errors = new ArrayList<>();
-        int inserted = 0;
-        int updated  = 0;
-        int skipped  = 0;
-        int lineNum  = 0;
+        String prenom = null;
+        String nom = null;
+        LocalDate birthDate = null;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
 
             String line;
             while ((line = reader.readLine()) != null) {
-                lineNum++;
-                line = line.trim();
-
-                // Skip empty lines and header
-                if (line.isEmpty()) continue;
-                if (lineNum == 1 && looksLikeHeader(line)) continue;
-
                 String[] cols = line.split(";", -1);
-                if (cols.length < 3) {
-                    errors.add("Line %d skipped: not enough columns (%s)".formatted(lineNum, line));
-                    skipped++;
-                    continue;
-                }
+                if (cols.length < 2) continue;
 
-                String prenom = cols[0].trim();
-                String nom    = cols[1].trim();
-                String datStr = cols[2].trim();
+                // Format : Etudiant;John Doe
+                if (cols[0].equalsIgnoreCase("Etudiant")) {
+                    String fullName = cols[1].trim();
+                    String[] parts = fullName.split(" ", 2);
 
-                if (prenom.isEmpty() || nom.isEmpty()) {
-                    errors.add("Line %d skipped: first name or last name is empty.".formatted(lineNum));
-                    skipped++;
-                    continue;
-                }
-
-                LocalDate birthDate = parseDate(datStr);
-                if (birthDate == null) {
-                    errors.add("Line %d skipped: invalid date '%s' (expected: yyyy-MM-dd or dd/MM/yyyy)."
-                            .formatted(lineNum, datStr));
-                    skipped++;
-                    continue;
-                }
-
-                // ── Look for a duplicate in the in-memory list ────────────
-                StudentModel existing = existants.stream()
-                        .filter(s -> s.getFirstName().equalsIgnoreCase(prenom)
-                                  && s.getLastName().equalsIgnoreCase(nom))
-                        .findFirst()
-                        .orElse(null);
-
-                try {
-                    if (existing != null) {
-                        // Student exists → update
-                        studentDAO.updateStudent(existing.getId(), prenom, nom, birthDate);
-                        updated++;
-
-                    } else {
-                        // New student → insert
-                        int newId = studentDAO.addStudent(prenom, nom, birthDate);
-
-                        // IMPORTANT to keep the in-memory list in sync with the database for accurate duplicate detection
-                        existants.add(new StudentModel(
-                                newId,
-                                prenom,
-                                nom,
-                                birthDate,
-                                LocalDateTime.now(),   // creation_date
-                                null,                  // last_modified_date
-                                0.0                    // average_grade
-                        ));
-
-                        inserted++;
+                    if (parts.length == 2) {
+                        prenom = parts[0].trim();
+                        nom    = parts[1].trim();
                     }
-                } catch (Exception e) {
-                    errors.add("Line %d database error: %s".formatted(lineNum, e.getMessage()));
-                    skipped++;
+                }
+
+                // Format : Date de naissance;01/01/2000
+                if (cols[0].equalsIgnoreCase("Date de naissance")) {
+                    birthDate = parseDate(cols[1].trim());
                 }
             }
 
         } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "File read error", e.getMessage());
+            showAlert(Alert.AlertType.ERROR, "Erreur lecture fichier", e.getMessage());
             return;
         }
 
-        // ── Summary report ────────────────────────────────────────────────
-        StringBuilder report = new StringBuilder();
-        report.append("Import complete!\n\n");
-        report.append("✅ Inserted  : %d\n".formatted(inserted));
-        report.append("🔄 Updated   : %d\n".formatted(updated));
-        report.append("⏭ Skipped   : %d\n".formatted(skipped));
-
-        if (!errors.isEmpty()) {
-            report.append("\nSkipped lines detail:\n");
-            errors.stream().limit(10).forEach(e -> report.append("  • ").append(e).append("\n"));
-            if (errors.size() > 10)
-                report.append("  … and %d more.\n".formatted(errors.size() - 10));
+        // Validation
+        if (prenom == null || nom == null || birthDate == null) {
+            showAlert(Alert.AlertType.ERROR, "Format invalide",
+                    "Impossible d'extraire les informations de l'étudiant.\n" +
+                    "Vérifiez que le bulletin contient bien :\n" +
+                    "  Etudiant;Prenom;Nom\n" +
+                    "  Date;de;naissance;JJ/MM/AAAA");
+            return;
         }
 
-        showAlert(Alert.AlertType.INFORMATION, "CSV Import", report.toString());
+        try {
+            List<StudentModel> existants = studentDAO.getAllStudents();
+
+            // ───────────────────────────────────────────────
+            // 🔥 LIGNE EXACTE où tu dois mettre les variables finales
+            // ───────────────────────────────────────────────
+            final String fPrenom = prenom;
+            final String fNom    = nom;
+
+            StudentModel existing = existants.stream()
+                    .filter(s -> s.getFirstName().equalsIgnoreCase(fPrenom)
+                              && s.getLastName().equalsIgnoreCase(fNom))
+                    .findFirst()
+                    .orElse(null);
+
+            if (existing != null) {
+                studentDAO.updateStudent(existing.getId(), prenom, nom, birthDate);
+                showAlert(Alert.AlertType.INFORMATION, "Import bulletin",
+                        "Étudiant mis à jour : " + prenom + " " + nom);
+            } else {
+                studentDAO.addStudent(prenom, nom, birthDate);
+                showAlert(Alert.AlertType.INFORMATION, "Import bulletin",
+                        "Nouvel étudiant ajouté : " + prenom + " " + nom);
+            }
+
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur base de données", e.getMessage());
+        }
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────
+    // ───────────────────────────────────────────────
+    // Helpers
+    // ───────────────────────────────────────────────
 
-    /** Tries to parse the date using both supported formats. */
     private LocalDate parseDate(String s) {
-        for (DateTimeFormatter fmt : new DateTimeFormatter[]{ FMT_ISO, FMT_FR }) {
+        for (DateTimeFormatter fmt : new DateTimeFormatter[]{FMT_ISO, FMT_FR}) {
             try { return LocalDate.parse(s, fmt); }
             catch (DateTimeParseException ignored) {}
         }
         return null;
-    }
-
-    /** Detects whether the line looks like a header row. */
-    private boolean looksLikeHeader(String line) {
-        String low = line.toLowerCase();
-        return low.contains("prenom") || low.contains("nom") || low.contains("date")
-                || low.contains("first") || low.contains("last") || low.contains("birth");
     }
 
     private void showAlert(Alert.AlertType type, String title, String msg) {
