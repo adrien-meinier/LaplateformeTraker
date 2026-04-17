@@ -80,7 +80,8 @@ public class StudentDAO {
     // Retrieves a single student by ID
     public StudentModel getStudentById(int id) throws SQLException {
         String sql = """
-                SELECT id, first_name, last_name, birth_date, creation_date, last_modified_date, average_grade
+                SELECT id, first_name, last_name, birth_date,
+                       creation_date, last_modified_date, average_grade
                 FROM student
                 WHERE id = ?;
                 """;
@@ -93,13 +94,17 @@ public class StudentDAO {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
+
+                    // Handle NULL last_modified_date safely
+                    var tsModified = rs.getTimestamp("last_modified_date");
+
                     return new StudentModel(
                             rs.getInt("id"),
                             rs.getString("first_name"),
                             rs.getString("last_name"),
                             rs.getDate("birth_date").toLocalDate(),
                             rs.getTimestamp("creation_date").toLocalDateTime(),
-                            rs.getTimestamp("last_modified_date").toLocalDateTime(),
+                            tsModified != null ? tsModified.toLocalDateTime() : null,
                             rs.getDouble("average_grade")
                     );
                 }
@@ -111,7 +116,8 @@ public class StudentDAO {
     // Retrieves all students
     public List<StudentModel> getAllStudents() throws SQLException {
         String sql = """
-                SELECT id, first_name, last_name, birth_date, creation_date, last_modified_date, average_grade
+                SELECT id, first_name, last_name, birth_date,
+                       creation_date, last_modified_date, average_grade
                 FROM student
                 ORDER BY id;
                 """;
@@ -121,17 +127,19 @@ public class StudentDAO {
         try (DatabaseConnection db = new DatabaseConnection()) {
             db.openConnection();
             PreparedStatement stmt = db.prepareStatement(sql);
-            // Use try-with-resources to ensure proper resource management
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
+
+                    var tsModified = rs.getTimestamp("last_modified_date");
+
                     students.add(new StudentModel(
                             rs.getInt("id"),
                             rs.getString("first_name"),
                             rs.getString("last_name"),
                             rs.getDate("birth_date").toLocalDate(),
                             rs.getTimestamp("creation_date").toLocalDateTime(),
-                            rs.getTimestamp("last_modified_date").toLocalDateTime(),
+                            tsModified != null ? tsModified.toLocalDateTime() : null,
                             rs.getDouble("average_grade")
                     ));
                 }
@@ -141,7 +149,6 @@ public class StudentDAO {
         return students;
     }
 
-    // AVERAGES
     // Returns the average grade of a specific student
     public double getStudentAverage(int studentId) throws SQLException {
         String sql = """

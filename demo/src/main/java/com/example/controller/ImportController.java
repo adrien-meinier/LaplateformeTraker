@@ -1,6 +1,5 @@
 package com.example.controller;
 
-import com.example.controller.StudentDAO;
 import com.example.model.StudentModel;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -11,6 +10,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -112,9 +112,22 @@ public class ImportController {
                         // Student exists → update
                         studentDAO.updateStudent(existing.getId(), prenom, nom, birthDate);
                         updated++;
+
                     } else {
                         // New student → insert
-                        studentDAO.addStudent(prenom, nom, birthDate);
+                        int newId = studentDAO.addStudent(prenom, nom, birthDate);
+
+                        // IMPORTANT to keep the in-memory list in sync with the database for accurate duplicate detection
+                        existants.add(new StudentModel(
+                                newId,
+                                prenom,
+                                nom,
+                                birthDate,
+                                LocalDateTime.now(),   // creation_date
+                                null,                  // last_modified_date
+                                0.0                    // average_grade
+                        ));
+
                         inserted++;
                     }
                 } catch (Exception e) {

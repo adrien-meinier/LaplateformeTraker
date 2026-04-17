@@ -210,11 +210,7 @@ public class EtudiantsView {
             showAlert("Erreur SQL", e.getMessage());
         }
     }
-<<<<<<< HEAD
-
-=======
 // Opens a form to add a new student or edit an existing student, depending on whether the provided StudentModel is null.
->>>>>>> 60fd09049df8d7890036c389133c3415eecf726d
     private void openForm(StudentModel student) {
         Stage stage = new Stage();
         stage.setTitle(student == null ? "Ajouter un étudiant" : "Modifier un étudiant");
@@ -252,10 +248,6 @@ public class EtudiantsView {
         alert.setHeaderText(null);
         alert.showAndWait();
     }
-<<<<<<< HEAD
-}
-=======
 
 
 }
->>>>>>> 60fd09049df8d7890036c389133c3415eecf726d
