@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter;
 
 import com.example.controller.BulletinController;
 import com.example.controller.ExportController;
+import com.example.controller.ImportController;
 import com.example.DAO.StudentDAO;
 import com.example.model.StudentModel;
 
@@ -49,14 +50,13 @@ public class EtudiantsView {
     private Label lblPagination;
     private Button btnPrev, btnNext;
 
-    // Datetime formatter for the timestamps
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
         DateTimeFormatter.ofPattern("dd-MM-yyyy 'à' HH:mm");
 
     public EtudiantsView(StudentDAO dao) {
         this.dao = dao;
     }
-    // Builds the main view for displaying students, including the header, table, and pagination controls.
+
     public Node build() {
         VBox root = new VBox(16);
         root.setPadding(new Insets(10));
@@ -106,7 +106,7 @@ public class EtudiantsView {
         refresh();
         return root;
     }
-    // Builds the TableView for displaying students, including columns for student properties and action buttons.
+
     private TableView<StudentModel> buildTable() {
         TableView<StudentModel> tv = new TableView<>();
         tv.setStyle(StyleFactory.tableStyle());
@@ -120,23 +120,21 @@ public class EtudiantsView {
         TableColumn<StudentModel, LocalDateTime> colCreated = col("Créé le", "creationDate", 160);
         TableColumn<StudentModel, LocalDateTime> colModified = col("Modifié le", "lastModifiedDate", 160);
 
-        // Format the created/modified timestamp format
         colCreated.setCellFactory(column -> new TableCell<>() {
-        @Override
-        protected void updateItem(LocalDateTime item, boolean empty) {
-            super.updateItem(item, empty);
-            setText(empty || item == null ? "" : item.format(DATE_TIME_FORMATTER));
-        }
-    });
+            @Override
+            protected void updateItem(LocalDateTime item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? "" : item.format(DATE_TIME_FORMATTER));
+            }
+        });
 
         colModified.setCellFactory(column -> new TableCell<>() {
-        @Override
-        protected void updateItem(LocalDateTime item, boolean empty) {
-            super.updateItem(item, empty);
-            setText(empty || item == null ? "" : item.format(DATE_TIME_FORMATTER));
-        }
-    });
-
+            @Override
+            protected void updateItem(LocalDateTime item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? "" : item.format(DATE_TIME_FORMATTER));
+            }
+        });
 
         TableColumn<StudentModel, Void> colActions = new TableColumn<>("Actions");
         colActions.setPrefWidth(240);
@@ -177,14 +175,14 @@ public class EtudiantsView {
         tv.getColumns().addAll(colId, colPrenom, colNom, colAverage, colBirth, colCreated, colModified, colActions);
         return tv;
     }
-// Utility method to create a TableColumn with the specified title, property, and width.
+
     private <T> TableColumn<StudentModel, T> col(String title, String property, int width) {
         TableColumn<StudentModel, T> col = new TableColumn<>(title);
         col.setCellValueFactory(new PropertyValueFactory<>(property));
         col.setPrefWidth(width);
         return col;
     }
-// Method to refresh the student data displayed in the table, handling pagination and updating the pagination controls.
+
     private void refresh() {
         try {
             List<StudentModel> students = dao.getAllStudents();
@@ -209,7 +207,7 @@ public class EtudiantsView {
             showAlert("Erreur SQL", e.getMessage());
         }
     }
-// Opens a form to add a new student or edit an existing student, depending on whether the provided StudentModel is null.
+
     private void openForm(StudentModel student) {
         Stage stage = new Stage();
         stage.setTitle(student == null ? "Ajouter un étudiant" : "Modifier un étudiant");
@@ -224,7 +222,7 @@ public class EtudiantsView {
         stage.setScene(scene);
         stage.showAndWait();
     }
-// Shows a confirmation dialog before deleting a student, and if confirmed, deletes the student from the database and refreshes the view.
+
     private void confirmDelete(StudentModel s) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
                 "Supprimer " + s.getFirstName() + " " + s.getLastName() + " ?",
