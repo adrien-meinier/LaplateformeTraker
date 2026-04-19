@@ -86,17 +86,25 @@ public class StatistiquesView {
         return scroll;
     }
 
-    private DashboardStats computeDashboardStats(List<StudentModel> students) {
+    private DashboardStats computeDashboardStats(List<StudentModel> students) throws SQLException {
         if (students.isEmpty()) return new DashboardStats(0, 0, 0, Map.of());
 
         int total = students.size();
-        // Ici on simule que 'age' ou une autre valeur sert de note pour l'exemple, 
-        // Adapte avec s.getMoyenne() si tu as ce champ dans ton StudentModel
-        double avg = students.stream().mapToDouble(s -> 15.5).average().orElse(0); // Exemple statique
-        double max = 19.5; // Exemple statique
 
+        // Overall average across all individual grades (via the grades table)
+        double avg = dao.getClassAverage();
+
+        // Best student average — "major de promo" is the student with the highest stored average_grade
+        double max = students.stream()
+                .mapToDouble(StudentModel::getAverageGrade)
+                .max()
+                .orElse(0);
+
+        // Demographic grouping by birth decade — kept as a visual placeholder only
         Map<String, Integer> ageDist = students.stream()
-                .collect(Collectors.groupingBy(s -> "Classe " + (int)(Math.random()*3 + 1), Collectors.summingInt(e -> 1)));
+                .collect(Collectors.groupingBy(
+                        s -> String.valueOf((s.getBirthDate().getYear() / 10) * 10) + "s",
+                        Collectors.summingInt(e -> 1)));
 
         return new DashboardStats(total, avg, max, ageDist);
     }
