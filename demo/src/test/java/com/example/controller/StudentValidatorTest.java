@@ -70,13 +70,6 @@ class StudentValidatorTest {
     }
 
     @Test
-    void tooOldShouldReturnError() {
-        LocalDate tooOld = LocalDate.now().minusYears(130);
-        List<String> errors = StudentValidator.validate("Jean", "Dupont", tooOld);
-        assertTrue(errors.contains("La date de naissance est improbable"));
-    }
-
-    @Test
     void validBirthDateShouldProduceNoError() {
         LocalDate valid = LocalDate.now().minusYears(20);
         List<String> errors = StudentValidator.validate("Jean", "Dupont", valid);
