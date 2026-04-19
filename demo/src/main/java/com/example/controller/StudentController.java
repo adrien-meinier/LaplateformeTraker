@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import com.example.DAO.StudentDAO;
@@ -81,14 +82,24 @@ public class StudentController {
 
     @FXML
     public void handleAdd() {
-        if (!validateFields()) return;
+        String firstName = firstNameField.getText().trim();
+        String lastName  = lastNameField.getText().trim();
+        LocalDate birth  = birthDatePicker.getValue();
+
+        // Field-level validation
+        List<String> errors = StudentValidator.validate(firstName, lastName, birth);
+        if (!errors.isEmpty()) {
+            showAlert("Données invalides", String.join("\n", errors));
+            return;
+        }
 
         try {
-            studentDAO.addStudent(
-                    firstNameField.getText().trim(),
-                    lastNameField.getText().trim(),
-                    birthDatePicker.getValue()
-            );
+            // Duplicate check for new students (no excludeId)
+            if (studentDAO.existsByNameAndBirthDate(firstName, lastName, birth, null)) {
+                showAlert("Doublon détecté", "Un étudiant avec ce nom et cette date de naissance existe déjà.");
+                return;
+            }
+            studentDAO.addStudent(firstName, lastName, birth);
             clearFields();
             refreshTable();
         } catch (Exception e) {
@@ -104,15 +115,23 @@ public class StudentController {
             return;
         }
 
-        if (!validateFields()) return;
+        String firstName = firstNameField.getText().trim();
+        String lastName  = lastNameField.getText().trim();
+        LocalDate birth  = birthDatePicker.getValue();
+
+        List<String> errors = StudentValidator.validate(firstName, lastName, birth);
+        if (!errors.isEmpty()) {
+            showAlert("Données invalides", String.join("\n", errors));
+            return;
+        }
 
         try {
-            studentDAO.updateStudent(
-                    selected.getId(),
-                    firstNameField.getText().trim(),
-                    lastNameField.getText().trim(),
-                    birthDatePicker.getValue()
-            );
+            // Exclude the student being edited to avoid a self-duplicate false positive
+            if (studentDAO.existsByNameAndBirthDate(firstName, lastName, birth, selected.getId())) {
+                showAlert("Doublon détecté", "Un autre étudiant avec ce nom et cette date de naissance existe déjà.");
+                return;
+            }
+            studentDAO.updateStudent(selected.getId(), firstName, lastName, birth);
             refreshTable();
         } catch (Exception e) {
             showError("Erreur lors de la modification", e);
@@ -162,17 +181,6 @@ public class StudentController {
         birthDatePicker.setValue(null);
         studentTable.getSelectionModel().clearSelection();
     }
-// Validates that all required fields are filled in before adding or updating a student.
-    private boolean validateFields() {
-        if (firstNameField.getText().trim().isEmpty() || 
-            lastNameField.getText().trim().isEmpty() || 
-            birthDatePicker.getValue() == null) {
-            showAlert("Champs manquants", "Tous les champs (*) sont obligatoires.");
-            return false;
-        }
-        return true;
-    }
-
     private void showAlert(String title, String content) {
         Alert alert = new Alert(AlertType.WARNING);
         alert.setTitle(title);

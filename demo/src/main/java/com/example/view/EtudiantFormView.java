@@ -2,6 +2,7 @@ package com.example.view;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.List;
 
 import com.example.DAO.GradeDAO;
 import com.example.DAO.StudentDAO;
@@ -122,18 +123,27 @@ public class EtudiantFormView {
 
         return wrapper;
     }
-// Method to save the student data, either by adding a new student or updating an existing one.
+// Validates inputs, checks for duplicates, then saves the student.
     private void doSave() {
         String prenom = tfPrenom.getText().trim();
-        String nom = tfNom.getText().trim();
+        String nom    = tfNom.getText().trim();
         LocalDate birth = dpBirthDate.getValue();
 
-        if (prenom.isEmpty() || nom.isEmpty() || birth == null) {
-            showError("Veuillez remplir tous les champs obligatoires (*).");
+        // Field-level validation (format, age range, forbidden characters)
+        List<String> errors = com.example.controller.StudentValidator.validate(prenom, nom, birth);
+        if (!errors.isEmpty()) {
+            showError(String.join("\n", errors));
             return;
         }
 
         try {
+            // Duplicate check: same name + birth date, excluding self when editing
+            Integer excludeId = (existing != null) ? existing.getId() : null;
+            if (studentDao.existsByNameAndBirthDate(prenom, nom, birth, excludeId)) {
+                showError("Un étudiant avec ce nom et cette date de naissance existe déjà.");
+                return;
+            }
+
             if (existing == null) {
                 studentDao.addStudent(prenom, nom, birth);
             } else {

@@ -196,6 +196,33 @@ public class StudentDAO {
         }
     }
 
+    // Returns true if a student with the same first name, last name and birth date already exists.
+    // Pass the current student's ID when editing to avoid a false positive on the record itself.
+    public boolean existsByNameAndBirthDate(String firstName, String lastName,
+                                            LocalDate birthDate, Integer excludeId)
+            throws SQLException {
+        String sql = excludeId == null
+                ? "SELECT 1 FROM student WHERE LOWER(first_name)=LOWER(?) AND LOWER(last_name)=LOWER(?) AND birth_date=?;"
+                : "SELECT 1 FROM student WHERE LOWER(first_name)=LOWER(?) AND LOWER(last_name)=LOWER(?) AND birth_date=? AND id <> ?;";
+
+        try (DatabaseConnection db = new DatabaseConnection()) {
+            db.openConnection();
+            try (PreparedStatement stmt = db.prepareStatement(sql)) {
+                stmt.setString(1, firstName.trim());
+                stmt.setString(2, lastName.trim());
+                stmt.setDate(3, Date.valueOf(birthDate));
+                if (excludeId != null) stmt.setInt(4, excludeId);
+                try (ResultSet rs = db.executeQuery(stmt)) {
+                    return rs.next();
+                }
+            }
+        } catch (SQLException e) {
+            // On a DB failure, let the save attempt proceed — worst case: a duplicate is inserted
+            System.err.println("Duplicate check failed (DB unavailable), skipping: " + e.getMessage());
+            return false;
+        }
+    }
+
     // Maps the current ResultSet row to a StudentModel. Handles nullable last_modified_date.
     private StudentModel mapRow(ResultSet rs) throws SQLException {
         var tsModified = rs.getTimestamp("last_modified_date");
